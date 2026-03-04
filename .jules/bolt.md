@@ -9,3 +9,7 @@
 ## 2024-05-24 - React-Window Item Memoization
 **Learning:** `react-window` supplies `itemData` to its item renderers. If the inner component (like `CaptureCard`) is not wrapped in `React.memo`, it will re-render even if its specific slice of `itemData` (e.g. `capture` and `onDelete`) hasn't changed, purely because the parent list re-rendered.
 **Action:** Always wrap components rendered inside `react-window` lists (e.g., `CaptureCard` inside `CapturesScreen` or `CapturesPanel`) with `React.memo()` to fully benefit from the stabilized `itemData` provided to the list.
+
+## 2026-03-04 - [Frontend Performance: EditorScreen Memoization]
+**Learning:** Functions that derive state from large data structures (like `getBlockDepths` iterating over `currentTask.actions`) will be executed on every re-render if called directly in the component body. This causes O(N) recalculations even when the data structure hasn't changed (e.g., during drag-and-drop operations, variable edits, etc.). Also, do not use hooks inside `(() => {})()` statements!
+**Action:** Always wrap derived array calculations inside `useMemo` hooks, with the parent array as the dependency, to avoid unnecessary loop executions during React render cycles. Ensure it is placed directly at the top level of the function block.

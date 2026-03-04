@@ -8,6 +8,8 @@ import JsonEditorPane from './editor/JsonEditorPane';
 import ResultsPane from './editor/ResultsPane';
 import ActionItem from './editor/ActionItem';
 
+const blockStartTypes = new Set(['if', 'while', 'repeat', 'foreach', 'on_error']);
+
 interface EditorScreenProps {
     currentTask: Task;
     setCurrentTask: Dispatch<SetStateAction<Task | null>>;
@@ -310,11 +312,10 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
         return () => clearTimeout(timeout);
     }, [currentTask]);
 
-    const blockStartTypes = new Set(['if', 'while', 'repeat', 'foreach', 'on_error']);
-
-    const getBlockDepths = (actions: Action[]) => {
+    // ⚡ Bolt: Memoize block depth array to prevent O(N) array mapping on every re-render (e.g., during drag operations)
+    const blockDepths = useMemo(() => {
         let depth = 0;
-        return actions.map((action) => {
+        return currentTask.actions.map((action) => {
             if (action.type === 'else' || action.type === 'end') {
                 depth = Math.max(0, depth - 1);
             }
@@ -324,7 +325,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
             }
             return currentDepth;
         });
-    };
+    }, [currentTask.actions]);
 
     const addActionByType = (type: Action['type']) => {
         const base: Action = {
@@ -848,7 +849,6 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                                 <div className="space-y-6 order-1">
                                     <div className="space-y-3" ref={actionsListRef}>
                                         {(() => {
-                                            const blockDepths = getBlockDepths(currentTask.actions);
                                             return currentTask.actions.map((action, idx) => {
                                                 const isDragging = dragState?.id === action.id;
                                                 const isBetween =
