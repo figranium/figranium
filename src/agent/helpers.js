@@ -38,16 +38,6 @@ const buildBlockMap = (list) => {
 const randomBetween = (min, max) => min + Math.random() * (max - min);
 
 const getForeachItems = async (act, page, runtimeVars) => {
-    // Note: resolveTemplate in common-utils usually takes just the string. 
-    // But in agent/index.js there was a local resolveTemplate that used runtimeVars.
-    // We should pass runtimeVars to resolveTemplate or use a local version.
-    // The common-utils resolveTemplate might not support runtimeVars injection if it wasn't designed for it.
-    // Looking at src/agent/index.js: 
-    // const resolveTemplate = (input) => { ... uses runtimeVars ... }
-
-    // I need to implement a resolveTemplate that accepts vars here or reuse one.
-    // I'll implement a local helper here that takes vars.
-
     const resolve = (input) => {
         if (typeof input !== 'string') return input;
         return input.replace(/\{\$([\w.]+)\}/g, (_match, name) => {
