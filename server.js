@@ -18,7 +18,8 @@ const {
 } = require('./src/server/constants');
 
 const {
-    loadTasks
+    loadTasks,
+    getTaskById
 } = require('./src/server/storage');
 
 // Context & Utils
@@ -235,8 +236,8 @@ const executeTaskById = async (req, res) => {
     const taskId = req.params.id;
     let task;
     try {
-        const tasks = await loadTasks();
-        task = tasks.find(t => t.id === taskId);
+        await loadTasks();
+        task = getTaskById(taskId);
     } catch (e) {
         return res.status(500).json({ error: 'FAILED_TO_LOAD_TASK' });
     }

@@ -77,8 +77,29 @@ async function saveUsers(users) {
 
 // Task Storage
 let tasksCache = null;
+let tasksMap = new Map(); // stores { task, index }
 let tasksLoadPromise = null;
 let tasksMtime = 0;
+
+function syncTasksMap() {
+    if (!tasksCache) {
+        tasksMap.clear();
+        return;
+    }
+    tasksMap = new Map(tasksCache.map((task, index) => [task.id, { task, index }]));
+}
+
+function getTaskById(id) {
+    if (!tasksCache) return null;
+    const entry = tasksMap.get(id);
+    return entry ? entry.task : null;
+}
+
+function getTaskIndexById(id) {
+    if (!tasksCache) return -1;
+    const entry = tasksMap.get(id);
+    return entry !== undefined ? entry.index : -1;
+}
 
 async function loadTasks() {
     const useDB = await ensureDB();
@@ -96,8 +117,10 @@ async function loadTasks() {
                 const pool = getPool();
                 const res = await pool.query('SELECT data FROM tasks');
                 tasksCache = res.rows.map(r => r.data);
+                syncTasksMap();
             } catch (e) {
                 tasksCache = [];
+                syncTasksMap();
             }
             tasksLoadPromise = null;
             return tasksCache;
@@ -129,9 +152,11 @@ async function loadTasks() {
             const data = await fs.promises.readFile(TASKS_FILE, 'utf8');
             tasksCache = JSON.parse(data);
             tasksMtime = stat.mtimeMs;
+            syncTasksMap();
         } catch (e) {
             tasksCache = [];
             tasksMtime = 0;
+            syncTasksMap();
         }
         tasksLoadPromise = null;
         return tasksCache;
@@ -143,6 +168,7 @@ async function loadTasks() {
 
 async function saveTasks(tasks) {
     tasksCache = tasks;
+    syncTasksMap();
     const useDB = await ensureDB();
     if (useDB) {
         const pool = getPool();
@@ -512,6 +538,8 @@ module.exports = {
     saveUsers,
     loadTasks,
     saveTasks,
+    getTaskById,
+    getTaskIndexById,
     loadExecutions,
     saveExecutions,
     appendExecution,

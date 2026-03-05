@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireAuth, requireApiKey } = require('../middleware');
-const { loadTasks, saveTasks, loadGeminiApiKey } = require('../storage');
+const { loadTasks, saveTasks, getTaskById, getTaskIndexById, loadGeminiApiKey } = require('../storage');
 const { taskMutex } = require('../state');
 const { appendTaskVersion, cloneTaskForVersion } = require('../utils');
 const { handleAgent } = require('../../agent/index');
@@ -27,16 +27,14 @@ router.post('/', requireAuth, async (req, res) => {
         const newTask = req.body;
         if (!newTask.id) newTask.id = 'task_' + Date.now();
 
-        const index = tasks.findIndex(t => t.id === newTask.id);
+        const index = getTaskIndexById(newTask.id);
         if (index > -1) {
+            const existingTask = tasks[index];
             if (req.query.version === 'true') {
-                appendTaskVersion(tasks[index]);
+                appendTaskVersion(existingTask);
             }
             // Preserve versions if not creating a new one, as the client might not send them back full
-            // Actually client typically sends full task. But if not, we should be careful.
-            // existing implementation: newTask.versions = tasks[index].versions || [];
-            // We should ensure versions are preserved.
-            newTask.versions = tasks[index].versions || [];
+            newTask.versions = existingTask.versions || [];
             tasks[index] = newTask;
         } else {
             newTask.versions = [];
@@ -54,11 +52,11 @@ router.post('/:id/touch', requireAuth, async (req, res) => {
     await taskMutex.lock();
     try {
         const tasks = await loadTasks();
-        const index = tasks.findIndex(t => t.id === req.params.id);
-        if (index === -1) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
-        tasks[index].last_opened = Date.now();
+        const task = getTaskById(req.params.id);
+        if (!task) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
+        task.last_opened = Date.now();
         await saveTasks(tasks);
-        res.json(tasks[index]);
+        res.json(task);
     } finally {
         taskMutex.unlock();
     }
@@ -77,8 +75,8 @@ router.delete('/:id', requireAuth, async (req, res) => {
 });
 
 router.get('/:id/versions', requireAuth, async (req, res) => {
-    const tasks = await loadTasks();
-    const task = tasks.find(t => t.id === req.params.id);
+    await loadTasks();
+    const task = getTaskById(req.params.id);
     if (!task) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
     const versions = (task.versions || []).map(v => ({
         id: v.id,
@@ -90,8 +88,8 @@ router.get('/:id/versions', requireAuth, async (req, res) => {
 });
 
 router.get('/:id/versions/:versionId', requireAuth, async (req, res) => {
-    const tasks = await loadTasks();
-    const task = tasks.find(t => t.id === req.params.id);
+    await loadTasks();
+    const task = getTaskById(req.params.id);
     if (!task) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
     const versions = task.versions || [];
     const version = versions.find(v => v.id === req.params.versionId);
@@ -103,9 +101,9 @@ router.post('/:id/versions/clear', requireAuth, async (req, res) => {
     await taskMutex.lock();
     try {
         const tasks = await loadTasks();
-        const index = tasks.findIndex(t => t.id === req.params.id);
-        if (index === -1) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
-        tasks[index].versions = [];
+        const task = getTaskById(req.params.id);
+        if (!task) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
+        task.versions = [];
         await saveTasks(tasks);
         res.json({ success: true });
     } finally {
@@ -119,8 +117,9 @@ router.post('/:id/rollback', requireAuth, async (req, res) => {
         const { versionId } = req.body || {};
         if (!versionId) return res.status(400).json({ error: 'MISSING_VERSION_ID' });
         const tasks = await loadTasks();
-        const index = tasks.findIndex(t => t.id === req.params.id);
+        const index = getTaskIndexById(req.params.id);
         if (index === -1) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
+
         const task = tasks[index];
         const versions = task.versions || [];
         const version = versions.find(v => v.id === versionId);
@@ -129,7 +128,9 @@ router.post('/:id/rollback', requireAuth, async (req, res) => {
         appendTaskVersion(task);
         const restored = { ...cloneTaskForVersion(version.snapshot), id: task.id, versions: task.versions };
         restored.last_opened = Date.now();
+
         tasks[index] = restored;
+
         await saveTasks(tasks);
         res.json(restored);
     } finally {
