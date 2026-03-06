@@ -79,7 +79,6 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="flex items-end justify-between">
                     <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.4em]">Execution</p>
                         <h2 className="text-3xl font-bold tracking-tighter text-white">{execution.taskName || execution.mode}</h2>
                         <div className="text-[8px] text-gray-500 uppercase tracking-[0.2em]">
                             {new Date(execution.timestamp).toLocaleString()} | {execution.source} | {execution.mode} | {execution.status} | {execution.durationMs}ms

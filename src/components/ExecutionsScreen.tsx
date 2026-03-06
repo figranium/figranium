@@ -133,7 +133,6 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="flex items-end justify-between">
                     <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.4em]">Executions</p>
                         <h2 className="text-4xl font-bold tracking-tighter text-white">Run History</h2>
                     </div>
                     <div className="flex items-center gap-3">

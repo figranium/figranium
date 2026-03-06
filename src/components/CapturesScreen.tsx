@@ -76,7 +76,6 @@ const CapturesScreen: React.FC<CapturesScreenProps> = ({ onConfirm, onNotify }) 
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="flex items-end justify-between">
                     <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.4em]">Captures</p>
                         <h2 className="text-3xl font-bold tracking-tighter text-white">All Captures</h2>
                         <div className="text-[8px] text-gray-500 uppercase tracking-[0.2em]">
                             Recordings and screenshots from every run
