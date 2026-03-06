@@ -141,6 +141,13 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
     const [_versionsLoading, setVersionsLoading] = useState(false);
     const [actionPaletteOpen, setActionPaletteOpen] = useState(false);
     const [isCabinetOpen, setIsCabinetOpen] = useState(false);
+    const [cabinetTab, setCabinetTab] = useState<'mode' | 'variables' | 'behavior' | 'extraction' | 'api' | 'history'>('mode');
+
+    const handleOpenCabinet = (tab: typeof cabinetTab = 'mode') => {
+        setCabinetTab(tab);
+        if (tab === 'history') loadVersions();
+        setIsCabinetOpen(true);
+    };
 
     const [selectedActionIds, setSelectedActionIds] = useState<Set<string>>(new Set());
     const [selectionBox, setSelectionBox] = useState<{ startX: number, startY: number, currentX: number, currentY: number } | null>(null);
@@ -865,21 +872,21 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
             {/* Top Bar - Thin & Full Width */}
             <div className="fixed top-0 left-0 right-0 z-40 w-full pointer-events-none">
                 <div className="glass-card flex items-center justify-between p-1 px-6 border-b border-white/10 backdrop-blur-xl pointer-events-auto">
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-hidden flex justify-center">
                         <input
                             type="text"
-                            value={currentTask.name}
+                            value={currentTask.name || ''}
                             onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
                             onBlur={() => handleAutoSave()}
-                            placeholder="Task name..."
-                            className="bg-transparent border-none text-[10px] font-bold text-white uppercase tracking-[0.25em] focus:outline-none w-full placeholder:text-gray-700 py-1"
+                            placeholder="Task name"
+                            className="bg-transparent border-none text-[11px] font-bold text-white uppercase tracking-[0.25em] focus:outline-none w-full max-w-[400px] text-center placeholder:text-white/20 py-1"
                         />
                     </div>
                     <div className="flex items-center gap-1">
                         <button
-                            onClick={() => setIsCabinetOpen(true)}
+                            onClick={() => handleOpenCabinet('history')}
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/5 transition-all"
-                            title="Task Settings"
+                            title="Version History"
                         >
                             <MaterialIcon name="history" className="text-base" />
                         </button>
@@ -962,7 +969,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                                     <MaterialIcon name={triggerExpanded ? 'expand_less' : 'expand_more'} className="text-xs text-gray-600" />
                                 </div>
                                 <button
-                                    onClick={() => setIsCabinetOpen(true)}
+                                    onClick={() => handleOpenCabinet('mode')}
                                     className="p-2 rounded-lg hover:bg-white/10 text-white/30 hover:text-white transition-all focus:outline-none"
                                     title="Task Settings"
                                 >
@@ -1594,6 +1601,11 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 }}
                 proxyListLoaded={proxyListLoaded}
                 proxyList={proxyList}
+                initialTab={cabinetTab}
+                versions={_versions}
+                versionsLoading={_versionsLoading}
+                onRollback={_rollbackToVersion}
+                onPreview={_openVersionPreview}
             />
         </div >
     );
