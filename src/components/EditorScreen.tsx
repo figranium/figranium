@@ -7,6 +7,7 @@ import ActionPalette from './editor/ActionPalette';
 // import JsonEditorPane from './editor/JsonEditorPane';
 import ResultsPane from './editor/ResultsPane';
 import ActionItem from './editor/ActionItem';
+import TaskSettingsCabinet from './editor/TaskSettingsCabinet';
 
 const blockStartTypes = new Set(['if', 'while', 'repeat', 'foreach', 'on_error']);
 
@@ -139,6 +140,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
     const [_versions, setVersions] = useState<{ id: string; timestamp: number; name: string; mode: TaskMode }[]>([]);
     const [_versionsLoading, setVersionsLoading] = useState(false);
     const [actionPaletteOpen, setActionPaletteOpen] = useState(false);
+    const [isCabinetOpen, setIsCabinetOpen] = useState(false);
 
     const [selectedActionIds, setSelectedActionIds] = useState<Set<string>>(new Set());
     const [selectionBox, setSelectionBox] = useState<{ startX: number, startY: number, currentX: number, currentY: number } | null>(null);
@@ -860,6 +862,31 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
         <div className="flex-1 flex overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 bg-black relative" data-editor-width={editorWidth}>
 
             {/* Infinite Canvas Viewport */}
+            {/* Top Bar - Thin & Full Width */}
+            <div className="fixed top-0 left-0 right-0 z-40 w-full pointer-events-none">
+                <div className="glass-card flex items-center justify-between p-1 px-6 border-b border-white/10 backdrop-blur-xl pointer-events-auto">
+                    <div className="flex-1 overflow-hidden">
+                        <input
+                            type="text"
+                            value={currentTask.name}
+                            onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+                            onBlur={() => handleAutoSave()}
+                            placeholder="Task name..."
+                            className="bg-transparent border-none text-[10px] font-bold text-white uppercase tracking-[0.25em] focus:outline-none w-full placeholder:text-gray-700 py-1"
+                        />
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setIsCabinetOpen(true)}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/5 transition-all"
+                            title="Task Settings"
+                        >
+                            <MaterialIcon name="history" className="text-base" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div
                 ref={canvasViewportRef}
                 className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing select-none"
@@ -928,14 +955,19 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                     <div className="flex flex-col items-center" style={{ paddingTop: '60px', minWidth: '500px' }}>
                         {/* Trigger Node */}
                         <div className="w-[360px] bg-black border border-white/15 p-5 rounded-2xl shadow-2xl shadow-black/50 select-text cursor-auto relative z-10">
-                            <div className="flex items-center justify-between cursor-pointer" onClick={() => setTriggerExpanded(!triggerExpanded)}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center border border-white/20">
-                                        <MaterialIcon name="bolt" className="text-white text-base" />
-                                    </div>
-                                    <h3 className="text-white font-bold tracking-widest uppercase text-[10px]">On Execution</h3>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 cursor-pointer" onClick={() => setTriggerExpanded(!triggerExpanded)}>
+                                    <MaterialIcon name="bolt" className="text-white/40 text-base" />
+                                    <h3 className="text-white/60 font-bold tracking-widest uppercase text-[10px]">On Execution</h3>
+                                    <MaterialIcon name={triggerExpanded ? 'expand_less' : 'expand_more'} className="text-xs text-gray-600" />
                                 </div>
-                                <MaterialIcon name={triggerExpanded ? 'expand_less' : 'expand_more'} className="text-base text-gray-600" />
+                                <button
+                                    onClick={() => setIsCabinetOpen(true)}
+                                    className="p-2 rounded-lg hover:bg-white/10 text-white/30 hover:text-white transition-all focus:outline-none"
+                                    title="Task Settings"
+                                >
+                                    <MaterialIcon name="settings" className="text-lg" />
+                                </button>
                             </div>
                             {triggerExpanded && (
                                 <div className="space-y-4 mt-4 pt-3 border-t border-white/10">
@@ -966,10 +998,12 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                         </div>
 
                         {/* Connector line from trigger to actions */}
-                        <div className="w-px h-10 bg-white/25" />
+                        {currentTask.mode === 'agent' && (
+                            <div className="w-px h-10 bg-white/25" />
+                        )}
 
                         {/* Action Nodes */}
-                        {(
+                        {currentTask.mode === 'agent' && (
                             <div className="flex flex-col items-center w-full select-text cursor-auto">
                                 <div className="space-y-6 w-full flex flex-col items-center relative" ref={actionsListRef}>
                                     {(() => {
@@ -1548,6 +1582,19 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                     {isHeadfulOpen ? 'Close Browser' : 'Open Browser'}
                 </button>
             </div>
+
+            <TaskSettingsCabinet
+                isOpen={isCabinetOpen}
+                onClose={() => setIsCabinetOpen(false)}
+                currentTask={currentTask}
+                onUpdateTask={(updates) => {
+                    const next = { ...currentTask, ...updates };
+                    setCurrentTask(next);
+                    handleAutoSave(next);
+                }}
+                proxyListLoaded={proxyListLoaded}
+                proxyList={proxyList}
+            />
         </div >
     );
 };
