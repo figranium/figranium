@@ -12,6 +12,8 @@ const normalizeExecutionSource = (source) => {
     return !normalized || normalized.toLowerCase() === 'unknown' ? 'api' : normalized;
 };
 
+const isExecutionListEntry = (exec) => exec?.mode !== 'headful';
+
 const getExecutionOutcome = (exec) => normalizeTaskOutcome(
     exec?.outcome || exec?.result?.outcome,
     Number(exec?.status) >= 200 && Number(exec?.status) < 300 ? 'success' : 'error'
@@ -33,12 +35,12 @@ const summarizeExecution = (exec) => ({
 });
 
 router.get('/', requireAuth, async (req, res) => {
-    const executions = await loadExecutions();
+    const executions = (await loadExecutions()).filter(isExecutionListEntry);
     res.json({ executions: executions.map(summarizeExecution) });
 });
 
 router.get('/list', requireApiKey, async (req, res) => {
-    const executions = await loadExecutions();
+    const executions = (await loadExecutions()).filter(isExecutionListEntry);
     res.json({ executions: executions.map(summarizeExecution) });
 });
 
@@ -109,3 +111,4 @@ router.delete('/:id', requireAuth, async (req, res) => {
 module.exports = router;
 module.exports.getExecutionOutcome = getExecutionOutcome;
 module.exports.summarizeExecution = summarizeExecution;
+module.exports.isExecutionListEntry = isExecutionListEntry;
