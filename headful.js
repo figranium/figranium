@@ -5,6 +5,7 @@ const { getProxySelection } = require('./proxy-rotation');
 const { selectUserAgent } = require('./user-agent-settings');
 const { validateUrl, setupNavigationProtection } = require('./url-utils');
 const { parseBooleanFlag } = require('./common-utils');
+const { installPageTranslation } = require('./src/agent/translate');
 const { Mutex } = require('./src/server/utils');
 
 const HEADFUL_PROFILE_DIR = path.join(__dirname, 'data', 'browser-profile-headful');
@@ -532,6 +533,7 @@ async function runHeadful(data, options = {}) {
         if (!navigated && url) {
             await page.goto(url).catch(() => { });
         }
+        await installPageTranslation(page, data.translation || data.taskSnapshot?.translation);
 
         const syncInterval = statelessExecution ? null : setInterval(() => {
             if (activeSession && activeSession.context) {

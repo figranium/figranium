@@ -11,6 +11,19 @@ import { taskFieldInspectId, taskGroupContainerInspectId, taskGroupFieldInspectI
 import CustomSelect from '../common/CustomSelect';
 import { EXTRACTION_ATTRIBUTE_OPTIONS } from './extractionOptions';
 
+const TRANSLATION_LANGUAGES = [
+    { value: 'english', label: 'English' },
+    { value: 'spanish', label: 'Spanish' },
+    { value: 'french', label: 'French' },
+    { value: 'german', label: 'German' },
+    { value: 'italian', label: 'Italian' },
+    { value: 'portuguese', label: 'Portuguese' },
+    { value: 'japanese', label: 'Japanese' },
+    { value: 'korean', label: 'Korean' },
+    { value: 'chinese_simplified', label: 'Chinese (Simplified)' },
+    { value: 'arabic', label: 'Arabic' },
+];
+
 interface TaskSettingsCabinetProps {
     isOpen: boolean;
     onClose: () => void;
@@ -422,6 +435,48 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 </div>
                                             </button>
                                         ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Page Translation</label>
+                                    <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <MaterialIcon name="translate" className="text-sm opacity-70" />
+                                                <div>
+                                                    <p className="text-xs font-medium text-[var(--app-text)]">Translate visited pages</p>
+                                                    <p className="mt-1 text-xs text-[var(--app-text-faint)]">Uses translate.js in browser-backed task runs.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                role="switch"
+                                                aria-checked={!!currentTask.translation?.enabled}
+                                                onClick={() => onUpdateTask({
+                                                    translation: {
+                                                        enabled: !currentTask.translation?.enabled,
+                                                        targetLanguage: currentTask.translation?.targetLanguage || 'english'
+                                                    }
+                                                })}
+                                                className={`w-8 h-4 rounded-full relative transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.translation?.enabled ? 'bg-[var(--app-accent)]' : 'bg-[var(--app-border-strong)]'}`}
+                                                aria-label="Translate visited pages"
+                                            >
+                                                <span className={`absolute top-1 w-2 h-2 rounded-full transition-all ${currentTask.translation?.enabled ? 'right-1 bg-[var(--app-accent-text)]' : 'left-1 bg-[var(--app-text-faint)]'}`} />
+                                            </button>
+                                        </div>
+                                        {currentTask.translation?.enabled && (
+                                            <div className="mt-4">
+                                                <label className="mb-2 block text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Translate to</label>
+                                                <CustomSelect
+                                                    value={currentTask.translation.targetLanguage || 'english'}
+                                                    onChange={(targetLanguage) => onUpdateTask({
+                                                        translation: { enabled: true, targetLanguage }
+                                                    })}
+                                                    options={TRANSLATION_LANGUAGES}
+                                                    ariaLabel="Translation target language"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

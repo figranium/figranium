@@ -15,6 +15,7 @@ const { evalStructuredCondition, evalCondition } = require('./logic-handler');
 const { executeAction } = require('./action-handler');
 const { solveCaptcha } = require('./captcha-client');
 const { resolveTaskOutcome, inspectPageForAntiBot } = require('../outcomes');
+const { installPageTranslation } = require('../translate');
 const { setStopChecker, setStopCleaner, consumeStopRequest, clearStopRequest, registerActiveRun, unregisterActiveRun } = require('../execution-control');
 
 // Action types after which an auto-solve pass (task-level `autoSolveCaptcha`) checks for
@@ -204,6 +205,7 @@ async function runFigranite(data, options = {}) {
     let stopRequested = false;
     let stopOutcome = 'success';
     let userStopped = false;
+    let stopPageTranslation = () => {};
 
     const forceStop = async () => {
         isForceStopped = true;
@@ -303,6 +305,7 @@ async function runFigranite(data, options = {}) {
 
         const initialResponse = await page.goto(resolveTemplate(url), { waitUntil: 'domcontentloaded', timeout: 60000 });
         lastMainDocumentStatus = initialResponse?.status?.() ?? lastMainDocumentStatus;
+        stopPageTranslation = await installPageTranslation(page, data.translation || data.taskSnapshot?.translation, logs);
 
         let actionIdx = 0;
         const baseDelay = (ms) => {
@@ -869,6 +872,7 @@ async function runFigranite(data, options = {}) {
         if (browser) await browser.close();
         throw error;
     } finally {
+        stopPageTranslation();
         if (runId) {
             unregisterActiveRun(runId);
             clearStopRequest(runId);

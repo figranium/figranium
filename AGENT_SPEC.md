@@ -27,6 +27,10 @@ This document is a concise, implementation-focused reference for AI agents that 
     "naturalTyping": false
   },
   "autoSolveCaptcha": false,
+  "translation": {
+    "enabled": false,
+    "targetLanguage": "english"
+  },
   "downloadCabinetId": "cab_basic",
   "actions": [],
   "variables": {},
@@ -91,6 +95,22 @@ Reserved:
 - `{$now}` resolves to ISO timestamp
 - `block.output` contains last block output
 - `loop.index`, `loop.count`, `loop.item`, `loop.text`, `loop.html` during foreach
+
+### Task page translation
+
+Browser-backed Tasks can translate the rendered target page before their actions and extraction run:
+
+```json
+"translation": {
+  "enabled": true,
+  "targetLanguage": "spanish"
+}
+```
+
+- `enabled` defaults to `false`.
+- `targetLanguage` is a translate.js language name, such as `english`, `spanish`, `french`, `german`, `italian`, `portuguese`, `japanese`, `korean`, `chinese_simplified`, or `arabic`.
+- This setting applies to Agent and headful browser sessions, including later navigations in the same page. Scrape mode is HTTP-only and does not execute page translation.
+- Enabling translation loads translate.js and sends rendered page text to its configured external translation service. Only enable it for target pages whose content may be shared with that service.
 
 ## 4) JavaScript action context
 The `javascript` action runs **inside the page** (browser context), not Node.

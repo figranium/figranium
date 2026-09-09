@@ -120,6 +120,11 @@ export interface TaskSchedule {
     nextRun?: number;
 }
 
+export interface TaskTranslation {
+    enabled: boolean;
+    targetLanguage: string;
+}
+
 export type StickyNoteColor = 'default' | 'yellow' | 'pink' | 'green' | 'purple';
 
 export interface StickyNote {
@@ -179,6 +184,7 @@ export interface Task {
     disableRecording?: boolean;
     statelessExecution?: boolean;
     autoSolveCaptcha?: boolean;
+    translation?: TaskTranslation;
     downloadCabinetId?: string;
     versions?: TaskVersion[];
     schedule?: TaskSchedule;

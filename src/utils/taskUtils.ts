@@ -52,7 +52,8 @@ export const makeDefaultTask = (): Task => ({
     variables: {},
     includeShadowDom: true,
     disableRecording: false,
-    statelessExecution: false
+    statelessExecution: false,
+    translation: { enabled: false, targetLanguage: 'english' }
 } as Task);
 
 export const normalizeImportedTask = (raw: any, index: number): Task | null => {
@@ -74,6 +75,16 @@ export const normalizeImportedTask = (raw: any, index: number): Task | null => {
     merged.disableRecording = parseBooleanFlag(merged.disableRecording);
     if (merged.statelessExecution === undefined) merged.statelessExecution = false;
     merged.statelessExecution = parseBooleanFlag(merged.statelessExecution);
+    if (!merged.translation || typeof merged.translation !== 'object') {
+        merged.translation = { enabled: false, targetLanguage: 'english' };
+    } else {
+        merged.translation = {
+            enabled: parseBooleanFlag(merged.translation.enabled),
+            targetLanguage: typeof merged.translation.targetLanguage === 'string' && merged.translation.targetLanguage.trim()
+                ? merged.translation.targetLanguage.trim()
+                : 'english'
+        };
+    }
     delete merged.versions;
     delete merged.last_opened;
     return merged;
@@ -107,6 +118,7 @@ export const buildNewTask = (downloadCabinetId = 'cab_basic'): Task => {
         includeShadowDom: true,
         disableRecording: false,
         statelessExecution: false,
+        translation: { enabled: false, targetLanguage: 'english' },
         downloadCabinetId
     };
 };

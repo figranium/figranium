@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.17.1] - 2026-09-09
+
+### Page translation
+- Added an opt-in per-Task **Page Translation** setting with target-language selection. Agent and headful browser runs now load translate.js for enabled Tasks, translate the initial page, and reapply translation after navigation. Translation remains off by default; Scrape mode keeps its HTTP-only behavior.
+
+### Task execution and editor
+- Added the On Execution configuration panel to new Tasks by default, with a zero-second default wait.
+- Added a Task Variables shortcut in the editor header and made the editor, execution-detail, and browser-page titles contextual to the active Task or page.
+- Prevented unsolicited headful popups from stealing focus, refined editor action controls, and corrected Cabinet-route sidebar highlighting.
+- Normalized app typography to normal casing for improved readability.
+
+### Storage, deployment, and verification
+- Persisted Cabinet metadata across both JSON and PostgreSQL storage backends, with qualification coverage for Cabinet uploads and persistence.
+- Hardened Docker publishing against Playwright runtime-version drift.
+- Migrated the selected UI, user-journey, and star-prompt verification scripts to TypeScript and updated CI to run the migrated suite.
+
+### Documentation and maintenance
+- Updated README product, roadmap, and security guidance; completed the translate.js roadmap item and documented the Task translation field in `AGENT_SPEC.md`.
+
 ## [0.17.0] - 2026-09-05
 
 ### Cabinets and uploads
