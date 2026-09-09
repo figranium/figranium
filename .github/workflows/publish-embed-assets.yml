@@ -1,0 +1,48 @@
+name: Publish Embed Assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - src/**
+      - tailwind.config.js
+      - postcss.config.js
+      - package.json
+      - package-lock.json
+      - .github/workflows/publish-embed-assets.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build
+      - name: Publish canonical compiled embed CSS
+        run: |
+          CSS_FILE=$(find dist/assets -maxdepth 1 -type f -name '*.css' | head -n 1)
+          if [ -z "$CSS_FILE" ]; then
+            echo 'No compiled CSS asset found.' >&2
+            exit 1
+          fi
+
+          mkdir -p /tmp/figranium-embed-assets
+          cp "$CSS_FILE" /tmp/figranium-embed-assets/embed.css
+          printf '{"commit":"%s","generatedAt":"%s"}\n' "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /tmp/figranium-embed-assets/metadata.json
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan embed-assets
+          git rm -rf .
+          cp /tmp/figranium-embed-assets/embed.css ./embed.css
+          cp /tmp/figranium-embed-assets/metadata.json ./metadata.json
+          git add embed.css metadata.json
+          git commit -m "chore: publish embed assets for $GITHUB_SHA"
+          git push --force origin embed-assets
