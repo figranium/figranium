@@ -8,6 +8,11 @@ import { normalizeTaskOutcome, taskOutcomeBadgeClass, taskOutcomeLabel } from '.
 const EXECUTION_ITEM_SIZE = 94;
 const EXECUTION_LIST_MAX_VISIBLE = 7;
 const EXECUTION_OVERSCAN = 4;
+const FILTER_LABELS = {
+    all: 'All',
+    editor: 'Editor',
+    api: 'API',
+} as const;
 
 interface ExecutionListItemData {
     items: Execution[];
@@ -39,14 +44,18 @@ const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<Exec
                         <MaterialIcon name={execution.source === 'api' ? 'cloud' : 'monitor'} className="text-lg theme-text-faint" />
                     </div>
                     <div className="min-w-0">
-                        <div className="text-xs font-bold theme-text truncate">{execution.taskName || execution.mode}</div>
+                        {execution.taskName ? (
+                            <div className="text-xs font-bold theme-text truncate">{execution.taskName}</div>
+                        ) : (
+                            <div className="text-xs font-bold theme-text font-mono truncate">{execution.mode}</div>
+                        )}
                         <div className="mt-1 text-[10px] theme-text-faint font-mono truncate">{execution.url || new Date(execution.timestamp).toLocaleString()}</div>
                     </div>
                 </div>
                 <div><span className={`app-badge ${taskOutcomeBadgeClass(outcome)}`}>{taskOutcomeLabel(outcome)}</span></div>
-                <div className="text-[11px] theme-text-muted max-lg:hidden"><span className="">{execution.source}</span> · {execution.mode}</div>
+                <div className="text-[11px] theme-text-muted font-mono max-lg:hidden">{execution.source} · {execution.mode}</div>
                 <div className="max-lg:hidden">
-                    <div className="text-[11px] theme-text-muted">{execution.durationMs}ms</div>
+                    <div className="text-[11px] theme-text-muted font-mono">{execution.durationMs}ms</div>
                     <div className="mt-1 text-[10px] theme-text-faint">{new Date(execution.timestamp).toLocaleString()}</div>
                 </div>
                 <button
@@ -134,7 +143,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
         <main className="app-page custom-scrollbar animate-in fade-in duration-500">
             <div className="app-page-inner">
                 <header className="app-page-header">
-                    <div><h1 className="app-page-title">Executions</h1><p className="app-page-subtitle">Run history and Task outcomes</p></div>
+                    <div><h1 className="app-page-title">Executions</h1><p className="app-page-subtitle">Run history and task outcomes</p></div>
                     <div className="app-toolbar">
                         <button onClick={loadExecutions} disabled={loading} className="app-button-secondary" aria-busy={loading}>
                             <MaterialIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} /> Refresh
@@ -152,7 +161,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                         <div><h2 className="text-sm font-bold theme-text">Run history</h2><p className="mt-1 text-[10px] tracking-[0.14em] theme-text-faint">{filtered.length} executions</p></div>
                         <div role="tablist" className="app-toolbar rounded-xl border theme-border p-1 theme-input">
                             {(['all', 'editor', 'api'] as const).map((mode) => (
-                                <button key={mode} role="tab" aria-selected={filter === mode} onClick={() => setFilter(mode)} className={`min-h-8 px-3 rounded-lg text-[10px] font-bold tracking-widest transition-all ${filter === mode ? 'theme-accent-bg' : 'theme-text-faint hover:theme-text'}`}>{mode}</button>
+                                <button key={mode} role="tab" aria-selected={filter === mode} onClick={() => setFilter(mode)} className={`min-h-8 px-3 rounded-lg text-[10px] font-bold tracking-widest transition-all ${filter === mode ? 'theme-accent-bg' : 'theme-text-faint hover:theme-text'}`}>{FILTER_LABELS[mode]}</button>
                             ))}
                         </div>
                     </div>
