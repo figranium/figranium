@@ -62,25 +62,17 @@ async function main() {
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForSelector('[data-testid="sidebar-dashboard"]', { timeout: 15000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(700);
 
   const taskName = task.name || 'Google Maps Lead Scraper';
-  const nameNode = page.getByText(taskName, { exact: true }).first();
-  await nameNode.waitFor({ state: 'visible', timeout: 15000 });
+  const taskRow = page.getByRole('button', { name: `Open ${taskName}`, exact: true });
+  await taskRow.waitFor({ state: 'visible', timeout: 15000 });
+  await taskRow.click();
 
-  let card = nameNode.locator('xpath=ancestor::*[.//button[contains(normalize-space(.), "Edit Task")]][1]');
-  if (!(await card.count())) card = nameNode.locator('xpath=ancestor::div[1]');
-  const edit = card.getByRole('button', { name: /Edit Task/i });
-  if (await edit.count()) {
-    await edit.first().click();
-  } else {
-    await page.getByRole('button', { name: /Edit Task/i }).first().click();
-  }
-
-  await page.waitForTimeout(1800);
+  await page.waitForURL(/\/tasks\//, { timeout: 15000 });
+  await page.waitForTimeout(1400);
   await page.getByText(taskName, { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
-  // Match the README-style app screenshot: real UI only, no browser chrome, no annotations.
   await page.screenshot({ path: OUTPUT, fullPage: false });
   console.log('Saved', OUTPUT, 'title=', await page.title(), 'url=', page.url());
   await browser.close();
