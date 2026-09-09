@@ -29,7 +29,10 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
   }, []);
 
   return (
-    <div className={`relative flex h-full w-full pointer-events-none select-none ${className}`.trim()} aria-hidden="true">
+    <div
+      className={`relative flex h-full w-full pointer-events-none select-none [&_button]:hidden ${className}`.trim()}
+      aria-hidden="true"
+    >
       <CanvasView
         currentTask={task}
         setCurrentTask={noop as (task: Task) => void}
