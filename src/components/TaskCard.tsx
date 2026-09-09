@@ -121,7 +121,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
             </div>
 
             <div className="max-sm:hidden">
-                <span className="app-badge">{task.mode}</span>
+                <span className="app-badge font-mono">{task.mode}</span>
             </div>
 
             <div className="text-[11px] theme-text-muted max-lg:hidden">
