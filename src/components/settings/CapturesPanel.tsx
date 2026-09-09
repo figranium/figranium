@@ -28,17 +28,17 @@ const renderCaptureRow = ({ index, style, data }: ListChildComponentProps<Captur
         <div style={{ ...style, paddingBottom: CAPTURE_ROW_SPACING }}>
             <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-white/10 bg-white/[0.02]">
                 <div className="space-y-1">
-                    <div className="text-xs font-bold text-white uppercase tracking-widest">
+                    <div className="text-xs font-bold text-white tracking-widest">
                         {capture.type === 'recording' ? 'Recording' : 'Screenshot'}
                     </div>
-                    <div className="text-xs text-gray-500 uppercase tracking-widest">{capture.name}</div>
+                    <div className="text-xs text-gray-500 tracking-widest">{capture.name}</div>
                 </div>
                 <div className="flex items-center gap-2">
                     <a
                         href={capture.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                        className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-widest text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                         aria-label={`Open ${capture.name}`}
                         title={`Open ${capture.name}`}
                     >
@@ -47,7 +47,7 @@ const renderCaptureRow = ({ index, style, data }: ListChildComponentProps<Captur
                     <button
                         type="button"
                         onClick={() => data.onDelete(capture.name)}
-                        className="px-3 py-2 rounded-xl border border-red-500/20 text-xs font-bold uppercase tracking-widest text-red-300 hover:bg-red-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
+                        className="px-3 py-2 rounded-xl border border-red-500/20 text-xs font-bold tracking-widest text-red-300 hover:bg-red-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
                         aria-label={`Delete ${capture.name}`}
                         title={`Delete ${capture.name}`}
                     >
@@ -76,7 +76,7 @@ const CapturesPanel: React.FC<CapturesPanelProps> = ({ captures, loading, onRefr
                     type="button"
                     onClick={onRefresh}
                     disabled={loading}
-                    className="px-4 py-2 border border-white/10 text-xs font-bold rounded-xl uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="px-4 py-2 border border-white/10 text-xs font-bold rounded-xl tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     aria-label="Refresh captures list"
                     title="Refresh captures list"
                 >

@@ -44,7 +44,7 @@ const VersionPanel = ({ version }: VersionPanelProps) => {
                 </div>
             </div>
             <div className="flex items-center justify-between gap-4">
-                <div className="text-xs font-bold uppercase tracking-[0.3em] theme-text">{displayVersion}</div>
+                <div className="text-xs font-bold tracking-[0.3em] theme-text">{displayVersion}</div>
                 <button
                     onClick={handleCopy}
                     className="app-button-secondary"

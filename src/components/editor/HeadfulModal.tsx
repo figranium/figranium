@@ -43,7 +43,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-white/10 bg-black/20 gap-4">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold uppercase tracking-widest text-white">Active Browser Session</span>
+                            <span className="text-xs font-bold tracking-widest text-white">Active Browser Session</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             type="button"
                             onClick={onToggleInspect}
                             disabled={isInspectLoading || isExecuting}
-                            className={`px-3 py-1.5 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${isInspectMode
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${isInspectMode
                                 ? 'border-green-500/30 bg-green-500/20 text-green-400 hover:bg-green-500/30'
                                 : 'border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                             title={isInspectMode ? 'Stop inspecting elements' : 'Highlight elements on hover'}
@@ -88,7 +88,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                     {useNovnc === null ? (
                         <div className="text-center p-8 flex flex-col items-center justify-center gap-3">
                             <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                            <p className="text-white/60 text-xs tracking-wider uppercase">Checking browser status...</p>
+                            <p className="text-white/60 text-xs tracking-wider ">Checking browser status...</p>
                         </div>
                     ) : useNovnc === false ? (
                         <div className="text-center p-8 animate-in fade-in duration-300">

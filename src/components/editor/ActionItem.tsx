@@ -214,7 +214,7 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
                             e.stopPropagation();
                             setIsModalOpen(true);
                         }}
-                        className="action-type-select text-xs font-bold uppercase tracking-[0.2em] text-white focus:outline-none cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-white/50 shrink-0"
+                        className="action-type-select text-xs font-bold tracking-[0.2em] text-white focus:outline-none cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-white/50 shrink-0"
                         aria-label={`Change action type: ${action.type}`}
                     >
                         {ACTION_CATALOG.find((item) => item.type === action.type)?.label || action.type}

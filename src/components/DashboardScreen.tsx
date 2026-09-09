@@ -125,7 +125,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                         <div className="app-panel-header">
                             <div>
                                 <h2 className="text-sm font-bold theme-text">Tasks</h2>
-                                <p className="mt-1 text-[10px] uppercase tracking-[0.14em] theme-text-faint">{visibleTasks.length} of {tasks.length}</p>
+                                <p className="mt-1 text-[10px] tracking-[0.14em] theme-text-faint">{visibleTasks.length} of {tasks.length}</p>
                             </div>
                             <div className="app-toolbar">
                                 <label className="relative block w-[240px] max-sm:w-full">
@@ -174,9 +174,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                     <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-full slide-up">
                         <div className="p-6 sm:p-8 shrink-0"><h3 className="text-xl font-bold text-white tracking-tight">Export Tasks</h3><p className="text-xs text-white/50 mt-2 font-mono">Select the Tasks you want to export.</p></div>
                         <div className="px-6 sm:px-8 pb-4 flex items-center gap-3 shrink-0 border-b border-white/5">
-                            <button onClick={() => setSelectedTaskIds(tasks.flatMap((task) => task.id ? [task.id] : []))} className="text-xs font-bold uppercase tracking-widest text-blue-400 hover:text-blue-300">Select All</button>
+                            <button onClick={() => setSelectedTaskIds(tasks.flatMap((task) => task.id ? [task.id] : []))} className="text-xs font-bold tracking-widest text-blue-400 hover:text-blue-300">Select All</button>
                             <span className="text-white/20">|</span>
-                            <button onClick={() => setSelectedTaskIds([])} className="text-xs font-bold uppercase tracking-widest text-white/40 hover:text-white/80">Deselect All</button>
+                            <button onClick={() => setSelectedTaskIds([])} className="text-xs font-bold tracking-widest text-white/40 hover:text-white/80">Deselect All</button>
                             <div className="flex-1" /><span className="text-xs font-mono text-white/30">{selectedTaskIds.length} selected</span>
                         </div>
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-2">
@@ -188,8 +188,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                             ) : null)}
                         </div>
                         <div className="p-6 sm:p-8 bg-black/40 border-t border-white/5 flex gap-3 shrink-0">
-                            <button onClick={() => setIsExportModalOpen(false)} className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white text-xs font-bold uppercase tracking-widest hover:bg-white/5">Cancel</button>
-                            <button onClick={() => { onExportTasks(selectedTaskIds); setIsExportModalOpen(false); }} disabled={!selectedTaskIds.length} className={`flex-1 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest ${selectedTaskIds.length ? 'bg-white text-black hover:brightness-90' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}>Export ({selectedTaskIds.length})</button>
+                            <button onClick={() => setIsExportModalOpen(false)} className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white text-xs font-bold tracking-widest hover:bg-white/5">Cancel</button>
+                            <button onClick={() => { onExportTasks(selectedTaskIds); setIsExportModalOpen(false); }} disabled={!selectedTaskIds.length} className={`flex-1 px-4 py-3 rounded-xl text-xs font-bold tracking-widest ${selectedTaskIds.length ? 'bg-white text-black hover:brightness-90' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}>Export ({selectedTaskIds.length})</button>
                         </div>
                     </div>
                 </div>

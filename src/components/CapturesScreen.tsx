@@ -94,7 +94,7 @@ const CapturesScreen: React.FC<CapturesScreenProps> = ({ onConfirm, onNotify }) 
                 </header>
 
                 <section className="app-panel overflow-hidden">
-                    <div className="app-panel-header"><div><h2 className="text-sm font-bold theme-text">Media library</h2><p className="mt-1 text-[10px] uppercase tracking-[0.14em] theme-text-faint">{captures.length} captures</p></div></div>
+                    <div className="app-panel-header"><div><h2 className="text-sm font-bold theme-text">Media library</h2><p className="mt-1 text-[10px] tracking-[0.14em] theme-text-faint">{captures.length} captures</p></div></div>
                     {loading && (
                         <div className="app-empty-state min-h-[220px]">
                             <MaterialIcon name="sync" className="text-base animate-spin" />

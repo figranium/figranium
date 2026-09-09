@@ -101,7 +101,7 @@ const CookiesPanel: React.FC<CookiesPanelProps> = ({ cookies, originsCount, load
                     onClick={onClear}
                     title="Clear all cookies"
                     aria-label="Clear all cookies"
-                    className="px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-xl bg-yellow-500/5 border border-yellow-500/10 text-yellow-400 hover:bg-yellow-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="px-4 py-2 text-xs font-bold tracking-widest rounded-xl bg-yellow-500/5 border border-yellow-500/10 text-yellow-400 hover:bg-yellow-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
                     Clear Cookies
                 </button>
@@ -121,8 +121,8 @@ const CookiesPanel: React.FC<CookiesPanelProps> = ({ cookies, originsCount, load
                         <div key={key} className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
                             <div className="flex items-center justify-between gap-4">
                                 <div className="min-w-0">
-                                    <div className="text-xs font-bold text-white uppercase tracking-widest truncate">{cookie.name}</div>
-                                    <div className="text-xs text-gray-500 uppercase tracking-[0.2em]">
+                                    <div className="text-xs font-bold text-white tracking-widest truncate">{cookie.name}</div>
+                                    <div className="text-xs text-gray-500 tracking-[0.2em]">
                                         {(cookie.domain || 'local')} | {(cookie.path || '/')}
                                         {cookie.expires ? ` | ${new Date(cookie.expires * 1000).toLocaleString()}` : ''}
                                     </div>
@@ -134,7 +134,7 @@ const CookiesPanel: React.FC<CookiesPanelProps> = ({ cookies, originsCount, load
                                             onClick={() => toggleDecodedCookie(cookie)}
                                             title={showDecoded ? "Show raw value" : `Decode ${decodedCandidate.kind}`}
                                             aria-label={showDecoded ? "Show raw value" : `Decode ${decodedCandidate.kind}`}
-                                            className="px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                            className="px-3 py-2 text-xs font-bold tracking-widest rounded-xl border border-white/10 text-white/70 hover:text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         >
                                             {showDecoded ? 'Show Raw' : `Decode ${decodedCandidate.kind}`}
                                         </button>
@@ -143,7 +143,7 @@ const CookiesPanel: React.FC<CookiesPanelProps> = ({ cookies, originsCount, load
                                         text={fullValue}
                                         title="Copy cookie value"
                                         label="Copy"
-                                        className="px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
+                                        className="px-3 py-2 text-xs font-bold tracking-widest rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
                                         iconClassName="text-sm"
                                     />
                                     <button
@@ -151,7 +151,7 @@ const CookiesPanel: React.FC<CookiesPanelProps> = ({ cookies, originsCount, load
                                         onClick={() => onDelete(cookie)}
                                         title={`Delete cookie ${cookie.name}`}
                                         aria-label={`Delete cookie ${cookie.name}`}
-                                        className="px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-xl bg-red-500/5 border border-red-500/10 text-red-400 hover:bg-red-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                        className="px-3 py-2 text-xs font-bold tracking-widest rounded-xl bg-red-500/5 border border-red-500/10 text-red-400 hover:bg-red-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                     >
                                         Delete
                                     </button>
@@ -172,7 +172,7 @@ const CookiesPanel: React.FC<CookiesPanelProps> = ({ cookies, originsCount, load
                 })}
             </div>
             {!loading && originsCount > 0 && (
-                <div className="pt-2 text-xs text-gray-600 uppercase tracking-widest">
+                <div className="pt-2 text-xs text-gray-600 tracking-widest">
                     Origins stored: {originsCount}
                 </div>
             )}

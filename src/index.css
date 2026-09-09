@@ -136,7 +136,7 @@ body {
     font-size: 11px;
     line-height: 1.5;
     letter-spacing: 0.16em;
-    text-transform: uppercase;
+
 }
 
 .app-panel {
@@ -250,7 +250,7 @@ body {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.13em;
-    text-transform: uppercase;
+
     transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
@@ -305,7 +305,8 @@ body {
 }
 
 .app-metric:last-child { border-right: 0; }
-.app-metric-label { color: var(--app-text-faint); font-size: 10px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; }
+.app-metric-label { color: var(--app-text-faint); font-size: 10px; font-weight: 700; letter-spacing: 0.13em;
+}
 .app-metric-value { margin-top: 12px; color: var(--app-text); font-size: 26px; font-weight: 700; letter-spacing: -0.04em; }
 
 .app-list-row {
@@ -330,7 +331,7 @@ body {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
+
 }
 
 .app-empty-state {

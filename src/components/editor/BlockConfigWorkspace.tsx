@@ -106,7 +106,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
             <div className="min-w-0 space-y-6">
                 {configuration}
                 <section className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-4">
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--app-text-muted)]">
+                    <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
                         <MaterialIcon name="input" className="text-sm" /> Inputs
                     </div>
                     <div className="mt-3 space-y-2">
@@ -115,7 +115,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                             const resolved = tested ? testResult?.resolvedInputs[entry.key] : entry.resolved;
                             return (
                                 <div key={entry.key} className="rounded-xl bg-[var(--app-input)] px-3 py-2">
-                                    <div className="text-[10px] uppercase tracking-wider text-[var(--app-text-faint)]">{entry.label}</div>
+                                    <div className="text-[10px] tracking-wider text-[var(--app-text-faint)]">{entry.label}</div>
                                     <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-[var(--app-text)]">{formatValue(resolved)}</pre>
                                     {!Object.is(entry.raw, resolved) && <div className="mt-1 truncate font-mono text-[10px] text-[var(--app-text-faint)]">Raw: {formatValue(entry.raw)}</div>}
                                 </div>
@@ -124,7 +124,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                         {inputEntries.length === 0 && <p className="text-xs text-[var(--app-text-faint)]">No configurable inputs.</p>}
                     </div>
                     <div className="mt-4 border-t theme-border pt-4">
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--app-text-muted)]">
+                        <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
                             <MaterialIcon name="output" className="text-sm" /> Output
                         </div>
                         <p className="mt-2 text-xs leading-5 text-[var(--app-text-muted)]">{getExpectedOutput(action)}</p>
@@ -137,10 +137,10 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                 <ConfigVariableList variables={variables} canInsertVariable={canInsertVariable} loopVariablesAvailable={loopVariablesAvailable} onInsertVariable={onInsertVariable} />
                 <section className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-4" aria-live="polite">
                     <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[var(--app-text-muted)]">
+                        <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
                             <MaterialIcon name="science" className="text-sm" /> Test block
                         </div>
-                        {testResult && <span className={`text-[10px] font-bold uppercase tracking-wider ${statusTone[testResult.status]}`}>{testResult.status.replace('_', ' ')}</span>}
+                        {testResult && <span className={`text-[10px] font-bold tracking-wider ${statusTone[testResult.status]}`}>{testResult.status.replace('_', ' ')}</span>}
                     </div>
                     <p className="mt-2 text-[10px] leading-4 text-[var(--app-text-faint)]">Runs preceding blocks in a temporary browser. Actions may affect the target site.</p>
                     <button
@@ -160,7 +160,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                             <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-[var(--app-code-bg)] p-3 font-mono text-[11px] leading-5 text-[var(--app-code-text)] custom-scrollbar">{formatValue(testResult.output)}</pre>
                             {changedVariables.length > 0 && (
                                 <div>
-                                    <div className="text-[10px] uppercase tracking-wider text-[var(--app-text-faint)]">Changed variables</div>
+                                    <div className="text-[10px] tracking-wider text-[var(--app-text-faint)]">Changed variables</div>
                                     <div className="mt-2 space-y-1">{changedVariables.map(([name, value]) => <div key={name} className="flex gap-2 font-mono text-[10px] text-[var(--app-text-muted)]"><span className="text-blue-500">{name}</span><span className="min-w-0 flex-1 truncate text-right">{formatValue(value)}</span></div>)}</div>
                                 </div>
                             )}

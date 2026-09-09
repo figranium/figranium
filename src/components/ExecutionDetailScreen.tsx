@@ -124,7 +124,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
 
                 <section className="app-panel p-6 flex flex-col min-h-[420px]">
                         <div className="flex items-center justify-between border-b theme-border pb-4 mb-6">
-                            <span className="text-xs font-bold theme-text-muted uppercase tracking-widest">Output</span>
+                            <span className="text-xs font-bold theme-text-muted tracking-widest">Output</span>
                         </div>
                         {results ? (
                             <ResultsPane
@@ -137,7 +137,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                                 useNovnc={useNovnc}
                             />
                         ) : (
-                            <div className="text-xs theme-text-faint uppercase tracking-widest">No output captured.</div>
+                            <div className="text-xs theme-text-faint tracking-widest">No output captured.</div>
                         )}
                 </section>
             </div>

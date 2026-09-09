@@ -137,13 +137,13 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                     {/* Script */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Script</label>
+                            <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Script</label>
                             <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
                                 {(['visual', 'javascript'] as const).map(mode => (
                                     <button
                                         key={mode}
                                         onClick={() => switchExtractionMode(mode)}
-                                        className={`px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-tight transition-all ${extractionMode === mode
+                                        className={`px-2.5 py-0.5 rounded-md text-xs font-bold tracking-tight transition-all ${extractionMode === mode
                                             ? 'bg-white text-black'
                                             : 'text-white/50 hover:text-white'
                                             }`}
@@ -245,7 +245,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                 ))}
                                 <button
                                     onClick={addField}
-                                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-white/10 text-xs font-bold uppercase tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
+                                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-white/10 text-xs font-bold tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
                                 >
                                     <MaterialIcon name="add" className="text-base" />
                                     Add Field
@@ -253,7 +253,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
 
                                 <div className="pt-2 mt-2 border-t border-dashed border-white/10 space-y-3">
                                     <div>
-                                        <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Repeating Groups</label>
+                                        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Repeating Groups</label>
                                         <p className="text-xs text-gray-500 mt-0.5">One row per matched container — e.g. every product card on a search results page — with a column per sub-field. Produces a multi-row CSV.</p>
                                     </div>
                                     {groups.map(group => (
@@ -386,7 +386,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                 ))}
                                                 <button
                                                     onClick={() => addGroupField(group.id)}
-                                                    className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-white/10 text-xs font-bold uppercase tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
+                                                    className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-white/10 text-xs font-bold tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
                                                 >
                                                     <MaterialIcon name="add" className="text-sm" />
                                                     Add Column
@@ -396,7 +396,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                     ))}
                                     <button
                                         onClick={addGroup}
-                                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-white/10 text-xs font-bold uppercase tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
+                                        className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-white/10 text-xs font-bold tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
                                     >
                                         <MaterialIcon name="add" className="text-base" />
                                         Add Group
@@ -408,7 +408,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                 <div className="flex items-center justify-end">
                                     <button
                                         onClick={() => { setShowAiPrompt(v => !v); setAiError(null); }}
-                                        className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors"
+                                        className="flex items-center gap-1 text-xs font-bold tracking-widest text-white/60 hover:text-white transition-colors"
                                         title="Generate with AI"
                                     >
                                         <MaterialIcon name="auto_awesome" className="text-sm" />
@@ -428,11 +428,11 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                         />
                                         {aiError && <p className="text-xs text-red-400">{aiError}</p>}
                                         <div className="flex justify-end gap-2">
-                                            <button onClick={() => { setShowAiPrompt(false); setAiError(null); }} className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Cancel</button>
+                                            <button onClick={() => { setShowAiPrompt(false); setAiError(null); }} className="text-xs font-bold tracking-widest text-gray-500 hover:text-white transition-colors">Cancel</button>
                                             <button
                                                 onClick={handleGenerate}
                                                 disabled={aiLoading || !aiDescription.trim()}
-                                                className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                                className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                             >
                                                 {aiLoading && <MaterialIcon name="autorenew" className="text-xs animate-spin" />}
                                                 {aiLoading ? 'Generating…' : 'Generate'}
@@ -456,7 +456,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
 
                     {/* Format */}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Output Format</label>
+                        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Output Format</label>
                         <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 focus-within:border-white/20 transition-all">
                             <CustomSelect
                                 value={task.extractionFormat || 'json'}
@@ -513,7 +513,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
                         <MaterialIcon name="data_object" className="text-[12px] text-white" />
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-white shrink-0">Extraction Script</span>
+                    <span className="text-xs font-bold tracking-[0.2em] text-white shrink-0">Extraction Script</span>
                     {scriptPreview && (
                         <span className="text-white/40 text-xs font-mono truncate min-w-0 pointer-events-none">
                             {scriptPreview.trim()}
@@ -791,7 +791,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                         </div>
                         <div className={`flex mt-4 relative ${isNestedIf ? 'gap-6 -translate-x-[132px]' : 'gap-16'}`}>
                             <div className={`flex flex-col items-center ${isNestedIf ? 'w-[280px]' : 'min-w-[200px]'}`}>
-                                <div className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">
+                                <div className="text-xs font-bold text-white/60 tracking-widest mb-2">
                                     True
                                 </div>
                                 <div className="w-px h-6 bg-white/25" />
@@ -812,7 +812,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 </div>
                             </div>
                             <div className={`flex flex-col items-center ${isNestedIf ? 'w-[280px]' : 'min-w-[200px]'}`}>
-                                    <div className="text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Otherwise</div>
+                                    <div className="text-xs font-bold text-white/60 tracking-widest mb-2">Otherwise</div>
                                     <div className="w-px h-6 bg-white/25" />
                                     <div className="flex flex-col items-center gap-3">
                                         {falseStart !== -1 ? buildAst(falseStart, falseEnd, _depth + 1, branchActionWidth) : null}
@@ -1056,7 +1056,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 className="flex items-center gap-3 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg pr-2 transition-all"
                             >
                                 <MaterialIcon name="bolt" className="text-white/40 text-base" />
-                                <h3 className="text-white/60 font-bold tracking-widest uppercase text-xs">On Execution</h3>
+                                <h3 className="text-white/60 font-bold tracking-widest text-xs">On Execution</h3>
                             </button>
                             <button
                                 type="button"
@@ -1093,7 +1093,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     className="w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                 >
                                     <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
-                                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
+                                    <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
                                 </button>
                             )}
                         </div>
@@ -1114,7 +1114,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         <div className="w-10 h-10 rounded-xl bg-white/5 group-hover:bg-white/10 transition-all flex items-center justify-center">
                                             <MaterialIcon name="add" className="text-2xl text-gray-500 group-hover:text-white transition-colors" />
                                         </div>
-                                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Action</span>
+                                        <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Action</span>
                                     </button>
                                 </div>
                                 <div className="w-px h-6 bg-white/25" />
@@ -1137,7 +1137,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                             className="w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         >
                                             <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
-                                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
+                                            <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
                                         </button>
                                     )}
                                 </div>
@@ -1175,7 +1175,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setCanvasContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setCanvasContextMenu(null); }} />
                     <div
-                        className="fixed z-50 w-[180px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold uppercase tracking-widest text-white/80"
+                        className="fixed z-50 w-[180px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold tracking-widest text-white/80"
                         style={{ left: canvasContextMenu.x, top: canvasContextMenu.y }}
                     >
                         <button

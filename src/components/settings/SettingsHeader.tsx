@@ -16,7 +16,7 @@ const SettingsHeader: React.FC<SettingsHeaderProps> = ({ tab, onTabChange }) => 
         <div className="flex items-end justify-between mb-8">
             <div className="space-y-2">
                 <h2 className="text-4xl font-bold text-white">Settings</h2>
-                <div className="text-xs text-gray-500 uppercase tracking-[0.2em]">
+                <div className="text-xs text-gray-500 tracking-[0.2em]">
                     Configure integrations and network options
                 </div>
             </div>
@@ -27,7 +27,7 @@ const SettingsHeader: React.FC<SettingsHeaderProps> = ({ tab, onTabChange }) => 
                         role="tab"
                         aria-selected={tab === t}
                         onClick={() => onTabChange(t)}
-                        className={`px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-lg transition-all focus:outline-none focus-visible:ring-2 flex items-center gap-2 ${tab === t ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
+                        className={`px-4 py-2 text-xs font-bold tracking-widest rounded-lg transition-all focus:outline-none focus-visible:ring-2 flex items-center gap-2 ${tab === t ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                     >
                         <MaterialIcon name={TAB_ICONS[t]} className="text-[14px]" />
                         {t}

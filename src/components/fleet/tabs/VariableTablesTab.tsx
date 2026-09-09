@@ -102,13 +102,13 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
                 {/* CSV/TSV/JSON ingestion */}
                 <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                        <label className="text-xs font-bold uppercase text-gray-600 tracking-widest">Import Format</label>
+                        <label className="text-xs font-bold text-gray-600 tracking-widest">Import Format</label>
                         <div className="flex gap-1">
                             {(['csv', 'tsv', 'json'] as const).map((fmt) => (
                                 <button
                                     key={fmt}
                                     onClick={() => setImportMode(fmt)}
-                                    className={`px-2 py-1 rounded text-xs font-bold uppercase transition-all ${importMode === fmt ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/40' : 'bg-white/5 text-white/40 hover:bg-white/10'} focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50`}
+                                    className={`px-2 py-1 rounded text-xs font-bold transition-all ${importMode === fmt ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/40' : 'bg-white/5 text-white/40 hover:bg-white/10'} focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50`}
                                 >
                                     {fmt.toUpperCase()}
                                 </button>
@@ -147,12 +147,12 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
                 {headers.length > 0 && (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold uppercase text-gray-600 tracking-widest">
+                            <label className="text-xs font-bold text-gray-600 tracking-widest">
                                 Preview ({previewRows.length} / {rows.length} total rows)
                             </label>
                             <button
                                 onClick={handleImport}
-                                className="px-3 py-1 rounded-lg bg-cyan-400 text-black text-xs font-bold uppercase hover:scale-105 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                                className="px-3 py-1 rounded-lg bg-cyan-400 text-black text-xs font-bold hover:scale-105 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
                             >
                                 Import →
                             </button>
@@ -162,7 +162,7 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
                                 <thead>
                                     <tr className="bg-white/5">
                                         {headers.map((h) => (
-                                            <th key={h} className="px-2 py-1 text-left text-gray-500 uppercase">{h}</th>
+                                            <th key={h} className="px-2 py-1 text-left text-gray-500 ">{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
@@ -182,7 +182,7 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
 
                 {/* Interpolation preview */}
                 <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase text-gray-600 tracking-widest">Variable Interpolation</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-widest">Variable Interpolation</label>
                     <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3 space-y-1">
                         <p className="text-xs text-gray-500">
                             Use <span className="text-cyan-400 font-mono">{'{$varName}'}</span> syntax in actions. Example:
@@ -195,12 +195,12 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
 
                 {/* Worker ↔ Row mapping info */}
                 <div className="space-y-1 pt-2 border-t border-white/5">
-                    <label className="text-xs font-bold uppercase text-gray-600 tracking-widest">Worker Mapping</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-widest">Worker Mapping</label>
                     <p className="text-xs text-gray-500">Each worker N is mapped to CSV row N. The variable table below maps worker IDs to their current row data.</p>
                     <div className="grid grid-cols-[120px_1fr_80px] gap-1 text-xs">
-                        <div className="text-gray-500 font-bold uppercase">Worker ID</div>
-                        <div className="text-gray-500 font-bold uppercase">Row Key</div>
-                        <div className="text-gray-500 font-bold uppercase">Row #</div>
+                        <div className="text-gray-500 font-bold ">Worker ID</div>
+                        <div className="text-gray-500 font-bold ">Row Key</div>
+                        <div className="text-gray-500 font-bold ">Row #</div>
                     </div>
                     {rows.slice(0, 100).map((_, i) => (
                         <div key={i} className="grid grid-cols-[120px_1fr_80px] gap-1 text-xs border-t border-white/5">

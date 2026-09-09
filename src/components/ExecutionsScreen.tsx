@@ -44,7 +44,7 @@ const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<Exec
                     </div>
                 </div>
                 <div><span className={`app-badge ${taskOutcomeBadgeClass(outcome)}`}>{taskOutcomeLabel(outcome)}</span></div>
-                <div className="text-[11px] theme-text-muted max-lg:hidden"><span className="uppercase">{execution.source}</span> · {execution.mode}</div>
+                <div className="text-[11px] theme-text-muted max-lg:hidden"><span className="">{execution.source}</span> · {execution.mode}</div>
                 <div className="max-lg:hidden">
                     <div className="text-[11px] theme-text-muted">{execution.durationMs}ms</div>
                     <div className="mt-1 text-[10px] theme-text-faint">{new Date(execution.timestamp).toLocaleString()}</div>
@@ -149,10 +149,10 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
 
                 <section className="app-panel overflow-hidden">
                     <div className="app-panel-header">
-                        <div><h2 className="text-sm font-bold theme-text">Run history</h2><p className="mt-1 text-[10px] uppercase tracking-[0.14em] theme-text-faint">{filtered.length} executions</p></div>
+                        <div><h2 className="text-sm font-bold theme-text">Run history</h2><p className="mt-1 text-[10px] tracking-[0.14em] theme-text-faint">{filtered.length} executions</p></div>
                         <div role="tablist" className="app-toolbar rounded-xl border theme-border p-1 theme-input">
                             {(['all', 'editor', 'api'] as const).map((mode) => (
-                                <button key={mode} role="tab" aria-selected={filter === mode} onClick={() => setFilter(mode)} className={`min-h-8 px-3 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${filter === mode ? 'theme-accent-bg' : 'theme-text-faint hover:theme-text'}`}>{mode}</button>
+                                <button key={mode} role="tab" aria-selected={filter === mode} onClick={() => setFilter(mode)} className={`min-h-8 px-3 rounded-lg text-[10px] font-bold tracking-widest transition-all ${filter === mode ? 'theme-accent-bg' : 'theme-text-faint hover:theme-text'}`}>{mode}</button>
                             ))}
                         </div>
                     </div>

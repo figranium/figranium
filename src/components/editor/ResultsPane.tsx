@@ -457,10 +457,10 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
         if (headfulViewer === 'native') {
             return (
                 <div className="glass-card rounded-[32px] overflow-hidden h-[80vh] w-full relative flex flex-col items-center justify-center p-8 text-center gap-4">
-                    <div className="text-[12px] font-bold uppercase tracking-widest text-white">
+                    <div className="text-[12px] font-bold tracking-widest text-white">
                         Headful Session Active
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-widest text-amber-500/80 max-w-lg leading-relaxed">
+                    <div className="text-xs font-bold tracking-widest text-amber-500/80 max-w-lg leading-relaxed">
                         Figranium is not optimized for native browser windows. Please install the proper tools for stability (Xvfb, x11vnc, websockify) or simply use the Docker version.
                     </div>
                 </div>
@@ -469,7 +469,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
         if (headfulViewer === 'checking') {
             return (
                 <div className="glass-card rounded-[32px] overflow-hidden h-[80vh] w-full relative flex items-center justify-center">
-                    <div className="text-xs font-bold uppercase tracking-widest text-gray-500">
+                    <div className="text-xs font-bold tracking-widest text-gray-500">
                         Checking headful viewer...
                     </div>
                 </div>
@@ -480,7 +480,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                 <button
                     type="button"
                     onClick={requestFullscreen}
-                    className="absolute top-4 right-4 z-10 px-3 py-2 rounded-xl border border-white/20 bg-black/40 text-xs font-bold uppercase tracking-widest text-white/80 hover:bg-black/60 transition-all"
+                    className="absolute top-4 right-4 z-10 px-3 py-2 rounded-xl border border-white/20 bg-black/40 text-xs font-bold tracking-widest text-white/80 hover:bg-black/60 transition-all"
                     title="Toggle fullscreen"
                 >
                     Fullscreen
@@ -500,7 +500,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                 <div className="w-16 h-16 border border-white/10 rounded-full flex items-center justify-center">
                     <MaterialIcon name="terminal" className="text-2xl text-white" />
                 </div>
-                <p className="text-xs font-bold uppercase tracking-[0.3em]">Ready</p>
+                <p className="text-xs font-bold tracking-[0.3em]">Ready</p>
             </div>
         );
     }
@@ -514,12 +514,12 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
             )}
             <div className="flex items-end justify-between border-b border-white/5 pb-4">
                 <div className="space-y-2 min-w-0 mr-3">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.3em]">Preview</p>
+                    <p className="text-xs font-bold text-gray-500 tracking-[0.3em]">Preview</p>
                     <h2 className="text-sm font-mono text-white truncate tracking-tight italic">
                         {activeResults?.finalUrl || activeResults?.url || ''}
                     </h2>
                 </div>
-                <div className={`px-4 py-2 rounded-xl border text-xs font-bold uppercase tracking-[0.2em] ${resultView === 'pinned'
+                <div className={`px-4 py-2 rounded-xl border text-xs font-bold tracking-[0.2em] ${resultView === 'pinned'
                     ? 'bg-amber-500/10 text-amber-300'
                     : isExecuting
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 animate-pulse'
@@ -531,7 +531,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
             <div className={`grid grid-cols-1 ${fullWidth ? 'gap-6' : 'xl:grid-cols-2 gap-8'}`}>
                 <div className={`glass-card overflow-hidden flex flex-col ${fullWidth ? 'rounded-2xl min-h-[260px]' : 'rounded-[32px] min-h-[400px]'}`}>
-                    <div className={`border-b border-white/5 flex items-center justify-between text-xs font-bold text-gray-500 uppercase tracking-widest ${fullWidth ? 'p-4' : 'p-6'}`}>
+                    <div className={`border-b border-white/5 flex items-center justify-between text-xs font-bold text-gray-500 tracking-widest ${fullWidth ? 'p-4' : 'p-6'}`}>
                         <span>Screenshot</span>
                         <div className="flex items-center gap-2">
                             <span className="text-white/20">{activeResults?.timestamp || '--:--:--'}</span>
@@ -541,7 +541,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                     setCapturesOpen(true);
                                     loadCaptures();
                                 }}
-                                className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-all"
+                                className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-all"
                             >
                                 View All Captures
                             </button>
@@ -554,18 +554,18 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                 className="absolute inset-0 w-full h-full object-contain transition-opacity duration-1000"
                             />
                         ) : mode === 'scrape' ? (
-                            <div className="text-xs font-bold text-white/20 uppercase tracking-widest px-6 text-center">Scrape mode does not support screenshots</div>
+                            <div className="text-xs font-bold text-white/20 tracking-widest px-6 text-center">Scrape mode does not support screenshots</div>
                         ) : (
-                            <div className="text-xs font-bold text-white/5 uppercase tracking-widest">Waiting for Frame...</div>
+                            <div className="text-xs font-bold text-white/5 tracking-widest">Waiting for Frame...</div>
                         )}
                     </div>
                 </div>
                 <div className={`glass-card flex flex-col ${fullWidth ? 'rounded-2xl p-4 h-[240px]' : 'rounded-[32px] p-8 h-[400px]'}`}>
                     <div className={`flex items-center justify-between border-b border-white/5 ${fullWidth ? 'mb-4 pb-3' : 'mb-6 pb-4'}`}>
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Activity Log</span>
+                        <span className="text-xs font-bold text-gray-500 tracking-widest">Activity Log</span>
                         <button
                             onClick={() => handleCopy((activeResults?.logs || []).join('\n'), 'logs')}
-                            className={`px-3 py-1.5 border text-xs font-bold rounded-lg uppercase transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${copied === 'logs' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'}`}
+                            className={`px-3 py-1.5 border text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${copied === 'logs' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'}`}
                             title="Copy activity log"
                             aria-label="Copy activity log"
                         >
@@ -589,22 +589,22 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                     <div className="glass-card rounded-[32px] w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
                         <div className="p-6 border-b border-white/10 flex items-center justify-between">
                             <div>
-                                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Captures</div>
+                                <div className="text-xs font-bold text-gray-500 tracking-widest">Captures</div>
                                 <div className="text-sm font-bold text-white">Recordings and Screenshots</div>
                             </div>
                             <button
                                 onClick={() => setCapturesOpen(false)}
-                                className="px-3 py-2 border text-xs font-bold rounded-xl uppercase transition-all bg-white/5 border-white/10 text-white hover:bg-white/10"
+                                className="px-3 py-2 border text-xs font-bold rounded-xl transition-all bg-white/5 border-white/10 text-white hover:bg-white/10"
                             >
                                 Close
                             </button>
                         </div>
                         <div className="p-6 overflow-y-auto custom-scrollbar">
                             {capturesLoading && (
-                                <div className="text-xs text-gray-500 uppercase tracking-widest">Loading captures...</div>
+                                <div className="text-xs text-gray-500 tracking-widest">Loading captures...</div>
                             )}
                             {!capturesLoading && captures.length === 0 && (
-                                <div className="text-xs text-gray-600 uppercase tracking-widest">No captures found.</div>
+                                <div className="text-xs text-gray-600 tracking-widest">No captures found.</div>
                             )}
                             {!capturesLoading && captures.length > 0 && (
                                 <FixedSizeList
@@ -629,7 +629,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
             <div className={`glass-card flex flex-col relative ${fullWidth ? 'rounded-2xl p-4' : 'rounded-[32px] p-8'}`}>
                 <div className={`flex items-center justify-between border-b border-white/5 ${fullWidth ? 'flex-wrap gap-2 pb-4 mb-4' : 'pb-4 mb-6'}`}>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                    <span className="text-xs font-bold text-gray-500 tracking-widest">
                         {mainView === 'downloads' ? 'Downloads' : 'Data'}
                     </span>
                     <div className="flex items-center gap-2">
@@ -641,7 +641,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         role="tab"
                                         aria-selected={mainView === mode}
                                         onClick={() => setMainView(mode)}
-                                        className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${mainView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
+                                        className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${mainView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
                                         {mode}
                                     </button>
@@ -656,7 +656,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         role="tab"
                                         aria-selected={resultView === mode}
                                         onClick={() => setResultView(mode)}
-                                        className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${resultView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
+                                        className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${resultView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
                                         {mode}
                                     </button>
@@ -671,7 +671,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         role="tab"
                                         aria-selected={dataView === mode}
                                         onClick={() => setDataView(mode)}
-                                        className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${dataView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
+                                        className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${dataView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
                                         {mode}
                                     </button>
@@ -684,7 +684,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                     onUnpin?.();
                                     setResultView('latest');
                                 }}
-                                className="px-3 py-2 border text-xs font-bold rounded-xl uppercase transition-all flex items-center gap-2 bg-white/5 border-white/10 text-amber-200 hover:bg-white/10"
+                                className="px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 bg-white/5 border-white/10 text-amber-200 hover:bg-white/10"
                                 title="Unpin data"
                             >
                                 Unpin
@@ -699,7 +699,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                     onPin?.(activeResults);
                                     setResultView('pinned');
                                 }}
-                                className="px-3 py-2 border text-xs font-bold rounded-xl uppercase transition-all flex items-center gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
+                                className="px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
                                 title="Pin data"
                             >
                                 {pinnedResults ? 'Update Pin' : 'Pin'}
@@ -717,7 +717,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                     downloadText(name, payload.content, payload.mime);
                                     onNotify(`Exported ${payload.ext.toUpperCase()}.`, 'success');
                                 }}
-                                className="px-3 py-2 border text-xs font-bold rounded-xl uppercase transition-all flex items-center gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
+                                className="px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
                                 title="Export extracted data"
                             >
                                 Export
@@ -760,7 +760,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         onNotify('Failed to zip files.', 'error');
                                     }
                                 }}
-                                className="px-3 py-2 border text-xs font-bold rounded-xl uppercase transition-all flex items-center gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
+                                className="px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
                                 title={activeResults?.downloads?.length === 1 ? 'Download File' : 'Download ZIP'}
                             >
                                 <MaterialIcon name="folder_zip" className="text-[14px]" />
@@ -807,7 +807,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
                                     void handleCopy(copyText, 'data', { skipSizeConfirm: true, truncatedNotice: usedTruncated });
                                 }}
-                                className={`px-3 py-2 border text-xs font-bold rounded-xl uppercase transition-all flex items-center gap-2 ${copied === 'data' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
+                                className={`px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${copied === 'data' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
                                 title="Copy extracted data"
                             >
                                 {copied === 'data' ? <MaterialIcon name="check" className="text-sm" /> : <MaterialIcon name="content_copy" className="text-sm" />}
@@ -865,7 +865,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                 ) : tableData && dataView === 'table' ? (
                                     <div className="overflow-auto custom-scrollbar rounded-2xl border border-white/10">
                                         <table className="min-w-full table-auto text-xs text-left text-white/80 font-mono">
-                                            <thead className="bg-white/5 text-xs uppercase tracking-widest text-white/50">
+                                            <thead className="bg-white/5 text-xs tracking-widest text-white/50">
                                                 <tr>
                                                     {tableData.headers.map((header) => (
                                                         <th key={header} className="px-3 py-2 border-b border-white/10 whitespace-nowrap">

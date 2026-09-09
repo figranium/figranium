@@ -39,12 +39,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                         <MaterialIcon name="error" className="text-lg theme-text" />
                     </div>
                     <div className="space-y-2">
-                        <p className="text-xs font-bold uppercase tracking-[0.4em] theme-text-muted">Something went wrong</p>
+                        <p className="text-xs font-bold tracking-[0.4em] theme-text-muted">Something went wrong</p>
                         <p className="text-xs font-mono theme-text break-words">{error.message}</p>
                     </div>
                     <button
                         onClick={this.handleReload}
-                        className="px-4 py-2 rounded-full border theme-border text-xs font-bold uppercase tracking-[0.2em] theme-text hover:opacity-80 transition-opacity"
+                        className="px-4 py-2 rounded-full border theme-border text-xs font-bold tracking-[0.2em] theme-text hover:opacity-80 transition-opacity"
                         type="button"
                     >
                         Reload

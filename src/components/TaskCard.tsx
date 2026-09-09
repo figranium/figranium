@@ -55,7 +55,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
         <>
             <div className="fixed inset-0 z-40" onClick={() => setMenuPosition(null)} />
             <div
-                className="fixed z-50 w-[210px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold uppercase tracking-widest text-white/80"
+                className="fixed z-50 w-[210px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold tracking-widest text-white/80"
                 style={{ top: menuPosition.top, right: menuPosition.right }}
                 role="menu"
                 aria-label={`Actions for ${task.name || 'Untitled Task'}`}

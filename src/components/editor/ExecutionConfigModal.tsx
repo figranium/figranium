@@ -30,7 +30,7 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                     onPointerUpCapture={(event) => captureInsertionSelection(event.target)}
                 >
                     <div className="space-y-2">
-                        <label className="block text-xs font-bold uppercase tracking-[0.16em] text-[var(--app-text-muted)]">URL</label>
+                        <label className="block text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">URL</label>
                         <div className="rounded-xl border theme-border bg-[var(--app-input)] px-4 py-3 text-sm transition-colors focus-within:border-[var(--app-border-strong)]">
                             <RichInput
                                 value={task.url}
@@ -43,7 +43,7 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                     </div>
 
                     <div className="space-y-2">
-                        <label className="block text-xs font-bold uppercase tracking-[0.16em] text-[var(--app-text-muted)]">Wait (seconds)</label>
+                        <label className="block text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">Wait (seconds)</label>
                         <input
                             type="number"
                             min="0"
@@ -55,7 +55,7 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                     </div>
 
                     <div className="space-y-3">
-                        <label className="block text-xs font-bold uppercase tracking-[0.16em] text-[var(--app-text-muted)]">Execution mode</label>
+                        <label className="block text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">Execution mode</label>
                         <div className="grid gap-3 sm:grid-cols-2">
                             {modeOptions.map((option) => {
                                 const selected = task.mode === option.mode;

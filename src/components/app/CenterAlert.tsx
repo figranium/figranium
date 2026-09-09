@@ -37,7 +37,7 @@ const CenterAlert: React.FC<CenterAlertProps> = ({ message, tone, onClose }) => 
                     )}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-[0.35em] text-gray-500">
+                    <p className="text-xs font-bold tracking-[0.35em] text-gray-500">
                         {tone === 'error' ? 'Error' : 'Success'}
                     </p>
                     <p className="mt-1.5 font-mono text-xs text-white leading-relaxed break-words">{message}</p>

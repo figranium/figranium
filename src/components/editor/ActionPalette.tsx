@@ -133,7 +133,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                             >
                                 <MaterialIcon name={item.icon || 'extension'} className="text-2xl text-white/80 group-hover:text-white transition-colors shrink-0 mb-1" />
                                 <div>
-                                    <div className="text-xs font-bold uppercase tracking-widest text-white/90 group-hover:text-white mb-1">{item.label}</div>
+                                    <div className="text-xs font-bold tracking-widest text-white/90 group-hover:text-white mb-1">{item.label}</div>
                                     <div className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{item.description}</div>
                                 </div>
                             </button>
@@ -143,7 +143,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                         <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
                             <MaterialIcon name="search_off" className="text-4xl text-white/10" />
                             <div className="space-y-1">
-                                <p className="text-xs font-bold uppercase tracking-widest text-white/40">No matches found</p>
+                                <p className="text-xs font-bold tracking-widest text-white/40">No matches found</p>
                                 <p className="text-xs text-gray-600">Try a different search term or browse the catalog.</p>
                             </div>
                         </div>

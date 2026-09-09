@@ -23,7 +23,7 @@ const CaptureCard: React.FC<CaptureCardProps> = ({ capture, onDelete }) => {
     return (
         <article className="h-full min-h-[300px] flex flex-col theme-surface-3 overflow-hidden group">
             <div className="px-4 py-3 border-b theme-border flex items-center justify-between flex-shrink-0">
-                <div className="text-[10px] font-bold theme-text-muted uppercase tracking-widest flex items-center gap-1.5">
+                <div className="text-[10px] font-bold theme-text-muted tracking-widest flex items-center gap-1.5">
                     <MaterialIcon
                         name={capture.type === 'recording' ? 'play_circle' : 'photo_camera'}
                         className="text-xs theme-text-faint"
@@ -79,7 +79,7 @@ const CaptureCard: React.FC<CaptureCardProps> = ({ capture, onDelete }) => {
                 <div className="text-xs theme-text font-bold truncate" title={capture.name}>
                     {capture.name}
                 </div>
-                <div className="flex items-center justify-between mt-1.5 text-[10px] theme-text-faint uppercase tracking-widest">
+                <div className="flex items-center justify-between mt-1.5 text-[10px] theme-text-faint tracking-widest">
                     <span>{formatBytes(capture.size)}</span>
                     <span>{new Date(capture.modified).toLocaleDateString()}</span>
                 </div>

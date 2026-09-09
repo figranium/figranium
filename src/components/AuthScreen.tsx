@@ -46,7 +46,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                     <div className="space-y-4">
                         {status === 'setup' && (
                             <div className="space-y-2">
-                                <label htmlFor="auth-name" className="text-xs font-bold theme-text-muted uppercase tracking-[0.2em]">Name</label>
+                                <label htmlFor="auth-name" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Name</label>
                                 <input
                                     id="auth-name"
                                     type="text"
@@ -59,7 +59,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                             </div>
                         )}
                         <div className="space-y-2">
-                            <label htmlFor="auth-email" className="text-xs font-bold theme-text-muted uppercase tracking-[0.2em]">Email</label>
+                            <label htmlFor="auth-email" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Email</label>
                             <input
                                 id="auth-email"
                                 type="email"
@@ -72,7 +72,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="auth-pass" className="text-xs font-bold theme-text-muted uppercase tracking-[0.2em]">Password</label>
+                            <label htmlFor="auth-pass" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Password</label>
                             <div className="relative">
                                 <input
                                     id="auth-pass"
@@ -97,7 +97,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                         </div>
                         {status === 'setup' && (
                             <div className="space-y-2">
-                                <label htmlFor="auth-pass-confirm" className="text-xs font-bold theme-text-muted uppercase tracking-[0.2em]">Confirm Password</label>
+                                <label htmlFor="auth-pass-confirm" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Confirm Password</label>
                                 <div className="relative">
                                     <input
                                         id="auth-pass-confirm"
@@ -127,7 +127,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                         type="submit"
                         disabled={busy}
                         aria-busy={busy}
-                        className="shine-effect w-full theme-accent-bg py-4 rounded-2xl font-bold text-xs tracking-[0.3em] uppercase hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-default flex items-center justify-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        className="shine-effect w-full theme-accent-bg py-4 rounded-2xl font-bold text-xs tracking-[0.3em] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-default flex items-center justify-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         {busy && (
                             <div className="w-4 h-4 border-2 border-current/10 border-t-current rounded-full animate-spin" />
@@ -136,7 +136,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                     </button>
 
                     {(localError || error) && (
-                        <div role="alert" className="text-xs font-bold text-red-500 text-center uppercase tracking-widest">
+                        <div role="alert" className="text-xs font-bold text-red-500 text-center tracking-widest">
                             {localError || error}
                         </div>
                     )}

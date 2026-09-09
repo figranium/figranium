@@ -25,7 +25,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
             <button
                 onClick={onRun}
                 disabled={isExecuting || isHeadfulOpen}
-                className="shine-effect bg-white text-black px-8 py-4 rounded-2xl font-bold text-xs tracking-[0.3em] uppercase transition-all shadow-xl shadow-white/5 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="shine-effect bg-white text-black px-8 py-4 rounded-2xl font-bold text-xs tracking-[0.3em] transition-all shadow-xl shadow-white/5 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 title="Run Task (Ctrl + Enter)"
                 aria-label="Run Task (Ctrl + Enter)"
             >
@@ -56,7 +56,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
                     }
                 }}
                 disabled={isExecuting}
-                className={`px-4 h-12 rounded-2xl border text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed ${isHeadfulOpen
+                className={`px-4 h-12 rounded-2xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed ${isHeadfulOpen
                     ? 'border-blue-500/30 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
                     : 'border-white/10 text-white/80 hover:text-white hover:bg-white/10'
                     }`}

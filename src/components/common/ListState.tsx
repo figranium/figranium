@@ -32,9 +32,9 @@ export function PanelShell({ icon, title, description, headerActions, children }
 }
 
 export function LoadingState({ label }: { label: string }) {
-    return <div className="text-xs theme-text-faint uppercase tracking-widest">Loading {label}...</div>;
+    return <div className="text-xs theme-text-faint tracking-widest">Loading {label}...</div>;
 }
 
 export function EmptyState({ label }: { label: string }) {
-    return <div className="text-xs theme-text-faint uppercase tracking-widest">No {label} found.</div>;
+    return <div className="text-xs theme-text-faint tracking-widest">No {label} found.</div>;
 }

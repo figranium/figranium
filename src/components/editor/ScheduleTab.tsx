@@ -127,7 +127,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {/* Enable toggle */}
             <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Scheduled Execution</label>
+                <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Scheduled Execution</label>
                 <button
                     role="switch"
                     aria-checked={schedule.enabled}
@@ -143,7 +143,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                         // Immediate save when toggling
                         saveSchedule(nextSchedule);
                     }}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider transition-all border focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
                         schedule.enabled
                             ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
                             : 'bg-[var(--app-surface-3)] border-[var(--app-border)] text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:border-[var(--app-border-strong)]'
@@ -163,7 +163,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                         setAdvancedMode(false);
                         updateSchedule({ cron: undefined, frequency: schedule.frequency || 'daily' });
                     }}
-                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all focus:outline-none focus-visible:ring-2 ${
+                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider transition-all focus:outline-none focus-visible:ring-2 ${
                         !advancedMode ? 'bg-[var(--app-accent)] text-[var(--app-accent-text)] focus-visible:ring-blue-500' : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)] focus-visible:ring-white/50'
                     }`}
                 >Visual</button>
@@ -174,7 +174,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                         setAdvancedMode(true);
                         updateSchedule({ frequency: undefined, cron: schedule.cron || '0 9 * * *' });
                     }}
-                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all focus:outline-none focus-visible:ring-2 ${
+                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wider transition-all focus:outline-none focus-visible:ring-2 ${
                         advancedMode ? 'bg-[var(--app-accent)] text-[var(--app-accent-text)] focus-visible:ring-blue-500' : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)] focus-visible:ring-white/50'
                     }`}
                 >Advanced</button>
@@ -184,7 +184,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                 <div className="space-y-6">
                     {/* Frequency selector */}
                     <div className="space-y-3">
-                        <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Frequency</label>
+                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Frequency</label>
                         <div role="tablist" className="grid grid-cols-3 gap-2">
                             {(['interval', 'hourly', 'daily', 'weekly', 'monthly'] as const).map(f => (
                                 <button
@@ -192,7 +192,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                                     role="tab"
                                     aria-selected={freq === f}
                                     onClick={() => updateSchedule({ frequency: f, cron: undefined })}
-                                    className={`px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all focus:outline-none focus-visible:ring-2 ${
+                                    className={`px-3 py-2.5 rounded-xl text-xs font-bold tracking-wider border transition-all focus:outline-none focus-visible:ring-2 ${
                                         freq === f
                                             ? 'bg-[var(--app-surface-2)] border-[var(--app-border-strong)] text-[var(--app-text)] focus-visible:ring-blue-500'
                                             : 'bg-[var(--app-surface-3)] border-[var(--app-border)] text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:border-[var(--app-border-strong)] focus-visible:ring-white/50'
@@ -207,7 +207,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                     {/* Interval minutes */}
                     {freq === 'interval' && (
                         <div className="space-y-3">
-                            <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Run every</label>
+                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Run every</label>
                             <div role="tablist" className="grid grid-cols-6 gap-2">
                                 {[1, 5, 10, 15, 30, 60].map(m => (
                                     <button
@@ -231,7 +231,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                     {/* Hourly: minute of hour */}
                     {freq === 'hourly' && (
                         <div className="space-y-3">
-                            <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">At minute</label>
+                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">At minute</label>
                             <div role="tablist" className="grid grid-cols-4 gap-2">
                                 {[0, 15, 30, 45].map(m => (
                                     <button
@@ -255,7 +255,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                     {/* Daily / Weekly / Monthly: time picker */}
                     {(freq === 'daily' || freq === 'weekly' || freq === 'monthly') && (
                         <div className="space-y-3">
-                            <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Time</label>
+                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Time</label>
                             <div className="flex gap-2">
                                 <CustomSelect
                                     value={schedule.hour ?? 9}
@@ -278,7 +278,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                     {/* Weekly: day of week toggles */}
                     {freq === 'weekly' && (
                         <div className="space-y-3">
-                            <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Days</label>
+                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Days</label>
                             <div className="grid grid-cols-7 gap-1.5">
                                 {dayNames.map((name, i) => (
                                     <button
@@ -290,7 +290,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                                                 : [...daysOfWeek, i].sort();
                                             updateSchedule({ daysOfWeek: next });
                                         }}
-                                        className={`py-2 rounded-xl text-xs font-bold uppercase border transition-all focus:outline-none focus-visible:ring-2 ${
+                                        className={`py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus-visible:ring-2 ${
                                             daysOfWeek.includes(i)
                                                 ? 'bg-[var(--app-surface-2)] border-[var(--app-border-strong)] text-[var(--app-text)] focus-visible:ring-blue-500'
                                                 : 'bg-[var(--app-surface-3)] border-[var(--app-border)] text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:border-[var(--app-border-strong)] focus-visible:ring-white/50'
@@ -306,7 +306,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                     {/* Monthly: day of month */}
                     {freq === 'monthly' && (
                         <div className="space-y-3">
-                            <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Day of Month</label>
+                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Day of Month</label>
                             <CustomSelect
                                 value={schedule.dayOfMonth ?? 1}
                                 onChange={(dayOfMonth) => updateSchedule({ dayOfMonth })}
@@ -319,7 +319,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
             ) : (
                 /* Advanced raw cron mode */
                 <div className="space-y-3">
-                    <label className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Cron Expression</label>
+                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Cron Expression</label>
                     <input
                         type="text"
                         aria-label="Cron Expression"
@@ -337,7 +337,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                 <div className="bg-[var(--app-surface-3)] border border-[var(--app-border)] rounded-2xl p-4">
                     <div className="flex items-center gap-2 mb-1">
                         <MaterialIcon name="event_repeat" className="text-sm text-[var(--app-text-faint)]" />
-                        <span className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Schedule</span>
+                        <span className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Schedule</span>
                     </div>
                     <p className="text-sm text-[var(--app-text)] font-medium">{description}</p>
                 </div>
@@ -347,7 +347,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
             {nextRunPreview && (
                 <div className="flex items-center justify-between bg-[var(--app-surface-3)] border border-[var(--app-border)] rounded-2xl p-4">
                     <div>
-                        <span className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Next Run</span>
+                        <span className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Next Run</span>
                         <p className="text-xs text-[var(--app-text)] mt-1">{new Date(nextRunPreview).toLocaleString()}</p>
                     </div>
                     <span className="text-xs text-[var(--app-text-muted)]">in {formatRelativeTime(nextRunPreview)}</span>
@@ -360,9 +360,9 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                     <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${taskOutcomeDotClass(normalizeTaskOutcome(schedule.lastRunStatus))}`} />
                         <div>
-                            <span className="text-xs font-bold text-[var(--app-text-muted)] uppercase tracking-[0.2em]">Last Run</span>
+                            <span className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Last Run</span>
                             <p className="text-xs text-[var(--app-text)] mt-0.5">{new Date(schedule.lastRun).toLocaleString()}</p>
-                            <p className="text-[10px] text-[var(--app-text-muted)] mt-0.5 uppercase tracking-widest">{taskOutcomeLabel(normalizeTaskOutcome(schedule.lastRunStatus))}</p>
+                            <p className="text-[10px] text-[var(--app-text-muted)] mt-0.5 tracking-widest">{taskOutcomeLabel(normalizeTaskOutcome(schedule.lastRunStatus))}</p>
                         </div>
                     </div>
                     {schedule.lastRunDurationMs != null && (
@@ -372,7 +372,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
             )}
 
             {saveError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-widest text-center">
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold tracking-widest text-center">
                     {saveError}
                 </div>
             )}
@@ -381,7 +381,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
             <button
                 onClick={() => saveSchedule()}
                 disabled={saving}
-                className={`w-full py-3 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 focus:outline-none focus-visible:ring-2 ${
+                className={`w-full py-3 rounded-2xl text-xs font-bold tracking-[0.2em] transition-all flex items-center justify-center gap-3 focus:outline-none focus-visible:ring-2 ${
                     saveSuccess 
                         ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 focus-visible:ring-white'
                         : 'bg-[var(--app-accent)] text-[var(--app-accent-text)] hover:opacity-90 shadow-xl shadow-black/5 focus-visible:ring-blue-500'

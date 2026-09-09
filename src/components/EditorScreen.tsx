@@ -507,7 +507,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 return (
                     <>
                     <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
-                    <div className="action-context-menu fixed z-50 w-[200px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold uppercase tracking-widest text-white/80" style={{ left: contextMenu.x, top: contextMenu.y }}>
+                    <div className="action-context-menu fixed z-50 w-[200px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold tracking-widest text-white/80" style={{ left: contextMenu.x, top: contextMenu.y }}>
                         <button onClick={() => {
                             const nextState = !target.disabled;
                             const nextActions = currentTask.actions.map(a => affectedIds.includes(a.id) ? { ...a, disabled: nextState } : a);

@@ -75,12 +75,12 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
         <div className="h-full overflow-y-auto custom-scrollbar">
             <div className="p-4 space-y-6 font-questrial">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold uppercase text-gray-500">Proxy Presets</h3>
+                    <h3 className="text-xs font-bold text-gray-500">Proxy Presets</h3>
                     <span className="text-xs text-gray-500 font-space-mono">{proxies.length} preset(s)</span>
                 </div>
 
                 <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-4 space-y-3">
-                    <h4 className="text-xs font-bold uppercase text-gray-600 tracking-widest">Add Proxy Preset</h4>
+                    <h4 className="text-xs font-bold text-gray-600 tracking-widest">Add Proxy Preset</h4>
                     <div className="grid grid-cols-2 gap-3">
                         <input
                             type="text"
@@ -121,14 +121,14 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                     </div>
                     <button
                         onClick={handleAddProxy}
-                        className="w-full py-2 rounded-xl bg-cyan-400 text-black text-xs font-bold uppercase tracking-widest hover:scale-[1.02] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                        className="w-full py-2 rounded-xl bg-cyan-400 text-black text-xs font-bold tracking-widest hover:scale-[1.02] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
                     >
                         Add Preset
                     </button>
                 </div>
 
                 <div className="space-y-2">
-                    <h4 className="text-xs font-bold uppercase text-gray-600 tracking-widest">Saved Presets</h4>
+                    <h4 className="text-xs font-bold text-gray-600 tracking-widest">Saved Presets</h4>
                     {proxies.length === 0 ? (
                         <p className="text-xs text-gray-600">No proxy presets configured. Add one above.</p>
                     ) : (
@@ -162,7 +162,7 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-white/5">
-                    <h4 className="text-xs font-bold uppercase text-gray-600 tracking-widest">Infrastructure Config</h4>
+                    <h4 className="text-xs font-bold text-gray-600 tracking-widest">Infrastructure Config</h4>
                     <div className="grid grid-cols-[120px_1fr] gap-2 text-xs">
                         <span className="text-gray-500">Browser pool size</span>
                         <span className="text-white/60 font-mono">{fleetConfig?.poolSize || 10}</span>

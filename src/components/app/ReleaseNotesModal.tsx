@@ -69,7 +69,7 @@ export default function ReleaseNotesModal() {
                 <div className="mt-8 flex justify-end shrink-0">
                     <button
                         onClick={handleClose}
-                        className="rounded-2xl px-8 py-3 text-xs font-bold uppercase tracking-[0.3em] transition-all bg-white text-black hover:scale-105 shadow-xl shadow-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        className="rounded-2xl px-8 py-3 text-xs font-bold tracking-[0.3em] transition-all bg-white text-black hover:scale-105 shadow-xl shadow-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         Got it
                     </button>

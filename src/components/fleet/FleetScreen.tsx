@@ -117,7 +117,7 @@ const FleetScreen: React.FC<FleetScreenProps> = ({ onNotify }) => {
             <div className="absolute top-0 left-0 right-0 h-12 flex items-center justify-between px-4 border-b border-white/10 z-30 bg-black/80 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
                     <MaterialIcon name="layers" className="text-cyan-400 text-xl drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
-                    <h1 className="text-sm font-bold tracking-[0.2em] uppercase text-cyan-400 font-questrial">FLEET</h1>
+                    <h1 className="text-sm font-bold tracking-[0.2em] text-cyan-400 font-questrial">FLEET</h1>
                 </div>
                 {selectedTaskId && (
                     <span className="text-xs text-white/40 font-mono">Task: {selectedTaskId}</span>

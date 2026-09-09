@@ -70,7 +70,7 @@ const ModelRow: React.FC<{
                     <img src={iconUrl} alt={label} className="w-6 h-6 object-contain" />
                 </div>
                 <div className="flex-1">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-widest">{label}</h4>
+                    <h4 className="text-sm font-bold text-white tracking-widest">{label}</h4>
                 </div>
             </div>
             {!editing ? (
@@ -78,7 +78,7 @@ const ModelRow: React.FC<{
                     <div className="flex-1 rounded-2xl theme-input border theme-border px-4 py-3 font-mono text-xs theme-text min-h-[44px] flex items-center" style={{ backgroundColor: 'var(--app-input)', color: 'var(--app-text)' }}>
                         {loading ? <span className="opacity-50">Loading…</span> : <span>{value}</span>}
                     </div>
-                    <button onClick={handleEdit} disabled={loading || saving} className="px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest theme-accent-bg hover:bg-white/20 transition-all disabled:opacity-50 flex items-center gap-2">
+                    <button onClick={handleEdit} disabled={loading || saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest theme-accent-bg hover:bg-white/20 transition-all disabled:opacity-50 flex items-center gap-2">
                         <MaterialIcon name="edit" className="text-base" />
                         Edit
                     </button>
@@ -96,8 +96,8 @@ const ModelRow: React.FC<{
                             onEscape={handleCancel}
                         />
                     </div>
-                    <button onClick={handleCancel} disabled={saving} className="px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest theme-border text-white hover:bg-white/10 transition-all disabled:opacity-50">Cancel</button>
-                    <button onClick={handleSave} disabled={saving || !draft.trim()} className="px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest theme-accent-bg hover:bg-blue-400 transition-all disabled:opacity-50 flex items-center gap-2">
+                    <button onClick={handleCancel} disabled={saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest theme-border text-white hover:bg-white/10 transition-all disabled:opacity-50">Cancel</button>
+                    <button onClick={handleSave} disabled={saving || !draft.trim()} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest theme-accent-bg hover:bg-blue-400 transition-all disabled:opacity-50 flex items-center gap-2">
                         <MaterialIcon name="save" className="text-base" />
                         {saving ? 'Saving…' : 'Save'}
                     </button>
@@ -110,8 +110,8 @@ const ModelRow: React.FC<{
 const AiModelsPanel: React.FC<AiModelsPanelProps> = ({ models, loading, saving, onSave }) => (
     <div className="app-panel p-7">
         <div className="mb-6">
-            <h3 className="text-lg font-bold text-white uppercase tracking-widest">AI Models</h3>
-            <p className="text-xs text-gray-400 uppercase tracking-widest mt-1">Preferred model for each AI provider</p>
+            <h3 className="text-lg font-bold text-white tracking-widest">AI Models</h3>
+            <p className="text-xs text-gray-400 tracking-widest mt-1">Preferred model for each AI provider</p>
         </div>
         <div className="flex flex-col">
             {MODEL_PROVIDERS.map(p => (

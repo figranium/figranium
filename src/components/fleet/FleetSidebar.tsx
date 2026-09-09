@@ -18,7 +18,7 @@ const FleetSidebar: React.FC<FleetSidebarProps> = ({ activeTab, onTabChange }) =
     return (
         <aside className="w-64 h-full border-r border-white/10 bg-[#0a0a0a] flex flex-col overflow-y-auto custom-scrollbar shrink-0">
             <div className="p-4">
-                <p className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1 mb-3">Fleet Console</p>
+                <p className="text-xs font-bold text-gray-600 tracking-widest pl-1 mb-3">Fleet Console</p>
                 <div className="flex flex-col gap-1">
                     {tabs.map((tab) => (
                         <button
@@ -31,7 +31,7 @@ const FleetSidebar: React.FC<FleetSidebarProps> = ({ activeTab, onTabChange }) =
                             }`}
                         >
                             <MaterialIcon name={tab.icon} className="text-sm" />
-                            <span className="text-xs font-bold uppercase tracking-widest">{tab.label}</span>
+                            <span className="text-xs font-bold tracking-widest">{tab.label}</span>
                         </button>
                     ))}
                 </div>

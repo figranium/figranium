@@ -281,7 +281,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
 
     const field = (labelText: string, children: React.ReactNode) => (
         <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1 block">{labelText}</label>
+            <label className="text-xs font-bold text-gray-600 tracking-widest pl-1 block">{labelText}</label>
             {children}
         </div>
     );
@@ -387,10 +387,10 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                     action.type === 'javascript' ? (
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Script</label>
+                                <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Script</label>
                                 <button
                                     onClick={() => { setShowAiPrompt(v => !v); setAiError(null); }}
-                                    className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors"
+                                    className="flex items-center gap-1 text-xs font-bold tracking-widest text-white/60 hover:text-white transition-colors"
                                     title="Generate with AI"
                                 >
                                     <MaterialIcon name="auto_awesome" className="text-sm" />
@@ -410,11 +410,11 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     />
                                     {aiError && <p className="text-xs text-red-400">{aiError}</p>}
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => { setShowAiPrompt(false); setAiError(null); }} className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors">Cancel</button>
+                                        <button onClick={() => { setShowAiPrompt(false); setAiError(null); }} className="text-xs font-bold tracking-widest text-gray-500 hover:text-white transition-colors">Cancel</button>
                                         <button
                                             onClick={handleGenerateScript}
                                             disabled={aiLoading || !aiDescription.trim()}
-                                            className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                            className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                         >
                                             {aiLoading && <MaterialIcon name="autorenew" className="text-xs animate-spin" />}
                                             {aiLoading ? 'Generating…' : 'Generate'}
@@ -499,7 +499,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 {/* Press key */}
                 {action.type === 'press' && (
                     <div className="space-y-5">
-                        <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Key</label>
+                        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Key</label>
                         <div className="grid grid-cols-2 gap-3 text-xs text-white">
                             {PRESS_MODIFIERS.map((modifier) => (
                                 <label key={modifier.value} className="inline-flex items-center space-x-1">
@@ -514,7 +514,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                         }}
                                         className="h-3 w-3 rounded border border-white/30 bg-black/80"
                                     />
-                                    <span className="uppercase text-xs text-white/70">{modifier.label}</span>
+                                    <span className="text-xs text-white/70">{modifier.label}</span>
                                 </label>
                             ))}
                         </div>
@@ -533,10 +533,10 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 {/* If / While condition */}
                 {(action.type === 'if' || action.type === 'while') && (
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Condition</label>
+                        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Condition</label>
                         <div className="grid grid-cols-3 gap-2">
                             <div className="space-y-1">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">{condVarType === 'selector' ? 'Selector' : 'Variable'}</span>
+                                <span className="text-xs font-bold text-gray-500 tracking-widest pl-1">{condVarType === 'selector' ? 'Selector' : 'Variable'}</span>
                                 {condVarType === 'selector' ? (
                                     <div className="bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 focus-within:border-white/30 transition-all flex items-center gap-2">
                                         <input
@@ -572,7 +572,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                 )}
                             </div>
                             <div className="space-y-1">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Type</span>
+                                <span className="text-xs font-bold text-gray-500 tracking-widest pl-1">Type</span>
                                 <CustomSelect
                                     value={condVarType}
                                     onChange={(nextType) => {
@@ -593,7 +593,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                 />
                             </div>
                             <div className="space-y-1">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Relation</span>
+                                <span className="text-xs font-bold text-gray-500 tracking-widest pl-1">Relation</span>
                                 <CustomSelect
                                     value={opValue}
                                     onChange={(value) => onUpdate(action.id, { conditionOp: value }, true)}
@@ -604,7 +604,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                         </div>
                         {condVarType !== 'boolean' && condVarType !== 'selector' && (
                             <div className="space-y-1">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">Value</span>
+                                <span className="text-xs font-bold text-gray-500 tracking-widest pl-1">Value</span>
                                 <input
                                     type={condVarType === 'number' ? 'number' : 'text'}
                                     value={action.conditionValue || ''}
@@ -744,7 +744,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 {action.type === 'http_request' && <>
                     <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Method</label>
+                            <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Method</label>
                             <CustomSelect
                                 value={httpMethod}
                                 onChange={(value) => onUpdate(action.id, { method: value }, true)}
@@ -759,7 +759,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                             />
                         </div>
                         <div className="col-span-2 space-y-1.5">
-                            <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">URL</label>
+                            <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">URL</label>
                             {inputWrap(
                                 <RichInput
                                     value={action.value || ''}
@@ -836,7 +836,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                         </p>
                     )}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-600 uppercase tracking-widest pl-1">Captcha Type (Optional)</label>
+                        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Captcha Type (Optional)</label>
                         <CustomSelect
                             value={action.captchaType || ''}
                             onChange={(value) => onUpdate(action.id, { captchaType: (value || undefined) as Action['captchaType'] }, true)}

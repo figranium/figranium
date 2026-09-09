@@ -101,10 +101,10 @@ export default function GithubStarPrompt({ runId, onClose }: GithubStarPromptPro
                     <MaterialIcon name="star" className="text-xl text-[var(--app-accent)]" fill />
                 </div>
                 <div className="space-y-1 min-w-0 flex-1">
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-white leading-snug" style={{ color: 'var(--app-text)' }}>
+                    <h4 className="text-xs font-bold tracking-widest text-white leading-snug" style={{ color: 'var(--app-text)' }}>
                         Success! Figranium executed perfectly. ⭐
                     </h4>
-                    <p className="text-xs uppercase tracking-wider leading-relaxed text-gray-400" style={{ color: 'var(--app-text-faint)' }}>
+                    <p className="text-xs tracking-wider leading-relaxed text-gray-400" style={{ color: 'var(--app-text-faint)' }}>
                         Figranium is open-source. If it saved you time, support us with a GitHub star! It takes 5 seconds.
                     </p>
                     {helperText && (
@@ -118,7 +118,7 @@ export default function GithubStarPrompt({ runId, onClose }: GithubStarPromptPro
             <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-white/5">
                 <button
                     onClick={handleStarClick}
-                    className="flex-1 px-3 py-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 hover:brightness-90 bg-transparent"
+                    className="flex-1 px-3 py-2 rounded-xl border text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 hover:brightness-90 bg-transparent"
                     style={{ borderColor: 'var(--app-border)', color: 'var(--app-text)' }}
                 >
                     <MaterialIcon name="star_border" className="text-sm" />
@@ -126,7 +126,7 @@ export default function GithubStarPrompt({ runId, onClose }: GithubStarPromptPro
                 </button>
                 <button
                     onClick={handleStarredConfirm}
-                    className="flex-1 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 hover:brightness-90"
+                    className="flex-1 px-3 py-2 rounded-xl text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 hover:brightness-90"
                     style={{
                         backgroundColor: hasOpenedUrl ? 'var(--app-accent)' : 'var(--app-surface-3)',
                         color: hasOpenedUrl ? 'var(--app-accent-text)' : 'var(--app-text-faint)',

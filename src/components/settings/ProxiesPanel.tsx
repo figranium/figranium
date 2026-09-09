@@ -248,7 +248,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                 <button
                     onClick={onRefresh}
                     disabled={loading}
-                    className="px-4 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/5 transition-all disabled:opacity-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="px-4 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-widest text-white hover:bg-white/5 transition-all disabled:opacity-50 inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     title="Refresh proxy list"
                     aria-label="Refresh proxy list"
                 >
@@ -297,7 +297,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                         onChange={(e) => setIsRotatingPool(e.target.checked)}
                         className="w-4 h-4 rounded border-white/20 bg-transparent"
                     />
-                    <span className="text-xs text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors">Rotating pool</span>
+                    <span className="text-xs text-gray-400 tracking-widest group-hover:text-white transition-colors">Rotating pool</span>
                 </label>
                 {isRotatingPool && (
                     <input
@@ -318,20 +318,20 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                 <button
                     onClick={submit}
                     disabled={loading}
-                    className="px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest bg-white text-black hover:scale-105 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white text-black hover:scale-105 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                     {loading && <div className="w-3 h-3 border-2 border-black/20 border-t-black rounded-full animate-spin" />}
                     Add Proxy
                 </button>
                 <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest border border-white/10 text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest border border-white/10 text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
                     Import
                 </button>
                 <button
                     onClick={() => onSetDefault('host')}
-                    className={`px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest border border-white/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${defaultProxyId ? 'text-white hover:bg-white/5' : 'bg-white/10 text-white'}`}
+                    className={`px-6 py-3 rounded-2xl text-xs font-bold tracking-widest border border-white/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${defaultProxyId ? 'text-white hover:bg-white/5' : 'bg-white/10 text-white'}`}
                 >
                     Use Host IP
                 </button>
@@ -345,7 +345,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                 className="hidden"
             />
             {importError && (
-                <div className="text-xs text-red-400 uppercase tracking-widest">{importError}</div>
+                <div className="text-xs text-red-400 tracking-widest">{importError}</div>
             )}
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 rounded-2xl border border-white/5 bg-white/[0.02] p-2.5">
                 <label className="flex items-center rounded-xl px-2 py-1.5 transition-colors hover:bg-white/[0.04] group">
@@ -367,7 +367,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                         onChange={(e) => onToggleIncludeDefault(e.target.checked)}
                         className="w-4 h-4 rounded border-white/20 bg-transparent"
                     />
-                    <span className="whitespace-nowrap text-xs font-bold text-gray-500 uppercase tracking-widest group-hover:text-white">Include default IP</span>
+                    <span className="whitespace-nowrap text-xs font-bold text-gray-500 tracking-widest group-hover:text-white">Include default IP</span>
                 </label>
                 {(selectedProxyIds.size > 0 || selectableProxies.length > 0) && (
                     <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-white/[0.04] group">
@@ -378,7 +378,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                             disabled={selectableProxies.length === 0}
                             className="w-4 h-4 rounded border-white/20 bg-transparent disabled:opacity-50"
                         />
-                        <span className="whitespace-nowrap text-xs font-bold text-gray-500 uppercase tracking-widest group-hover:text-white">
+                        <span className="whitespace-nowrap text-xs font-bold text-gray-500 tracking-widest group-hover:text-white">
                             {selectedProxyIds.size > 0 ? `${selectedProxyIds.size} Selected` : 'Select All'}
                         </span>
                     </label>
@@ -386,7 +386,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                 {selectedProxyIds.size > 0 && (
                     <button
                         onClick={handleBulkDelete}
-                        className="ml-auto inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-red-400 transition-all hover:bg-red-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                        className="ml-auto inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-bold tracking-widest text-red-400 transition-all hover:bg-red-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     >
                         <MaterialIcon name="delete" className="text-base" />
                         Delete Selected
@@ -444,7 +444,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                                 onChange={(e) => setEditIsRotatingPool(e.target.checked)}
                                                 className="w-3.5 h-3.5 rounded border-white/20 bg-transparent"
                                             />
-                                            <span className="text-xs text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors">Rotating pool</span>
+                                            <span className="text-xs text-gray-400 tracking-widest group-hover:text-white transition-colors">Rotating pool</span>
                                         </label>
                                         {editIsRotatingPool && (
                                             <input
@@ -464,7 +464,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={saveEdit}
-                                            className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                            className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-widest text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                             title="Save proxy changes"
                                             aria-label="Save proxy changes"
                                         >
@@ -472,7 +472,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                         </button>
                                         <button
                                             onClick={cancelEdit}
-                                            className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest text-white/70 hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                            className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-widest text-white/70 hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                             title="Cancel editing"
                                             aria-label="Cancel editing"
                                         >
@@ -501,10 +501,10 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                         )}
                                     </div>
                                     <div className="flex-1 space-y-1">
-                                        <div className="text-xs font-bold text-white uppercase tracking-widest">
+                                        <div className="text-xs font-bold text-white tracking-widest">
                                             {getProxyDisplayLabel(proxy)}
                                         </div>
-                                        <div className="text-xs text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                                        <div className="text-xs text-gray-500 tracking-widest flex items-center gap-2">
                                             <span>{proxy.server}</span>
                                             {proxy.isRotatingPool && (
                                                 <span className="px-1.5 py-0.5 rounded bg-white/10 text-white font-bold inline-flex items-center gap-1">
@@ -518,7 +518,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => onSetDefault(proxy.id)}
-                                            className={`px-3 py-2 rounded-xl border text-xs font-bold uppercase tracking-widest transition-all inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 ${isDefault ? 'bg-white text-black border-white focus-visible:ring-blue-500' : 'border-white/10 text-white hover:bg-white/5 focus-visible:ring-white/50'}`}
+                                            className={`px-3 py-2 rounded-xl border text-xs font-bold tracking-widest transition-all inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 ${isDefault ? 'bg-white text-black border-white focus-visible:ring-blue-500' : 'border-white/10 text-white hover:bg-white/5 focus-visible:ring-white/50'}`}
                                             title={isDefault ? "Current default proxy" : "Set as default proxy"}
                                             aria-label={isDefault ? "Current default proxy" : "Set as default proxy"}
                                         >
@@ -529,7 +529,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                             <>
                                                 <button
                                                     onClick={() => startEdit(proxy)}
-                                                    className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-widest text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                                    className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-widest text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                                     title="Edit proxy"
                                                     aria-label="Edit proxy"
                                                 >
@@ -537,7 +537,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                                 </button>
                                                 <button
                                                     onClick={() => onDelete(proxy.id)}
-                                                    className="px-3 py-2 rounded-xl border border-red-500/20 text-xs font-bold uppercase tracking-widest text-red-300 hover:bg-red-500/10 transition-all inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                                    className="px-3 py-2 rounded-xl border border-red-500/20 text-xs font-bold tracking-widest text-red-300 hover:bg-red-500/10 transition-all inline-flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                                     title="Delete proxy"
                                                     aria-label="Delete proxy"
                                                 >
