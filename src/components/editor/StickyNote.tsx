@@ -140,7 +140,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                 left: note.x,
                 top: note.y,
                 width: note.width,
-                height: note.height,
+                minHeight: note.height,
                 zIndex: 5,
             }}
             onPointerDown={(e) => e.stopPropagation()}
@@ -154,7 +154,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
             }}
         >
             <div
-                className="w-full h-full rounded-xl flex flex-col overflow-hidden"
+                className="w-full min-h-full rounded-xl flex flex-col overflow-hidden"
                 style={{
                     background: colors.bg,
                     border: `1px solid ${isSelected ? 'rgba(96,165,250,0.8)' : colors.border}`,
@@ -222,7 +222,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
 
                 {/* Content area */}
                 <div
-                    className="flex-1 overflow-auto min-h-0 custom-scrollbar"
+                    className="flex-1 min-h-0 custom-scrollbar"
                     onDoubleClick={() => { if (!isEditing) { setIsEditing(true); setDraft(note.content); } }}
                 >
                     {isEditing ? (
@@ -236,14 +236,13 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') commitEdit();
                                 e.stopPropagation();
                             }}
-                            className="w-full h-full resize-none bg-transparent px-3 py-2 text-xs text-white/80 placeholder-white/20 focus:outline-none font-mono leading-relaxed"
+                            className="w-full min-h-[120px] resize-none bg-transparent px-3 py-2 text-xs text-white/80 placeholder-white/20 focus:outline-none font-mono leading-relaxed"
                             placeholder="Write markdown here..."
-                            style={{ minHeight: 0 }}
                             onClick={(e) => e.stopPropagation()}
                         />
                     ) : (
                         <div
-                            className="px-3 py-2 text-xs text-white/75 leading-relaxed overflow-auto h-full cursor-text custom-scrollbar font-mono whitespace-pre-wrap"
+                            className="px-3 py-2 text-xs text-white/75 leading-relaxed cursor-text custom-scrollbar font-mono whitespace-pre-wrap"
                         >
                             {note.content || <span className="text-white/20 italic">Double-click to edit...</span>}
                         </div>
