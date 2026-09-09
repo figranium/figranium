@@ -15,8 +15,38 @@ const {
 const cookie = require('cookie');
 const { getUserAgentConfig, setUserAgentSelection } = require('../../../user-agent-settings');
 const { listProxies, addProxy, addProxies, updateProxy, deleteProxy, deleteProxies, setDefaultProxy, setIncludeDefaultInRotation, setRotationMode } = require('../../../proxy-rotation');
+const { DB_FIELDS, getEnvironmentDatabaseConfig, loadDatabaseConfig, maskedDatabaseConfig, saveDatabaseConfig } = require('../database-config');
 
 const router = express.Router();
+
+router.get('/database', requireAuthForSettings, async (_req, res) => {
+    const environmentConfig = getEnvironmentDatabaseConfig();
+    const savedConfig = environmentConfig ? null : await loadDatabaseConfig();
+    res.json({
+        ...maskedDatabaseConfig(environmentConfig || savedConfig),
+        source: environmentConfig ? 'environment' : savedConfig ? 'settings' : 'none',
+        restartRequired: true
+    });
+});
+
+router.post('/database', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
+    try {
+        const existing = await loadDatabaseConfig();
+        const next = {};
+        for (const field of DB_FIELDS) {
+            const incoming = req.body?.[field];
+            next[field] = typeof incoming === 'string' && incoming.trim() ? incoming : existing?.[field] || '';
+        }
+        await saveDatabaseConfig(next);
+        res.json({
+            ...maskedDatabaseConfig(await loadDatabaseConfig()),
+            source: getEnvironmentDatabaseConfig() ? 'environment' : 'settings',
+            restartRequired: true
+        });
+    } catch (error) {
+        res.status(400).json({ error: 'INVALID_DATABASE_CONFIG', message: error.message });
+    }
+});
 
 function createNewApiKey() {
     return crypto.randomBytes(32).toString('hex');

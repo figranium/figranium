@@ -20,6 +20,7 @@ const DEFAULT_AI_MODELS = { gemini: 'gemini-3-flash-preview', openai: 'gpt-5-nan
 const THEME_FILE = path.join(DATA_DIR, 'theme.json');
 const DEFAULT_THEME_ID = 'dark';
 const CAPTCHA_SETTINGS_FILE = path.join(DATA_DIR, 'captcha_settings.json');
+const DATABASE_CONFIG_FILE = path.join(DATA_DIR, 'database_config.json');
 const STORAGE_STATE_PATH = path.join(__dirname, '../../storage_state.json');
 const EXECUTIONS_FILE = path.join(DATA_DIR, 'executions.json');
 const CREDENTIALS_FILE = path.join(DATA_DIR, 'credentials.json');
@@ -56,6 +57,7 @@ module.exports = {
     THEME_FILE,
     DEFAULT_THEME_ID,
     CAPTCHA_SETTINGS_FILE,
+    DATABASE_CONFIG_FILE,
     STORAGE_STATE_PATH,
     EXECUTIONS_FILE,
     CREDENTIALS_FILE,

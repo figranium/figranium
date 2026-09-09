@@ -5,6 +5,7 @@ import ProxiesPanel from './settings/ProxiesPanel';
 import UserAgentPanel from './settings/UserAgentPanel';
 import VersionPanel from './settings/VersionPanel';
 import ThemePanel from './settings/ThemePanel';
+import DatabasePanel, { DatabaseConfigStatus } from './settings/DatabasePanel';
 import { APP_VERSION } from '@/utils/appInfo';
 import MaterialIcon from './MaterialIcon';
 import { useTheme } from '../hooks/useTheme';
@@ -27,13 +28,14 @@ const MODEL_PROVIDERS = [
     { key: 'ollama' as const, label: 'Ollama', iconUrl: 'https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/ollama.svg' },
 ];
 
-type SettingsSection = 'api-keys' | 'ai-models' | 'user-agent' | 'proxies' | 'appearance' | 'about';
+type SettingsSection = 'api-keys' | 'ai-models' | 'user-agent' | 'proxies' | 'database' | 'appearance' | 'about';
 
 const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
     { id: 'api-keys', label: 'API Keys', icon: 'key' },
     { id: 'ai-models', label: 'AI Models', icon: 'auto_awesome' },
     { id: 'user-agent', label: 'User Agent', icon: 'language' },
     { id: 'proxies', label: 'Proxies', icon: 'security' },
+    { id: 'database', label: 'Database', icon: 'database' },
     { id: 'appearance', label: 'Appearance', icon: 'palette' },
     { id: 'about', label: 'About', icon: 'info' },
 ];
@@ -180,6 +182,9 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
     const [userAgentSelection, setUserAgentSelection] = useState('system');
     const [userAgentOptions, setUserAgentOptions] = useState<string[]>([]);
     const [userAgentLoading, setUserAgentLoading] = useState(false);
+    const [databaseConfig, setDatabaseConfig] = useState<DatabaseConfigStatus>({ configured: false, db_protocol: '', source: 'none', restartRequired: true });
+    const [databaseLoading, setDatabaseLoading] = useState(false);
+    const [databaseSaving, setDatabaseSaving] = useState(false);
 
     const { theme, setTheme } = useTheme();
 
@@ -308,6 +313,40 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
             setProxiesLoading(false);
         }
     };
+
+    const loadDatabaseConfig = useCallback(async () => {
+        setDatabaseLoading(true);
+        try {
+            const response = await fetch('/api/settings/database', { credentials: 'include' });
+            if (!response.ok) throw new Error('Failed to load database configuration.');
+            setDatabaseConfig(await response.json());
+        } catch {
+            setDatabaseConfig({ configured: false, db_protocol: '', source: 'none', restartRequired: true });
+            onNotify('Failed to load database configuration.', 'error');
+        } finally {
+            setDatabaseLoading(false);
+        }
+    }, [onNotify]);
+
+    const saveDatabaseConfig = useCallback(async (config: Record<string, string>) => {
+        setDatabaseSaving(true);
+        try {
+            const response = await fetch('/api/settings/database', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(config)
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(payload.message || 'Failed to save database configuration.');
+            setDatabaseConfig(payload);
+            onNotify('Database configuration saved. Restart Figranium to activate it.', 'success');
+        } catch (error: any) {
+            onNotify(error.message || 'Failed to save database configuration.', 'error');
+        } finally {
+            setDatabaseSaving(false);
+        }
+    }, [onNotify]);
 
     const addProxy = async (entry: { server: string; username?: string; password?: string; label?: string; isRotatingPool?: boolean; estimatedPoolSize?: number }) => {
         setProxiesLoading(true);
@@ -798,7 +837,8 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
         }
         if (section === 'user-agent') loadUserAgent();
         if (section === 'proxies') loadProxies();
-    }, [section]);
+        if (section === 'database') loadDatabaseConfig();
+    }, [section, loadDatabaseConfig]);
 
     const availableProviders: ProviderConfig[] = [
         {
@@ -1218,6 +1258,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                         onToggleIncludeDefault={toggleIncludeDefaultInRotation}
                         onRotationModeChange={updateRotationMode}
                     />
+                    )}
+                    {section === 'database' && (
+                        <DatabasePanel
+                            config={databaseConfig}
+                            loading={databaseLoading}
+                            saving={databaseSaving}
+                            onSave={saveDatabaseConfig}
+                        />
                     )}
                 </div>
             </main>

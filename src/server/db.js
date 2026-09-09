@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const { getEnvironmentDatabaseConfig, loadDatabaseConfig } = require('./database-config');
 
 let pool = null;
 let initPromise = null;
@@ -8,42 +9,38 @@ async function initDB() {
     if (initPromise) return initPromise;
 
     initPromise = (async () => {
-        const host = process.env.DB_POSTGRESDB_HOST;
-        const port = process.env.DB_POSTGRESDB_PORT;
-        const user = process.env.DB_POSTGRESDB_USER;
-        const password = process.env.DB_POSTGRESDB_PASSWORD;
-        const database = process.env.DB_POSTGRESDB_DATABASE || 'postgres';
+        const config = getEnvironmentDatabaseConfig() || await loadDatabaseConfig();
 
         // Parse SSL safely as a string, checking for 'true' and '1'
         const sslEnv = String(process.env.DB_POSTGRESDB_SSL || '').toLowerCase();
         const sslEnabled = sslEnv === 'true' || sslEnv === '1';
 
         // Handle database type check
-        const dbType = process.env.DB_TYPE;
+        const dbType = config?.db_protocol;
         if (dbType && !['postgres', 'pg'].includes(dbType.toLowerCase())) {
             initError = new Error('Only postgres is supported as a cloud database.');
             throw initError;
         }
 
-        const hasAnyVar = dbType || host || port || user || password;
-        const hasAllVars = host && port && user && password;
+        const hasAnyVar = Boolean(config);
+        const hasAllVars = config?.db_host && config?.db_port && config?.db_username && config?.db_password;
 
         if (!hasAnyVar) {
             return null;
         }
 
         if (!hasAllVars) {
-            initError = new Error('Missing PostgreSQL environment variables. DB_POSTGRESDB_HOST, DB_POSTGRESDB_PORT, DB_POSTGRESDB_USER, and DB_POSTGRESDB_PASSWORD are all required.');
+            initError = new Error('PostgreSQL configuration requires host, port, username, and password.');
             throw initError;
         }
 
         try {
             pool = new Pool({
-                host,
-                port: parseInt(port, 10),
-                user,
-                password,
-                database,
+                host: config.db_host,
+                port: parseInt(config.db_port, 10),
+                user: config.db_username,
+                password: config.db_password,
+                database: config.db_database || 'postgres',
                 // Set rejectUnauthorized: false if active, otherwise set to false
                 ssl: sslEnabled ? { rejectUnauthorized: false } : false
             });
