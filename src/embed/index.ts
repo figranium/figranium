@@ -4,6 +4,8 @@
 // exports rather than copying editor implementation or styles. That guarantees
 // future Embed releases are built from the same source UI as Figranium itself.
 
+export { default as ReadOnlyCanvas } from './ReadOnlyCanvas';
+export type { ReadOnlyCanvasProps } from './ReadOnlyCanvas';
 export { default as CanvasView } from '../components/editor/CanvasView';
 export { default as ActionItem } from '../components/editor/ActionItem';
 export { default as EditorTopBar } from '../components/editor/EditorTopBar';
