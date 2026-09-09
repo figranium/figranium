@@ -7,7 +7,7 @@
 Figranium is an open-source, self-hosted alternative to Apify and SaaS cloud scrapers, built to turn browser workflows into instant API endpoints for developers, API pipelines, and low-code tools like n8n and Activepieces. Powered by a React/Vite control plane and an Express/Playwright runtime, it lets you visually build stealth browser tasks, pass dynamic variables during runtime, handle automatic proxy rotation, and stream structured results or CSV exports on your own infrastructure—delivering the instant API convenience of cloud actors without usage credits, rate caps, or third-party data hosting.
 
 <div align="center">
-  <img src="verification/maps-lead-scraper-screenshot.png" alt="Figranium Demo" width="100%">
+  <img src="screenshot.png" alt="Figranium Demo" width="100%">
   <p align="center">
     <i>Watch a video walkthrough of Figranium usage: <b><a href="demo.webm">demo.webm</a></b> or <b><a href="demo.mp4">demo.mp4</a></b></i>
   </p>
@@ -248,16 +248,161 @@ Proxies can be defined via the UI or `data/proxies.json`:
 ```json
 [
   "http://user:pass@proxy1.example.com:8000",
-  { "server": "proxy2.example.com:9000", "username": "u", "password": "p" }
+  { "server": "socks5://proxy2.example.com:1080", "label": "data center" }
 ]
 ```
 
-Entries are deduplicated automatically and headful/agent modes pick the default or rotation-enabled proxy (when set). The GUI lets you toggle rotation per task.
+- `host` is always available and represents your machine’s default IP.
+- Rotation settings (`round-robin` or `random`) live in the Settings screen and persist through the backend endpoints.
+- Import/export operations live behind `/api/settings/proxies/import`.
 
-# Documentation
+# API Surface
 
-Detailed documentation is hosted at **[docs.figranium.com](https://docs.figranium.com)**, covering setup, configuration, task building, API usage, scheduling, proxy rotation, and troubleshooting.
+Figranium exposes a comprehensive REST API for integration with agents (like OpenClaw) or custom automation scripts. All endpoints are hosted locally, typically on port `11345`.
 
-# License
+**Authentication:** 
+If enabled, provide the `x-api-key` header or `Authorization: Bearer <key>`. For internal network use, this may be optional depending on your settings.
 
-Figranium is open-source under the [GNU General Public License v3.0](LICENSE).
+
+### Task Management API
+*   **`GET /api/tasks`**: List all saved automation profiles.
+*   **`POST /api/tasks`**: Create a new task profile.
+*   **`PUT /api/tasks/:id`**: Update an existing task profile.
+*   **`POST /api/tasks/:id/api`**: Execute a predefined task. Pass `{"variables": {}}` in the body to override execution variables dynamically.
+
+### Scheduling API
+*   **`GET /api/schedules`**: List all scheduled tasks and their status.
+*   **`POST /api/schedules/:taskId`**: Create or update a schedule (supports visual config or raw cron).
+*   **`DELETE /api/schedules/:taskId`**: Disable/remove a schedule.
+*   **`GET /api/schedules/status/all`**: Get an overview of all active scheduled jobs.
+
+### Execution & Logging API
+*   **`GET /api/executions`**: Retrieve paginated logs of all past runs.
+*   **`GET /api/executions/:id`**: View the exact steps, result JSON, and configuration state of a specific run.
+
+### Data Management API
+*   **`GET /api/data/captures`**: List generated screenshots, videos, and downloads.
+*   **`DELETE /api/data/captures/:name`**: Delete a specific capture.
+*   **`POST /api/clear-screenshots`**: Removes all files in `public/captures` and `data/recordings`.
+*   **`POST /api/clear-cookies`**: Clears stored browser session cookies.
+
+# Task Scripting Tips
+
+- Use JavaScript blocks to scrape structured data:
+  ```js
+  return document.querySelectorAll('article').length;
+  ```
+- Keep CSS selectors narrow; the block-based editor surfaces `#`, `.`, and attribute hints.
+- When running headlessly, toggle `headful.js` or `agent.js` depending on whether you need a visible browser for debugging.
+- Set `task.variables` via the API to re-use generic workflows across multiple domains.
+
+## Workflow Recipe
+
+1. Design a task in the editor starting with a `goto` block and a `wait` block to give pages time to render.
+2. Add conditional `javascript` blocks to test for specific DOM elements; use the retry/timer controls per block.
+3. Attach `extract` (JSON output) or `screenshot` actions before submitting so you can inspect results in the Captures tab.
+4. Toggle “Rotate Proxies” if you need egress diversity and pick a default proxy on Settings → Proxies.
+5. Use the **Schedule** tab to set up automated runs (e.g., every day at 9 AM or every 15 minutes).
+6. Save the task, pin results you care about, and use the `POST /tasks/:id/api` endpoint with variables like `{"variables":{"query":"books"}}` to run it from automation tools.
+
+# Task Scheduling
+
+Figranium includes a built-in scheduler that handles automated task execution without requiring external cron jobs or triggers.
+
+- **Visual Mode**: Easily configure periodic runs (every X minutes), hourly, daily, weekly (select specific days), or monthly runs.
+- **Advanced Mode**: Use standard 5-field cron expressions (`* * * * *`) for complex schedules.
+- **Persistence**: Schedules are stored within the task metadata and persist across server restarts.
+- **Monitoring**: The "Next Run" and "Last Run" status (including duration) are visible directly in the Task Editor's Schedule tab.
+
+# Testing & Validation
+
+- Run `npm run build` before packaging for production; the `dist/` folder contains the compiled assets.
+- Backend logging writes to the console; capture output from `server.js` for debugging proxies, authentication, or Playwright failures.
+- Playwright logs are visible in the running Node process and under `node_modules/.cache` when using the CLI.
+
+# Troubleshooting
+
+- **“Session expired”** in the UI: confirm `SESSION_SECRET` is consistent and cookies aren’t blocked by your browser.
+- **Proxy import fails**: inspect `data/proxies.json` for valid URLs; the backend validates `server` as a string.
+- **API key lost**: copy from Settings → System tab.
+
+# Data Lifecycle
+
+- Captures land in `public/captures`; regular cleanups can be scripted via `POST /api/clear-screenshots`.
+- Cookies are stored internally; clear them via the UI or `/api/clear-cookies`.
+- Proxy lists, user-agent preferences, and settings persist under `data/` (look for `proxies.json`, `allowed_ips.json`, etc.) — treat this directory as your config source control.
+- Use `Storage` controls in Settings to clear data after experimentation cycles, and keep `layouts` or `version` info tracked via `localStorage` as shown in `src/components/SettingsScreen.tsx`.
+
+# Maintenance
+
+- The project is governed by the **[GNU General Public License v3.0](https://github.com/figranium/figranium/blob/main/LICENSE)**, which grants rights for distribution and modification as per the GPLv3 terms.
+- Keep `data/` backed up if you rely on historical proxies and settings.
+- Release updates: Docker installations should run `docker compose pull` followed by `docker compose up -d`; source installations should pull `figranium/figranium` and follow the project setup commands. The Settings view always displays the current package version.
+- Contributions: follow `.github/` templates, respect `CONTRIBUTING.md`, and run available lint/test scripts if you touch critical areas.
+
+# Roadmap
+
+- [x] **Settings shortcuts** — dedicated API Keys, User Agent, Proxies, and Appearance sections let operators tune core settings without leaving the UI.
+- [x] **Storage cleanup** — the standalone Captures page lets you review and clear captured media, while the backend exposes `/api/clear-screenshots` and `/api/clear-cookies` for storage maintenance.
+- [x] **IP rotation tooling** — build a settings workflow for importing proxies and automatically rotating them.
+- [x] **API key workflow** — the API key panel already supports regenerating and copying keys via `/api/settings/api-key`, so secure API access is ready without extra setup.
+- [x] **Task proxy rotation toggle** — the “Rotate Proxies” option in each task ties into the Settings rotation controls, enabling rotation per execution.
+- [x] **Spatial editor transition** — transition to a spatial editor like that of activepieces (top priority).
+- [ ] **[Action key combos](https://github.com/figranium/figranium/issues/366)** — add modifier shortcuts (e.g., Ctrl+Click, Shift+Scroll) so tasks can more closely mirror real user interactions.
+- [ ] **[Click-and-drag block](https://github.com/figranium/figranium/issues/367)** — add an action that does drag gestures (selecting text, moving items) so tasks can simulate click-and-drag flows.
+- [x] **Recording controls** — Task editor now exposes a “Disable automated recording” switch in the general settings panel so workflows can skip video capture on a per-task basis.
+- [x] **File downloads** — add explicit support for agent tasks to download files (PDFs, CSVs, etc.) directly from target pages, then surface those downloads in the UI so users can preview or export them without sifting through captures.
+- [x] **Cabinet-backed file workspace** — tasks now route downloads into shared Cabinets, and Upload blocks consume the latest queued file, ZIP, or compatible folder.
+- [x] **Stateless mode** — Tasks now have a “Stateless execution” toggle alongside the recording controls so each run starts with no cookies or local storage, ensuring nothing persists between executions for that workflow.
+- [ ] **[Adblocking filters](https://github.com/figranium/figranium/issues/368)** — add controls so execution contexts can enable built-in ad/malware filtering (e.g., via hosts file overrides or request blocking) to reduce noise on sensitive sites.
+- [x] **Extraction response mode** — add a Settings switch so users can choose whether the API returns HTML+data (for debugging) or data-only payloads when extraction scripts run.
+- [ ] **[Folder organization](https://github.com/figranium/figranium/issues/369)** — group tasks, assets, and captures into named folders so operators can browse, filter, and download collections per workflow.
+- [ ] **[Stable capture retention](https://github.com/figranium/figranium/issues/370)** — add filtering, pinning, and archiving in captures tab so teams can keep compliance records.
+- [ ] **[Workspace templates](https://github.com/figranium/figranium/issues/371)** — allow saving and sharing workspace presets (layout + default proxies/agents) so new team members can onboard with pre-configured setups.
+- [ ] **[Geo-targeted exits](https://github.com/figranium/figranium/issues/372)** — allow choosing proxy regions for tasks so you can pin the apparent location before running a job.
+- [x] **Complete anti-detection coverage** — follow browserscan.net's anti-detection checklist (fingerprints, headers, fonts, WebRTC, etc.) so automated runs mimic real browsers across task executions.
+- [ ] **[Session recording redaction](https://github.com/figranium/figranium/issues/373)** — add toggles to redact sensitive fields (passwords, credit cards) from recordings/logs before storing them.
+- [ ] **[Two-factor authentication](https://github.com/figranium/figranium/issues/374)** — add optional TOTP/second-factor support to Settings/Auth so operators can lock down the UI with 2FA.
+- [ ] **[Automatic self-healing selectors](https://github.com/figranium/figranium/issues/375)** — add selector fallback and recovery logic so tasks can repair broken locators after layout changes without manual intervention.
+- [x] **[Multilingual task pages with translate.js](https://github.com/figranium/figranium/issues/365)** — tasks can opt in to translating browser-rendered pages to a chosen language before their actions and extraction run.
+- [ ] **[AI-assisted fixing](https://github.com/figranium/figranium/issues/376)** — add an “AI auto-fix” helper that suggests layout, selector, and proxy tweaks after failed runs, letting teams approve or discard the proposed changes without switching contexts.
+- [ ] **[Companion app](https://github.com/figranium/figranium/issues/377)** — build a lightweight companion app that mirrors critical dashboard notifications (failures, capture completions, proxy issues) so operators can stay informed without opening the full UI.
+- [x] **Community presets hub** — build a marketplace where users can publish task/workspace presets, browse and download others’ submissions, and choose to offer each preset either for free or as a paid template so creators can monetize standalone workflows while keeping the free option available.
+- [ ] **[Database Tab / Local CRM](https://github.com/figranium/figranium/issues/378)** — add a built-in spreadsheet-like interface for viewing and managing extracted data (CRM-style) entirely within the app, without requiring external tools.
+- [ ] **[iframe interaction support](https://github.com/figranium/figranium/issues/379)** — add the ability to target and interact with elements inside iframes in the task editor.
+- [x] **Autosave** — automatically persist task changes and editor state at regular intervals so operators don't lose work on long-running or complex workflow designs.
+- [x] **Highlight tool** — add a feature to highlight elements on the page (similar to a browser's inspect tool) to easily pick selectors and build workflows.
+- [x] **Cron triggers** — add support for scheduling tasks with cron expressions so workflows can run automatically on defined intervals.
+- [x] **Canvas notes** — add sticky-note-style annotations to the block canvas so operators can leave freeform comments and context alongside their workflows without affecting execution.
+- [ ] **[Page triggers](https://github.com/figranium/figranium/issues/380)** - trigger a task automatically when a web page changes a certain way.
+- [ ] **[Task-dedicated browser state & cookie buckets](https://github.com/figranium/figranium/issues/382)** — persist isolated browser state per bucket so tasks can retain logins across executions or intentionally share the same browser identity with related tasks.
+
+# Security Considerations
+
+- Never commit your `SESSION_SECRET` or API keys into shared repositories.
+- Use `ALLOWED_IPS`/`data/allowed_ips.json` to gate the UI when deploying to a network-exposed host.
+- Rotate API keys periodically via Settings, and log all automation runs through the Executions tab for audit purposes.
+- Playwright runs inside the same Node process; keep dependencies up to date and rebuild `node_modules` after significant OS patches.
+
+# Community
+
+- Report issues or request features via the GitHub repo issue tracker.
+- Follow the authors on `https://github.com/figranium` for releases.
+- Share automation recipes with other self-hosted users in your org, but respect the license for sharing infrastructure.
+- Join the community on [Discord](https://discord.gg/kPmfbgu9Xn).
+
+# Support the Project
+
+If you find this project helpful, please consider supporting its development. Your contributions help keep the project maintained and the lights on!
+
+<div align="center">
+  <a href="https://ko-fi.com/figranium" target="_blank">
+    <img src="https://img.shields.io/badge/Support%20on-Ko--fi-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Support on Ko-fi" />
+  </a>
+</div>
+
+
+**Other ways to help:**
+*   **Star** the repository to help others find it.
+*   **Share** the project with your network.
+*   **Contribute** to the code or documentation.
