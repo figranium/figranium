@@ -1,0 +1,9 @@
+/*
+ * Canonical Figranium Embed style entrypoint.
+ *
+ * Consumers should import this file (or a built package derived from it)
+ * instead of copying Figranium's CSS. This keeps Embed visually aligned with
+ * the Figranium release it targets.
+ */
+
+@import '../index.css';
