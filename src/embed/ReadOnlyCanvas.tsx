@@ -11,7 +11,7 @@ const noop = () => {};
 
 /** Canonical inert Figranium task canvas for embeds and previews. */
 const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' }) => {
-  const canvasViewportRef = useRef<HTMLDivElement>(null);
+  const canvasViewportRef = useRef<HTMLDivElement>(null!);
 
   return (
     <div className={`relative h-full w-full pointer-events-none select-none ${className}`.trim()} aria-hidden="true">
