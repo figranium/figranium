@@ -10,6 +10,7 @@
 
 /* Presentation-only controls are omitted without hiding task labels/content. */
 .figranium-readonly-canvas button[data-action-drop-scope],
+.figranium-readonly-canvas button[aria-label^="Add action"],
 .figranium-readonly-canvas button[aria-label="Configure block"],
 .figranium-readonly-canvas button[aria-label="Open Task Settings"] {
   display: none !important;
