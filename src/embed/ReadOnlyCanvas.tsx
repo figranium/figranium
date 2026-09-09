@@ -32,6 +32,7 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
     <div
       className={`figranium-readonly-canvas relative flex h-full w-full pointer-events-none select-none ${className}`.trim()}
       aria-hidden="true"
+      style={{ '--app-dot': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
     >
       <CanvasView
         currentTask={task}
