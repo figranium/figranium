@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import CanvasView from '../components/editor/CanvasView';
 import type { Task } from '../types';
 
@@ -12,13 +12,28 @@ const noop = () => {};
 /** Canonical inert Figranium task canvas for embeds and previews. */
 const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' }) => {
   const canvasViewportRef = useRef<HTMLDivElement>(null!);
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 20 });
+
+  useLayoutEffect(() => {
+    const viewport = canvasViewportRef.current;
+    if (!viewport) return;
+
+    const center = () => {
+      setCanvasOffset({ x: Math.max(20, (viewport.clientWidth - 400) / 2), y: 20 });
+    };
+
+    center();
+    const observer = new ResizeObserver(center);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className={`relative h-full w-full pointer-events-none select-none ${className}`.trim()} aria-hidden="true">
+    <div className={`relative flex h-full w-full pointer-events-none select-none ${className}`.trim()} aria-hidden="true">
       <CanvasView
         currentTask={task}
         setCurrentTask={noop as (task: Task) => void}
-        canvasOffset={{ x: 0, y: 0 }}
+        canvasOffset={canvasOffset}
         canvasScale={1}
         canvasViewportRef={canvasViewportRef}
         triggerExpanded={false}
