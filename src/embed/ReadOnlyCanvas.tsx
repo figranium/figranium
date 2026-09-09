@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import CanvasView from '../components/editor/CanvasView';
 import type { Task } from '../types';
 
@@ -9,16 +9,18 @@ export interface ReadOnlyCanvasProps {
 
 const noop = () => {};
 
-/** Canonical inert Figranium task canvas for embeds and previews. */
+/** Canonical immutable Figranium task canvas for embeds and previews. */
 const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' }) => {
   const canvasViewportRef = useRef<HTMLDivElement>(null!);
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 20 });
+  const panRef = useRef<{ pointerId: number; x: number; y: number; offsetX: number; offsetY: number } | null>(null);
 
   useLayoutEffect(() => {
     const viewport = canvasViewportRef.current;
     if (!viewport) return;
 
     const center = () => {
+      if (panRef.current) return;
       setCanvasOffset({ x: Math.max(20, (viewport.clientWidth - 400) / 2), y: 20 });
     };
 
@@ -28,11 +30,59 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const viewport = canvasViewportRef.current;
+    if (!viewport) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) return;
+      event.preventDefault();
+      setCanvasOffset(previous => ({
+        x: previous.x - event.deltaX,
+        y: previous.y - event.deltaY,
+      }));
+    };
+
+    viewport.addEventListener('wheel', handleWheel, { passive: false });
+    return () => viewport.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  const startPanning = (event: React.PointerEvent) => {
+    if (event.button !== 0) return;
+    panRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      offsetX: canvasOffset.x,
+      offsetY: canvasOffset.y,
+    };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const movePanning = (event: React.PointerEvent) => {
+    const pan = panRef.current;
+    if (!pan || pan.pointerId !== event.pointerId) return;
+    setCanvasOffset({
+      x: pan.offsetX + event.clientX - pan.x,
+      y: pan.offsetY + event.clientY - pan.y,
+    });
+  };
+
+  const stopPanning = (event: React.PointerEvent) => {
+    if (panRef.current?.pointerId !== event.pointerId) return;
+    panRef.current = null;
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+  };
+
   return (
     <div
-      className={`figranium-readonly-canvas relative flex h-full w-full pointer-events-none select-none ${className}`.trim()}
-      aria-hidden="true"
-      style={{ '--app-dot': 'rgba(255, 255, 255, 0.12)' } as React.CSSProperties}
+      className={`figranium-readonly-canvas relative flex h-full w-full select-none cursor-grab active:cursor-grabbing ${className}`.trim()}
+      aria-label="Read-only Figranium task canvas. Drag or scroll to pan."
+      style={{ '--app-dot': 'rgba(255, 255, 255, 0.12)', touchAction: 'none' } as React.CSSProperties}
+      onPointerDown={startPanning}
+      onPointerMove={movePanning}
+      onPointerUp={stopPanning}
+      onPointerCancel={stopPanning}
     >
       <CanvasView
         currentTask={task}
