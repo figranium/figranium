@@ -1,0 +1,75 @@
+name: Refresh Maps Screenshot
+
+on:
+  push:
+    branches:
+      - chatgpt/refresh-maps-screenshot
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build Figranium
+        run: npm run build
+
+      - name: Download exact Templates Hub preset
+        run: |
+          curl --fail --silent --show-error \
+            -X POST \
+            'https://templates.figranium.dev/api/presets/41da9f7c-0a49-490f-aca8-f287519cca87/download' \
+            -o /tmp/maps-preset.json
+          node -e "const x=require('/tmp/maps-preset.json'); const c=typeof x.configuration==='string'?JSON.parse(x.configuration):x.configuration; console.log(JSON.stringify({name:c?.name||c?.tasks?.[0]?.name, mode:c?.mode||c?.tasks?.[0]?.mode, actions:(c?.actions||c?.tasks?.[0]?.actions||[]).length},null,2))"
+
+      - name: Start Figranium
+        env:
+          SESSION_SECRET: github-actions-screenshot-session-secret-2026
+          NODE_ENV: production
+          PORT: 11345
+        run: |
+          node server.js > /tmp/figranium-server.log 2>&1 &
+          echo $! > /tmp/figranium.pid
+          for i in {1..30}; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:11345/ || true)
+            if [ "$code" = "200" ] || [ "$code" = "302" ]; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/figranium-server.log
+          exit 1
+
+      - name: Capture real Figranium screenshot
+        env:
+          PRESET_FILE: /tmp/maps-preset.json
+          OUTPUT: verification/maps-lead-scraper-screenshot.png
+        run: node tests/refresh_maps_screenshot.js
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/figranium-server.log || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: figranium-maps-screenshot
+          path: |
+            verification/maps-lead-scraper-screenshot.png
+            /tmp/maps-preset.json
+            /tmp/figranium-server.log
+          if-no-files-found: warn
