@@ -8,6 +8,11 @@
 
 @import '../index.css';
 
+/* Read-only sticky notes should remain visible even when positioned over blocks. */
+.figranium-readonly-canvas [data-sticky-note-id] {
+  z-index: 20 !important;
+}
+
 /* Presentation-only controls are omitted without hiding task labels/content. */
 .figranium-readonly-canvas button[data-action-drop-scope],
 .figranium-readonly-canvas button[aria-label^="Add action"],
