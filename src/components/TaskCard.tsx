@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Task } from '../types';
 import MaterialIcon from './MaterialIcon';
 import { copyToClipboard } from '../utils/clipboard';
+import { formatLabel } from '../utils/taskUtils';
 
 interface TaskCardProps {
     task: Task;
@@ -121,7 +122,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
             </div>
 
             <div className="max-sm:hidden">
-                <span className="app-badge font-mono">{task.mode}</span>
+                <span className="app-badge font-mono">{formatLabel(task.mode)}</span>
             </div>
 
             <div className="text-[11px] theme-text-muted max-lg:hidden">
