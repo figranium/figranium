@@ -48,6 +48,16 @@ async function run() {
         html: '<div class="h-captcha" data-sitekey="key"></div>',
         captchaResolved: true
     }), null);
+    assert.strictEqual(findAntiBotReason({
+        url: 'https://example.com/cdn-cgi/challenge-platform/test',
+        captchaResolved: true
+    }), null);
+    assert.strictEqual(findAntiBotReason({
+        title: 'Just a moment...',
+        html: '<main>Checking your browser before accessing the site</main>',
+        captchaResolved: true
+    }), null);
+    assert.match(findAntiBotReason({ status: 403, captchaResolved: true }), /HTTP 403/);
 
     const unresolvedPage = {
         url: () => 'https://example.com',
@@ -57,6 +67,14 @@ async function run() {
     };
     assert.strictEqual((await inspectPageForAntiBot(unresolvedPage)).detected, true);
     assert.strictEqual((await inspectPageForAntiBot({ ...unresolvedPage, evaluate: async () => true })).detected, false);
+
+    const solvedChallengePage = {
+        url: () => 'https://example.com/cdn-cgi/challenge-platform/test',
+        title: async () => 'Just a moment...',
+        content: async () => '<main>Checking your browser before accessing the site</main><textarea name="g-recaptcha-response">token</textarea>',
+        evaluate: async () => true
+    };
+    assert.strictEqual((await inspectPageForAntiBot(solvedChallengePage)).detected, false);
 
     let stopPending = true;
     let clearedRunId = null;

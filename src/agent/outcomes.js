@@ -25,7 +25,7 @@ const findAntiBotReason = ({ status, url, title, html, captchaResolved = false }
     }
 
     const currentUrl = String(url || '').toLowerCase();
-    if (/\/cdn-cgi\/(challenge|challenge-platform)\b/.test(currentUrl)) {
+    if (!captchaResolved && /\/cdn-cgi\/(challenge|challenge-platform)\b/.test(currentUrl)) {
         return 'Cloudflare challenge URL detected';
     }
 
@@ -36,18 +36,18 @@ const findAntiBotReason = ({ status, url, title, html, captchaResolved = false }
         || /<(?:input|textarea)\b[^>]+name=["'](?:g-recaptcha-response|h-captcha-response|cf-turnstile-response)["']/i.test(activeMarkup);
 
     if (hasChallengeWidget && !captchaResolved) return 'unresolved CAPTCHA challenge detected';
-    if (normalized.includes('just a moment')
+    if (!captchaResolved && normalized.includes('just a moment')
         && /(checking your browser|performing security verification|enable javascript and cookies)/.test(normalized)) {
         return 'browser verification challenge page detected';
     }
-    if (normalized.includes('attention required') && normalized.includes('cloudflare')) {
+    if (!captchaResolved && normalized.includes('attention required') && normalized.includes('cloudflare')) {
         return 'Cloudflare access challenge detected';
     }
     if (normalized.includes('access denied')
         && /(request blocked|security service|incident id|reference #)/.test(normalized)) {
         return 'access-denied block page detected';
     }
-    if (normalized.includes('verify you are human') && /(captcha|security check|robot)/.test(normalized)) {
+    if (!captchaResolved && normalized.includes('verify you are human') && /(captcha|security check|robot)/.test(normalized)) {
         return 'human-verification challenge detected';
     }
 
