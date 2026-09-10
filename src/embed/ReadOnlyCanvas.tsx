@@ -42,6 +42,29 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
     return () => observer.disconnect();
   }, [task]);
 
+  useLayoutEffect(() => {
+    const viewport = canvasViewportRef.current;
+    if (!viewport) return;
+
+    const lockStickyNotes = () => {
+      viewport.querySelectorAll<HTMLElement>('[data-sticky-note-id]').forEach(note => {
+        note.style.pointerEvents = 'none';
+        note.setAttribute('inert', '');
+
+        note.querySelectorAll<HTMLTextAreaElement>('textarea').forEach(textarea => {
+          textarea.readOnly = true;
+          textarea.tabIndex = -1;
+          if (document.activeElement === textarea) textarea.blur();
+        });
+      });
+    };
+
+    lockStickyNotes();
+    const observer = new MutationObserver(lockStickyNotes);
+    observer.observe(viewport, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [task]);
+
   useEffect(() => {
     const viewport = canvasViewportRef.current;
     if (!viewport) return;
