@@ -114,6 +114,10 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
       className={`figranium-readonly-canvas relative flex h-full w-full select-none cursor-grab active:cursor-grabbing ${className}`.trim()}
       aria-label="Read-only Figranium task canvas. Drag or scroll to pan."
       style={{ '--app-dot': 'rgba(255, 255, 255, 0.12)', touchAction: 'none' } as React.CSSProperties}
+      onContextMenuCapture={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
       onPointerDown={startPanning}
       onPointerMove={movePanning}
       onPointerUp={stopPanning}
