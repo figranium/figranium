@@ -117,7 +117,6 @@ Run the following command to start the application in detached mode:
 ```bash
 docker compose up -d
 ```
-
 ## Git Clone (Multi-arch / ARM / Apple Silicon)
 
 The easiest way to run Figranium on any architecture (including M1/M2/M3 Macs) is via Docker Compose.
@@ -344,6 +343,7 @@ Figranium includes a built-in scheduler that handles automated task execution wi
 - [x] **Storage cleanup** — the standalone Captures page lets you review and clear captured media, while the backend exposes `/api/clear-screenshots` and `/api/clear-cookies` for storage maintenance.
 - [x] **IP rotation tooling** — build a settings workflow for importing proxies and automatically rotating them.
 - [x] **API key workflow** — the API key panel already supports regenerating and copying keys via `/api/settings/api-key`, so secure API access is ready without extra setup.
+- [ ] **[Scoped API keys](https://github.com/figranium/figranium/issues/405)** — support multiple individually revocable API keys with explicit permissions so integrations can be limited to only the task, execution, scheduling, data, or administrative capabilities they need.
 - [x] **Task proxy rotation toggle** — the “Rotate Proxies” option in each task ties into the Settings rotation controls, enabling rotation per execution.
 - [x] **Spatial editor transition** — transition to a spatial editor like that of activepieces (top priority).
 - [ ] **[Action key combos](https://github.com/figranium/figranium/issues/366)** — add modifier shortcuts (e.g., Ctrl+Click, Shift+Scroll) so tasks can more closely mirror real user interactions.
