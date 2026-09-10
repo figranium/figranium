@@ -2,8 +2,32 @@
 
 This document is a concise, implementation-focused reference for AI agents that generate tasks for Figranium. It covers the JSON schema, supported actions, variable templating, control flow, JavaScript execution context, and extraction scripts.
 
+## Agent task-building rules
 
+### Task design
+- Prefer the simplest native Figranium workflow that reliably satisfies the request.
+- Do not add actions that duplicate task-level behavior. Never add duplicate `start` / “On Execution” behavior, and do not add redundant `navigate` or wait blocks when task-level behavior already handles them.
+- Do not add variables, waits, navigation, JavaScript, loops, or other blocks unless they serve a concrete purpose.
+- Do not create configuration options the task does not actually use.
+- Prefer native Figranium actions over JavaScript. Use JavaScript only when native actions cannot reliably accomplish the required behavior.
+- Preserve intentional ambiguity when it represents a reasonable implementation choice. Do not invent unnecessary requirements, but make sensible implementation decisions when needed to complete the task.
 
+### Variables and runtime state
+- Task-level `variables` are inputs/configuration that callers may override before execution. Do not use task variables as final output fields.
+- Use `set` for runtime or mid-task state that later blocks need. `set` may create or update a runtime variable.
+- Values that depend on execution time, such as “today”, “last 7 days”, or “past 90 days”, must remain dynamic. Do not hard-code the date observed while creating the task unless the user explicitly requests a fixed date.
+
+### Source and extraction
+- When the user does not specify a source, choose one that directly represents the requested data rather than fetching a broad unrelated dataset and filtering it afterward.
+- Prefer structured first-party/public APIs when they provide the required information reliably.
+- Final structured output, including table parsing/extraction, must be produced through the task-level `extractionScript` field. Do not put final result extraction into task variables or ordinary JavaScript action blocks.
+- When extracting lists, return consistently structured records and remove obvious duplicates when appropriate.
+
+### Testing and verification
+- Unless the user explicitly asks not to test, execute a created or updated task and inspect the actual returned result.
+- Do not consider an execution successful merely because its execution status is `success`.
+- Verify that the returned result meaningfully satisfies the user's request.
+- If the output is empty, malformed, irrelevant, duplicated, unexpectedly null, or otherwise incorrect, fix the task and execute it again.
 
 ## 1) Task JSON schema (minimal)
 ```json
@@ -64,7 +88,7 @@ Common fields:
 - `value` (string): payload for type/wait/scroll/javascript/start.
 - `key` (string): key for `press` (e.g., `Enter`).
 - `disabled` (boolean): skip action.
-- `varName` (string): target variable for `set`, `merge`, `foreach`.
+- `varName` (string): target runtime variable for actions such as `set`, `merge`, `foreach`, `http_request`, `get_content`, and CAPTCHA actions. It is not a final output declaration.
 - `conditionVar`, `conditionVarType`, `conditionOp`, `conditionValue`: structured conditions for `if` and `while`.
 - `cabinetId`: source Cabinet for `upload`; omitted uses the default Cabinet.
 - `markAsUploaded`: when true, an Upload action marks its item uploaded after attaching it.
@@ -91,6 +115,8 @@ Example:
 "value": "Hello {$user.name}"
 ```
 
+Task-level `variables` are user/caller inputs and configuration defaults. Runtime state belongs in action-created variables such as those produced by `set`; final output belongs in `extractionScript`.
+
 Reserved:
 - `{$now}` resolves to ISO timestamp
 - `block.output` contains last block output
@@ -113,10 +139,11 @@ Browser-backed Tasks can translate the rendered target page before their actions
 - Enabling translation loads translate.js and sends rendered page text to its configured external translation service. Only enable it for target pages whose content may be shared with that service.
 
 ## 4) JavaScript action context
-The `javascript` action runs **inside the page** (browser context), not Node.
+The `javascript` action runs **inside the page** (browser context), not Node. Prefer native actions whenever they can reliably perform the same work.
 - `document` and DOM APIs are available.
 - `page` is **not** available.
-- Return a value from the script to set `block.output`.
+- Return a value from the script to set `block.output` for intermediate use.
+- Do not use an ordinary `javascript` action as the task's final structured extraction; use `extractionScript` instead.
 
 Example:
 ```js
@@ -125,7 +152,7 @@ return { title };
 ```
 
 ## 5) Extraction scripts (task-level)
-You can set `extractionScript` and `extractionFormat` at the task level. The extraction script runs **after** the page is processed and uses the same page-context rules as `javascript` actions (no `page` object).
+Use `extractionScript` and `extractionFormat` at the task level for final structured output. Final table parsing/extraction only works as task output when it is implemented in `extractionScript`. The extraction script runs **after** the page is processed and uses the same page-context rules as `javascript` actions (no `page` object).
 
 Minimal example:
 ```json
@@ -292,7 +319,7 @@ exists('.load-more') && text('.count') !== ''
 }
 ```
 
-## 11) Example: JavaScript extraction
+## 11) Example: JavaScript action output (intermediate only)
 ```json
 {
   "id": "act_js",
@@ -300,6 +327,8 @@ exists('.load-more') && text('.count') !== ''
   "value": "return Array.from(document.querySelectorAll('.item')).map(el => el.textContent.trim());"
 }
 ```
+
+Use this only when the value is needed during the action sequence. For the task's final structured result, put the equivalent parsing in `extractionScript`.
 
 ## 12) Stop action
 ```json
@@ -312,6 +341,8 @@ The Stop action accepts only `success` or `error`. The `stopped`, `crashed`, and
 ```json
 { "id": "act_start", "type": "start", "value": "task_id_here" }
 ```
+
+`start` starts another task; it is not a generic “On Execution” marker. Do not add duplicate `start` actions or use them to reproduce task-level startup behavior.
 
 ## 14) HTTP Request
 Make an arbitrary HTTP API call. The response is automatically parsed as JSON (falls back to text). Throws on non-2xx status.
@@ -330,10 +361,10 @@ Make an arbitrary HTTP API call. The response is automatically parsed as JSON (f
 - `value`: The request URL. Supports variable templating. Validated against SSRF rules.
 - `headers`: Optional JSON string of request headers. Supports variable templating.
 - `body`: Optional request body (for POST/PUT/PATCH/DELETE). Supports variable templating.
-- `varName`: Optional variable name to store the parsed response for use in later actions.
+- `varName`: Optional runtime variable name to store the parsed response for use in later actions.
 
 ## 15) Get Content
-Extract the visible text content (`innerText`) of a page or a specific element and optionally store it in a variable.
+Extract the visible text content (`innerText`) of a page or a specific element and optionally store it in a runtime variable.
 ```json
 {
   "id": "act_content",
@@ -343,7 +374,7 @@ Extract the visible text content (`innerText`) of a page or a specific element a
 }
 ```
 - `selector`: Optional CSS selector. If omitted, returns the full page body text.
-- `varName`: Optional variable name to store the result. Also available as `{$block.output}` in the next action.
+- `varName`: Optional runtime variable name to store the result. Also available as `{$block.output}` in the next action.
 
 ## 16) Solve CAPTCHA
 
@@ -360,7 +391,7 @@ Detect and solve a CAPTCHA challenge on the current page. A configured YesCaptch
 ```
 - `captchaType`: Optional — one of `recaptcha_v2`, `recaptcha_v3`, `hcaptcha`, `turnstile`. If omitted, the challenge type is auto-detected from the page.
 - `selector`: Optional CSS selector scoping the search to a specific container (e.g. the widget's iframe wrapper). If omitted, the whole page is scanned.
-- `varName`: Optional variable name to store solve metadata (`{ success, challenge, duration, provider, model?, device?, attempts }`). Existing fields remain stable; `attempts` describes remote/local routing outcomes without credentials or tokens.
+- `varName`: Optional runtime variable name to store solve metadata (`{ success, challenge, duration, provider, model?, device?, attempts }`). Existing fields remain stable; `attempts` describes remote/local routing outcomes without credentials or tokens.
 - `timeout`: Terminal deadline in milliseconds (default: 120000 for the action). Provider errors are returned immediately rather than being reported as timeouts.
 - Local image solving requires at least 2 GiB effective cgroup memory. Lower-memory hosts remain compatible with remote endpoints.
 - `SKIP_LOCAL_CAPTCHA_MODEL=true` disables all local probing and downloads, including on sufficiently provisioned hosts.
@@ -384,7 +415,7 @@ Wait until a CAPTCHA is initialized and ready for interaction without clicking o
 - `captchaType`: Optional provider filter. Uses the same values as `solve_captcha`; omitted means auto-detect.
 - `selector`: Optional CSS selector scoping detection to a widget container.
 - `timeout`: Maximum readiness wait in milliseconds (default `120000`).
-- `varName`: Optional variable receiving `{ ready, challenge, duration, siteKey? }`. The same object is available as `{$block.output}`.
+- `varName`: Optional runtime variable receiving `{ ready, challenge, duration, siteKey? }`. The same object is available as `{$block.output}`.
 - Checkbox challenges become ready only when their control is visible, enabled, pointer-receivable, and positionally stable. Invisible and non-interactive variants use their initialized/executable provider state.
 - The action never clicks or solves the challenge. A timeout marks the block as failed and follows the normal `on_error`/continue behavior.
 
@@ -401,7 +432,9 @@ Upload selects the latest unuploaded file, ZIP, or folder in the Cabinet. It sup
 ```
 
 ## 19) Notes for AI agents
-- `javascript` actions are page-context only (no `page` object).
+- Prefer native Figranium actions and the smallest reliable task; do not add duplicate task-level behavior.
+- Use waits only when a concrete readiness condition requires them. Keep fixed waits short; use 1-2s unless the target site is slow.
+- Task variables are inputs/configuration, not outputs. Use runtime variables for intermediate state and `extractionScript` for final structured output.
+- `javascript` actions are page-context only (no `page` object) and should be used only when native actions are insufficient.
 - Prefer structured conditions for selectors (`exists` with selector).
-- Keep waits short; use 1-2s unless the target site is slow.
 - Always close block structures with `end`.
