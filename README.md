@@ -29,11 +29,11 @@ Figranium is proudly supported by:
 ## Featured Partner
 
 <div align="center">
-  <a href="https://swiftproxy.net/?ref=figranium" target="_blank">
+  <a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="partner-assets/swiftproxy_white.png">
-      <source media="(prefers-color-scheme: light)" srcset="partner-assets/swiftproxy.png">
-      <img src="partner-assets/swiftproxy.png" width="220" alt="Swiftproxy">
+      <source media="(prefers-color-scheme: dark)" srcset="partner-assets/thordata_white.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png">
+      <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="220" alt="Thordata">
     </picture>
   </a>
 </div>
@@ -117,7 +117,6 @@ Run the following command to start the application in detached mode:
 ```bash
 docker compose up -d
 ```
-
 
 ## Git Clone (Multi-arch / ARM / Apple Silicon)
 
@@ -257,7 +256,6 @@ Proxies can be defined via the UI or `data/proxies.json`:
 - Import/export operations live behind `/api/settings/proxies/import`.
 
 # API Surface
-
 Figranium exposes a comprehensive REST API for integration with agents (like OpenClaw) or custom automation scripts. All endpoints are hosted locally, typically on port `11345`.
 
 **Authentication:** 
