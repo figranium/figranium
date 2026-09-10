@@ -673,7 +673,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         onClick={() => setDataView(mode)}
                                         className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${dataView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
-                                        {mode}
+                                        {mode === 'table' ? 'Table' : 'Raw'}
                                     </button>
                                 ))}
                             </div>
