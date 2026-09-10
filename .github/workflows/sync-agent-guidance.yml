@@ -2,8 +2,6 @@ name: Sync task agent guidance
 
 on:
   push:
-    paths:
-      - '.github/workflows/sync-agent-guidance.yml'
 
 permissions:
   contents: write
@@ -57,7 +55,6 @@ jobs:
           old = 'You can set `extractionScript` and `extractionFormat` at the task level. The extraction script runs **after** the page is processed and uses the same page-context rules as `javascript` actions (no `page` object).'
           new = 'Use `extractionScript` and `extractionFormat` at the task level for final structured output. Table parsing and final extraction only count as task output when implemented in `extractionScript`. The extraction script runs **after** the page is processed and uses the same page-context rules as `javascript` actions (no `page` object).'
           text = text.replace(old, new)
-
           path.write_text(text)
       - name: Commit changes and remove one-shot workflow
         run: |
