@@ -8,6 +8,8 @@ export interface ReadOnlyCanvasProps {
 }
 
 const noop = () => {};
+const TASK_WIDTH = 400;
+const VIEWPORT_PADDING = 20;
 
 /** Canonical immutable Figranium task canvas for embeds and previews. */
 const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' }) => {
@@ -21,14 +23,24 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
 
     const center = () => {
       if (panRef.current) return;
-      setCanvasOffset({ x: Math.max(20, (viewport.clientWidth - 400) / 2), y: 20 });
+
+      const notes = task.stickyNotes || [];
+      const minX = Math.min(0, ...notes.map(note => note.x));
+      const maxX = Math.max(TASK_WIDTH, ...notes.map(note => note.x + note.width));
+      const contentWidth = maxX - minX;
+      const availableWidth = Math.max(0, viewport.clientWidth - VIEWPORT_PADDING * 2);
+      const x = contentWidth <= availableWidth
+        ? (viewport.clientWidth - contentWidth) / 2 - minX
+        : VIEWPORT_PADDING - minX;
+
+      setCanvasOffset({ x, y: VIEWPORT_PADDING });
     };
 
     center();
     const observer = new ResizeObserver(center);
     observer.observe(viewport);
     return () => observer.disconnect();
-  }, []);
+  }, [task]);
 
   useEffect(() => {
     const viewport = canvasViewportRef.current;
