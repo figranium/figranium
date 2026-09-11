@@ -158,7 +158,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 | `VITE_BACKEND_PORT` | Backend port for proxying + scripts. | `11345` |
 | `DB_TYPE` | Optional database type overriding disk storage. Set to `postgres` to use PostgreSQL. | — |
 | `DB_POSTGRESDB_HOST` | Hostname for the PostgreSQL database (required if DB_TYPE is postgres). | — |
-| `DB_POSTGRESDB_PORT` | Port for the PostgreSQL database (required if DB_TYPE is postgres). | — |
+| `DB_POSTGRESDB_PORT` | Port number for the PostgreSQL database (required if DB_TYPE is postgres). | — |
 | `DB_POSTGRESDB_USER` | Username for the PostgreSQL database (required if DB_TYPE is postgres). | — |
 | `DB_POSTGRESDB_PASSWORD` | Password for the PostgreSQL database (required if DB_TYPE is postgres). | — |
 | `DB_POSTGRESDB_DATABASE` | Database name for PostgreSQL. | `postgres` |
@@ -345,6 +345,7 @@ Figranium includes a built-in scheduler that handles automated task execution wi
 - [x] **IP rotation tooling** — build a settings workflow for importing proxies and automatically rotating them.
 - [x] **API key workflow** — the API key panel already supports regenerating and copying keys via `/api/settings/api-key`, so secure API access is ready without extra setup.
 - [ ] **[Scoped API keys](https://github.com/figranium/figranium/issues/405)** — support multiple individually revocable API keys with explicit permissions so integrations can be limited to only the task, execution, scheduling, data, or administrative capabilities they need.
+- [ ] **[Password manager & credential injector](https://github.com/figranium/figranium/issues/406)** — securely store credentials and inject them into browser tasks at runtime without exposing plaintext secrets in task definitions, logs, execution history, or API responses.
 - [x] **Task proxy rotation toggle** — the “Rotate Proxies” option in each task ties into the Settings rotation controls, enabling rotation per execution.
 - [x] **Spatial editor transition** — transition to a spatial editor like that of activepieces (top priority).
 - [ ] **[Action key combos](https://github.com/figranium/figranium/issues/366)** — add modifier shortcuts (e.g., Ctrl+Click, Shift+Scroll) so tasks can more closely mirror real user interactions.
