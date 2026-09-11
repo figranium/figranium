@@ -1,32 +1,13 @@
 const { chromium } = require('./stealth-chromium');
-const fs = require('fs');
-const path = require('path');
 const { getProxySelection } = require('./proxy-rotation');
 const { selectUserAgent } = require('./user-agent-settings');
 const { validateUrl, setupNavigationProtection } = require('./url-utils');
 const { parseBooleanFlag } = require('./common-utils');
 const { installPageTranslation } = require('./src/agent/translate');
 const { Mutex } = require('./src/server/utils');
-
-const HEADFUL_PROFILE_DIR = path.join(__dirname, 'data', 'browser-profile-headful');
-const HEADFUL_STATE_PATH = path.join(__dirname, 'data', 'headful-storage-state.json');
+const { loadSharedBrowserState, saveSharedBrowserState } = require('./browser-storage-state');
 
 const headfulMutex = new Mutex();
-
-async function saveHeadfulStorageState(context) {
-    if (!context) return;
-    try {
-        const state = await context.storageState();
-        const now = Date.now() / 1000;
-        const cookies = (state.cookies || []).filter(c => !c.expires || c.expires === -1 || c.expires > now);
-        if (cookies.length === 0) return;
-        await fs.promises.mkdir(path.join(__dirname, 'data'), { recursive: true });
-        await fs.promises.writeFile(HEADFUL_STATE_PATH, JSON.stringify({ cookies }, null, 2));
-        console.log(`[HEADFUL] Saved ${cookies.length} cookies to headful-storage-state.json`);
-    } catch (e) {
-        console.error('[HEADFUL] Failed to save storage state:', e.message);
-    }
-}
 
 const EventEmitter = require('events');
 const headfulEventEmitter = new EventEmitter();
@@ -64,7 +45,7 @@ const teardownActiveSession = async () => {
         if (activeSession.interval) clearInterval(activeSession.interval);
     } catch { }
     if (activeSession.context && !activeSession.statelessExecution) {
-        await saveHeadfulStorageState(activeSession.context);
+        await saveSharedBrowserState(activeSession.context);
     }
     try {
         if (activeSession.browser) {
@@ -166,18 +147,17 @@ async function runHeadful(data, options = {}) {
 
             const isHeadless = parseBooleanFlag(data.headless) || parseBooleanFlag(process.env.HEADLESS);
 
-            if (statelessExecution) {
-                browser = await chromium.launch({ headless: isHeadless, args, ...(cleanProxy ? { proxy: cleanProxy } : {}) });
-                context = await browser.newContext(contextOptions);
-            } else {
-                await fs.promises.mkdir(HEADFUL_PROFILE_DIR, { recursive: true });
-                // Remove stale lock files left by a previous container/process to prevent launch failure
-                for (const lockFile of ['SingletonLock', 'SingletonCookie', 'SingletonSocket']) {
-                    try { await fs.promises.unlink(path.join(HEADFUL_PROFILE_DIR, lockFile)); } catch { }
-                }
-                context = await chromium.launchPersistentContext(HEADFUL_PROFILE_DIR, { headless: isHeadless, args, ...contextOptions });
-                browser = context.browser();
+            if (!statelessExecution) {
+                const storageState = await loadSharedBrowserState();
+                if (storageState) contextOptions.storageState = storageState;
             }
+
+            // A persistent Chromium profile also restores tab/session and service-worker
+            // state. Authenticated sites can consequently reopen background tabs, which
+            // then fight the popup guard and visibly flash open and closed. A fresh
+            // context preserves the explicit web storage above without reviving tabs.
+            browser = await chromium.launch({ headless: isHeadless, args, ...(cleanProxy ? { proxy: cleanProxy } : {}) });
+            context = await browser.newContext(contextOptions);
         }
 
         const inspectInitFn = () => {
@@ -537,7 +517,7 @@ async function runHeadful(data, options = {}) {
 
         const syncInterval = statelessExecution ? null : setInterval(() => {
             if (activeSession && activeSession.context) {
-                saveHeadfulStorageState(activeSession.context).catch(() => {});
+                saveSharedBrowserState(activeSession.context).catch(() => {});
             }
         }, 30000);
         activeSession = { browser, context, page, status: 'running', startedAt: activeSession.startedAt, inspectModeEnabled: activeSession.inspectModeEnabled, statelessExecution, interval: syncInterval };
@@ -559,7 +539,7 @@ async function runHeadful(data, options = {}) {
         }
         if (syncInterval) clearInterval(syncInterval);
         if (!statelessExecution && context) {
-            await saveHeadfulStorageState(context).catch(() => {});
+            await saveSharedBrowserState(context).catch(() => {});
         }
         activeSession = null;
         return responseData;

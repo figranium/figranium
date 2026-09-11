@@ -7,22 +7,20 @@ const { setupNavigationProtection } = require('../../url-utils');
 const { installMouseHelper } = require('./dom-utils');
 const { getInjectableScript } = require('idcac-playwright');
 const { installTurnstileInterceptor } = require('./figranite/captcha-interceptor');
+const { loadSharedBrowserState } = require('../../browser-storage-state');
 
 const PROFILE_DIR = path.join(__dirname, '../../data/browser-profile');
-const HEADFUL_STATE_PATH = path.join(__dirname, '../../data/headful-storage-state.json');
 
 async function injectHeadfulCookies(context) {
     try {
-        const raw = await fs.promises.readFile(HEADFUL_STATE_PATH, 'utf8');
-        const state = JSON.parse(raw);
-        const now = Date.now() / 1000;
-        const cookies = (state.cookies || []).filter(c => !c.expires || c.expires === -1 || c.expires > now);
+        const state = await loadSharedBrowserState();
+        const cookies = state?.cookies || [];
         if (cookies.length > 0) {
             await context.addCookies(cookies);
-            console.log(`Injected ${cookies.length} cookies from headful session`);
+            console.log(`Injected ${cookies.length} cookies from shared browser state`);
         }
     } catch (e) {
-        if (e.code !== 'ENOENT') console.error('Failed to inject headful cookies:', e.message);
+        console.error('Failed to inject shared browser cookies:', e.message);
     }
 }
 
