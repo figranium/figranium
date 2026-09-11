@@ -8,6 +8,7 @@ const { runExtractionScript } = require('../sandbox');
 const { cleanHtml } = require('../dom-utils');
 const { launchBrowser, createBrowserContext } = require('../browser');
 const cabinets = require('../../server/cabinets');
+const { saveSharedBrowserState } = require('../../../browser-storage-state');
 
 // New Modules
 const { buildBlockMap, randomBetween, getForeachItems } = require('./helpers');
@@ -207,12 +208,21 @@ async function runFigranite(data, options = {}) {
     let userStopped = false;
     let stopPageTranslation = () => {};
 
+    const syncBrowserState = async () => {
+        if (statelessExecution || isTestMode || !context) return;
+        // Agent contexts import the shared cookies after launch, but their persistent
+        // profile does not contain headful-only local storage for unrelated origins.
+        // Keep those origins intact while publishing the agent's updated cookies.
+        await saveSharedBrowserState(context, { preserveOrigins: true });
+    };
+
     const forceStop = async () => {
         isForceStopped = true;
         userStopped = true;
         stopRequested = true;
         logs.push('Execution force-stopped by user after 3s timeout.');
         try {
+            await syncBrowserState();
             if (page) await page.close().catch(() => {});
             if (context) await context.close().catch(() => {});
             if (browser) await browser.close().catch(() => {});
@@ -809,6 +819,7 @@ async function runFigranite(data, options = {}) {
 
         const video = page.video();
         if (!options.handoffContext) {
+            await syncBrowserState();
             try { await context.close(); } catch { }
         }
 
@@ -867,6 +878,7 @@ async function runFigranite(data, options = {}) {
         }
         error.executionLogs = logs;
         try {
+            await syncBrowserState();
             if (context) await context.close();
         } catch { }
         if (browser) await browser.close();

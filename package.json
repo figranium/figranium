@@ -30,6 +30,7 @@
     "agent.js",
     "headful.js",
     "scrape.js",
+    "browser-storage-state.js",
     "common-utils.js",
     "html-utils.js",
     "url-utils.js",

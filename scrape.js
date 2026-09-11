@@ -10,8 +10,8 @@ const { toCsvString } = require('./common-utils');
 const { resolveTaskOutcome, findAntiBotReason } = require('./src/agent/outcomes');
 const { consumeStopRequest, clearStopRequest, registerActiveRun, unregisterActiveRun } = require('./src/agent/execution-control');
 const { sendExecutionUpdate } = require('./src/server/state');
+const { loadSharedBrowserState } = require('./browser-storage-state');
 
-const HEADFUL_STATE_PATH = path.join(__dirname, 'data', 'headful-storage-state.json');
 const USELESS_SELECTOR = 'script, style, svg, link, noscript';
 
 class ScrapeInputError extends Error {
@@ -33,20 +33,19 @@ function buildProxyUrl(proxy) {
 
 async function buildCookieHeader(targetUrl) {
     try {
-        const raw = await fs.promises.readFile(HEADFUL_STATE_PATH, 'utf8');
-        const state = JSON.parse(raw);
+        const state = await loadSharedBrowserState();
         const now = Date.now() / 1000;
         const hostname = new URL(targetUrl).hostname;
-        const cookies = (state.cookies || []).filter(c => {
+        const cookies = (state?.cookies || []).filter(c => {
             if (c.expires && c.expires !== -1 && c.expires <= now) return false;
             const domain = (c.domain || '').replace(/^\./, '');
             return hostname === domain || hostname.endsWith(`.${domain}`);
         });
         if (cookies.length === 0) return undefined;
-        console.log(`[SCRAPE] Injected ${cookies.length} cookies from headful session`);
+        console.log(`[SCRAPE] Injected ${cookies.length} cookies from shared browser state`);
         return cookies.map(c => `${c.name}=${c.value}`).join('; ');
     } catch (e) {
-        if (e.code !== 'ENOENT') console.error('[SCRAPE] Failed to inject headful cookies:', e.message);
+        console.error('[SCRAPE] Failed to inject shared browser cookies:', e.message);
         return undefined;
     }
 }
