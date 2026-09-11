@@ -326,7 +326,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
         setContextMenu({ id, x, y });
     }, []);
 
-    const NO_CONFIG_TYPES: Action['type'][] = ['else', 'end', 'on_error', 'do_nothing', 'finalize_uploads'];
+    const NO_CONFIG_TYPES: Action['type'][] = ['else', 'end', 'on_error', 'do_nothing', 'reload', 'finalize_uploads'];
 
     const addActionByType = (type: Action['type']) => {
         const base: Action = { id: "act_" + Date.now() + "_" + Math.floor(Math.random() * 1000), type, selector: '', value: '' };
@@ -399,8 +399,8 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 handleActionPointerDown={actions.handleActionPointerDown}
                 onOpenHeadful={useCallback((url: string, id?: string) => {
                     headful.setActiveInspectActionId(id || null);
-                    onOpenHeadful?.(url, id, currentTaskRef.current, currentTaskRef.current.variables);
-                }, [onOpenHeadful, headful.setActiveInspectActionId])}
+                    if (!isHeadfulOpen) onOpenHeadful?.(url, id, currentTaskRef.current, currentTaskRef.current.variables);
+                }, [isHeadfulOpen, onOpenHeadful, headful.setActiveInspectActionId])}
                 isHeadfulOpen={isHeadfulOpen}
                 onPointerDown={(e) => {
                     if (e.button === 1 || (e.button === 0 && canvas.spaceHeldRef.current)) {

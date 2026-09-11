@@ -9,6 +9,12 @@ const stripUnsupportedForExtraction = (selectors: string[]) => {
     return filtered.length > 0 ? filtered : selectors;
 };
 
+const ACTION_TARGET_INSPECT_SUFFIX = '::targetSelector';
+
+const parseActionInspectTarget = (inspectId: string) => inspectId.endsWith(ACTION_TARGET_INSPECT_SUFFIX)
+    ? { actionId: inspectId.slice(0, -ACTION_TARGET_INSPECT_SUFFIX.length), field: 'targetSelector' }
+    : { actionId: inspectId, field: 'selector' };
+
 export const useEditorHeadful = (
     _currentTask: Task,
     isHeadfulOpen: boolean | undefined,
@@ -49,6 +55,7 @@ export const useEditorHeadful = (
                     const data = JSON.parse(e.data);
                     const inspectId = activeInspectActionIdRef.current;
                     if (data.selector && inspectId) {
+                        const { actionId, field } = parseActionInspectTarget(inspectId);
                         try {
                             let payload = JSON.parse(data.selector);
                             let parsed: string[] = Array.isArray(payload) ? payload : payload.selectors;
@@ -57,12 +64,12 @@ export const useEditorHeadful = (
                                     parsed = stripUnsupportedForExtraction(parsed);
                                 }
                                 setSelectorOptionsById(prev => ({ ...prev, [inspectId]: parsed }));
-                                updateAction(inspectId, { selector: parsed[0] }, true);
+                                updateAction(actionId, { [field]: parsed[0] }, true);
                             } else {
-                                updateAction(inspectId, { selector: data.selector }, true);
+                                updateAction(actionId, { [field]: data.selector }, true);
                             }
                         } catch {
-                            updateAction(inspectId, { selector: data.selector }, true);
+                            updateAction(actionId, { [field]: data.selector }, true);
                         }
                         setActiveInspectActionId(null);
                         setActiveInspectScopeSelector(null);

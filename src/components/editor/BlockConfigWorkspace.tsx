@@ -20,9 +20,9 @@ interface BlockConfigWorkspaceProps {
 }
 
 const inputLabels: Partial<Record<keyof Action, string>> = {
-    selector: 'Selector', value: 'Value', key: 'Key', conditionVar: 'Variable',
+    selector: 'Selector', targetSelector: 'Target selector', value: 'Value', key: 'Key', conditionVar: 'Variable',
     conditionVarType: 'Variable type', conditionOp: 'Relation', conditionValue: 'Comparison value',
-    typeMode: 'Typing mode', method: 'Method', headers: 'Headers', body: 'Body',
+    typeMode: 'Typing mode', clickType: 'Click type', method: 'Method', headers: 'Headers', body: 'Body',
     timeout: 'Timeout', captchaType: 'Captcha type',
 };
 const inputKeys = Object.keys(inputLabels) as (keyof Action)[];

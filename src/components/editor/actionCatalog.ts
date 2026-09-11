@@ -2,6 +2,11 @@ import { Action } from '../../types';
 
 export const ACTION_CATALOG: { type: Action['type']; label: string; description: string; icon?: string }[] = [
     { type: 'click', label: 'Click', description: 'Click an element', icon: 'ads_click' },
+    { type: 'check', label: 'Check', description: 'Ensure a checkbox is checked', icon: 'check_box' },
+    { type: 'uncheck', label: 'Uncheck', description: 'Ensure a checkbox is unchecked', icon: 'check_box_outline_blank' },
+    { type: 'drag_and_drop', label: 'Drag and Drop', description: 'Drag an element to a target', icon: 'drag_indicator' },
+    { type: 'reload', label: 'Reload', description: 'Reload the current page', icon: 'refresh' },
+    { type: 'select', label: 'Select', description: 'Select an option from a menu', icon: 'arrow_drop_down_circle' },
     { type: 'type', label: 'Type', description: 'Type text into a field', icon: 'text_format' },
     { type: 'hover', label: 'Hover', description: 'Hover an element', icon: 'my_location' },
     { type: 'press', label: 'Press', description: 'Press a key', icon: 'keyboard' },

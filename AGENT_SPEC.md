@@ -76,7 +76,7 @@ This document is a concise, implementation-focused reference for AI agents that 
 ## 2) Action types
 Supported action `type` values:
 ```
-navigate, click, type, wait, wait_selector, wait_downloads, press, scroll, javascript, csv, hover, merge,
+navigate, click, check, uncheck, drag_and_drop, reload, type, wait, wait_selector, wait_downloads, press, scroll, select, javascript, csv, hover, merge,
 screenshot, if, else, end, while, repeat, foreach, stop, set, on_error, start, http_request, get_content,
 solve_captcha
 wait_captcha
@@ -85,6 +85,8 @@ upload, finalize_uploads
 
 Common fields:
 - `selector` (string): CSS selector used by click/hover/scroll/foreach.
+- `clickType` (`single` | `double` | `right`): optional Click interaction mode; omitted defaults to `single`.
+- `targetSelector` (string): destination CSS selector required by `drag_and_drop`.
 - `value` (string): payload for type/wait/scroll/javascript/start.
 - `key` (string): key for `press` (e.g., `Enter`).
 - `disabled` (boolean): skip action.
@@ -92,6 +94,30 @@ Common fields:
 - `conditionVar`, `conditionVarType`, `conditionOp`, `conditionValue`: structured conditions for `if` and `while`.
 - `cabinetId`: source Cabinet for `upload`; omitted uses the default Cabinet.
 - `markAsUploaded`: when true, an Upload action marks its item uploaded after attaching it.
+
+### Element interaction
+
+`click` supports normal, double, and right clicks:
+
+```json
+{ "id": "act_open", "type": "click", "selector": ".file", "clickType": "double" }
+{ "id": "act_menu", "type": "click", "selector": ".row", "clickType": "right" }
+```
+
+`check` ensures a checkbox or radio input is selected; `uncheck` clears a checkbox. Both are idempotent and fail when the selector does not identify a compatible control:
+
+```json
+{ "id": "act_optin", "type": "check", "selector": "#newsletter" }
+{ "id": "act_optout", "type": "uncheck", "selector": "#newsletter" }
+```
+
+`drag_and_drop` moves an element from `selector` to `targetSelector`:
+
+```json
+{ "id": "act_move", "type": "drag_and_drop", "selector": ".card", "targetSelector": ".done-column" }
+```
+
+`reload` reloads the current page and waits for DOM content to load. `select` chooses an option from a native `<select>` using `selector` and `value`.
 
 ### Execution outcomes
 Completed `agent` and `scrape` executions return an `outcome` field with one of:

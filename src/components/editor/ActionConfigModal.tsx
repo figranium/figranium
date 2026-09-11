@@ -30,6 +30,12 @@ const TYPE_MODE_OPTIONS = [
     { value: 'append', label: 'Append Text' }
 ] as const;
 
+const CLICK_TYPE_OPTIONS = [
+    { value: 'single', label: 'Single Click' },
+    { value: 'double', label: 'Double Click' },
+    { value: 'right', label: 'Right Click' }
+] as const;
+
 const parsePressKey = (key?: string) => {
     if (!key) return { modifiers: [] as string[], baseKey: '' };
     const parts = key.split('+');
@@ -75,7 +81,7 @@ const conditionOps: Record<VarType, { value: string; label: string }[]> = {
     ]
 };
 
-const NO_CONFIG_TYPES: Action['type'][] = ['else', 'end', 'on_error', 'do_nothing'];
+const NO_CONFIG_TYPES: Action['type'][] = ['else', 'end', 'on_error', 'do_nothing', 'reload', 'finalize_uploads'];
 
 interface ActionConfigModalProps {
     action: Action;
@@ -86,7 +92,7 @@ interface ActionConfigModalProps {
     onUpdate: (id: string, updates: Partial<Action>, saveImmediately?: boolean) => void;
     onAutoSave: () => void;
     onClose: () => void;
-    onStartInspect?: (id: string) => void;
+    onStartInspect?: (id: string, field?: 'selector' | 'targetSelector') => void;
     onCreateVariable?: (name: string) => void;
     onDeleteVariable?: (name: string) => void;
     testResult?: BlockTestResult;
@@ -249,7 +255,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
 
     useEffect(() => {
         const fieldsToScan = [
-            action.selector, action.value, action.key, action.varName,
+            action.selector, action.targetSelector, action.value, action.key, action.varName,
             action.conditionValue, action.headers, action.body
         ];
         const regex = /\{\$([\w.]+)\}/g;
@@ -319,7 +325,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 ? 'grid grid-cols-1 content-start items-start gap-x-8 gap-y-10 md:grid-cols-2'
                 : 'space-y-10'}>
                 {/* Selector field */}
-                {(action.type === 'click' || action.type === 'type' || action.type === 'hover' || action.type === 'wait_selector' || action.type === 'scroll' || action.type === 'upload') && (
+                {(action.type === 'click' || action.type === 'check' || action.type === 'uncheck' || action.type === 'drag_and_drop' || action.type === 'select' || action.type === 'type' || action.type === 'hover' || action.type === 'wait_selector' || action.type === 'scroll' || action.type === 'upload') && (
                     field(action.type === 'scroll' ? 'Selector (Optional)' : 'Selector',
                         <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-xs focus-within:border-white/20 transition-all flex items-center gap-2">
                             <div className="flex-1 min-w-0 flex flex-col gap-1">
@@ -328,7 +334,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     onChange={(v) => onUpdate(action.id, { selector: v })}
                                     onBlur={() => onAutoSave()}
                                     variables={variables}
-                                    placeholder={action.type === 'scroll' ? '.scroll-container or leave empty' : action.type === 'upload' ? 'input[type=file] or .drop-zone' : '.btn-primary'}
+                                    placeholder={action.type === 'scroll' ? '.scroll-container or leave empty' : action.type === 'upload' ? 'input[type=file] or .drop-zone' : action.type === 'drag_and_drop' ? '.draggable-item' : '.btn-primary'}
                                 />
                                 {selectorOptions && selectorOptions.length > 1 && (
                                     <div className="flex flex-wrap gap-1 mt-1">
@@ -359,6 +365,41 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                     )
                 )}
 
+                {action.type === 'drag_and_drop' && field('Target Selector',
+                    <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-xs focus-within:border-white/20 transition-all flex items-center gap-2">
+                        <RichInput
+                            value={action.targetSelector || ''}
+                            onChange={(v) => onUpdate(action.id, { targetSelector: v })}
+                            onBlur={() => onAutoSave()}
+                            variables={variables}
+                            placeholder=".drop-target"
+                        />
+                        {onStartInspect && (
+                            <button
+                                onClick={() => { handleClose(); onStartInspect(action.id, 'targetSelector'); }}
+                                disabled={action.disabled}
+                                className="text-white opacity-50 hover:opacity-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 shrink-0 disabled:opacity-20 disabled:cursor-not-allowed rounded"
+                                title="Pick Target Selector in Browser"
+                                aria-label="Pick Target Selector in Browser"
+                            >
+                                <MaterialIcon name="my_location" className="text-lg" />
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                {action.type === 'click' && field('Click Type',
+                    inputWrap(
+                        <CustomSelect
+                            value={action.clickType || 'single'}
+                            onChange={(clickType) => onUpdate(action.id, { clickType }, true)}
+                            options={CLICK_TYPE_OPTIONS}
+                            className="!min-h-0 !border-0 !bg-transparent !p-0"
+                            ariaLabel="Click type"
+                        />
+                    )
+                )}
+
                 {action.type === 'upload' && <>
                     {field('Cabinet', <CustomSelect
                         value={action.cabinetId || ''}
@@ -383,7 +424,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 )}
 
                 {/* Value field for navigate / type / wait / wait_selector / javascript / csv */}
-                {(action.type === 'navigate' || action.type === 'type' || action.type === 'wait' || action.type === 'wait_selector' || action.type === 'javascript' || action.type === 'csv') && (
+                {(action.type === 'navigate' || action.type === 'type' || action.type === 'select' || action.type === 'wait' || action.type === 'wait_selector' || action.type === 'javascript' || action.type === 'csv') && (
                     action.type === 'javascript' ? (
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
@@ -437,6 +478,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                     ) : field(
                         action.type === 'navigate' ? 'URL'
                             : action.type === 'type' ? 'Content'
+                                : action.type === 'select' ? 'Option Value'
                                 : action.type === 'wait' ? 'Seconds'
                                     : action.type === 'wait_selector' ? 'Timeout (Sec)'
                                         : 'CSV Input',
@@ -460,6 +502,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     placeholder={
                                         action.type === 'navigate' ? 'https://example.com'
                                             : action.type === 'type' ? 'Search keywords'
+                                                : action.type === 'select' ? 'option-value'
                                                 : action.type === 'wait' ? '3'
                                                     : action.type === 'wait_selector' ? '10'
                                                         : '400'

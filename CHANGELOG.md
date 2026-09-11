@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.18.0] - 2026-09-11
+
+### Browser interactions and task building
+- Added `check`, `uncheck`, `drag_and_drop`, and `reload` Agent actions, and added single, double, and right-click modes to Click blocks. Drag and drop uses independently selectable source and target selectors, including headful selector picking.
+- Documented the expanded action contract in `AGENT_SPEC.md`, including the existing native `select` action, and added focused browser and editor regression coverage.
+- Added opt-in Task page translation, including target-language configuration and automatic reapplication after browser navigation.
+
+### Editor, embed, and interface
+- Introduced the canonical read-only Embed canvas and aligned its layout, block rendering, panning, sticky notes, and context controls with the editor.
+- Refined the editor with centered Task titles, direct API and Schedule shortcuts, clearer action/UI icons, normal-case execution terminology, and improved read-only interaction controls.
+
+### Reliability and maintenance
+- Fixed false anti-bot outcomes after a CAPTCHA is solved and added regression coverage.
+- Updated proxy-provider branding from Swiftproxy to Thordata, refreshed the README’s Google Maps Lead Scraper screenshot, and documented scoped API-key work on the roadmap.
+
 ## [0.17.1] - 2026-09-09
 
 ### Page translation

@@ -57,6 +57,11 @@ export interface Action {
     id: string;
     type:
     | 'click'
+    | 'check'
+    | 'uncheck'
+    | 'drag_and_drop'
+    | 'reload'
+    | 'select'
     | 'type'
     | 'wait'
     | 'wait_selector'
@@ -96,6 +101,8 @@ export interface Action {
     conditionOp?: string;
     conditionValue?: string;
     typeMode?: 'append' | 'replace';
+    clickType?: 'single' | 'double' | 'right';
+    targetSelector?: string;
     method?: string;
     headers?: string;
     body?: string;

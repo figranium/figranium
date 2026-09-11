@@ -51,7 +51,7 @@ const reportProgress = (runId, payload) => {
 const TEST_INPUT_FIELDS = [
     'selector', 'value', 'key', 'conditionVar', 'conditionVarType', 'conditionOp',
     'conditionValue', 'typeMode', 'method', 'headers', 'body', 'timeout', 'captchaType',
-    'cabinetId', 'markAsUploaded',
+    'cabinetId', 'markAsUploaded', 'clickType', 'targetSelector',
 ];
 
 const buildResolvedActionInputs = (action, resolveTemplate) => {

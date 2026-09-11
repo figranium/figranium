@@ -646,7 +646,6 @@ const CanvasView: React.FC<CanvasViewProps> = ({
     openContextMenu,
     handleActionPointerDown,
     onOpenHeadful,
-    isHeadfulOpen,
     onPointerDown,
     onPointerMove,
     onPointerUp,
@@ -660,11 +659,10 @@ const CanvasView: React.FC<CanvasViewProps> = ({
     autoOpenActionId,
     onClearAutoOpenActionId,
 }) => {
-    const onStartInspect = useCallback((id: string) => {
-        if (!isHeadfulOpen) {
-            onOpenHeadful?.(currentTask.url || 'https://www.google.com', id, currentTask, currentTask.variables);
-        }
-    }, [isHeadfulOpen, onOpenHeadful, currentTask.url, currentTask.variables]);
+    const onStartInspect = useCallback((id: string, field: 'selector' | 'targetSelector' = 'selector') => {
+        const inspectId = field === 'targetSelector' ? `${id}::targetSelector` : id;
+        onOpenHeadful?.(currentTask.url || 'https://www.google.com', inspectId, currentTask, currentTask.variables);
+    }, [onOpenHeadful, currentTask.url, currentTask.variables]);
 
     const handleCreateVariable = useCallback((name: string) => {
         const nextVars = { ...currentTask.variables };

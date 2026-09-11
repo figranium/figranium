@@ -220,10 +220,16 @@ const executeAction = async (act, context) => {
         case 'click': {
             const selectorValue = resolveMaybe(act.selector);
             const coords = parseCoords(String(selectorValue || ''));
+            const clickType = act.clickType || 'single';
+            const clickOptions = {
+                delay: baseDelay(50),
+                ...(clickType === 'double' ? { clickCount: 2 } : {}),
+                ...(clickType === 'right' ? { button: 'right' } : {})
+            };
             logs.push(`Clicking: ${selectorValue}`);
             if (coords) {
                 await moveMouseHumanlike(page, coords.x, coords.y, { cursorGlide, startX: context.lastMouse?.x, startY: context.lastMouse?.y });
-                await page.mouse.click(coords.x, coords.y, { delay: baseDelay(50) });
+                await page.mouse.click(coords.x, coords.y, clickOptions);
                 context.lastMouse = { x: coords.x, y: coords.y };
                 result = true;
                 break;
@@ -265,7 +271,7 @@ const executeAction = async (act, context) => {
                     }
 
                     await page.waitForTimeout(baseDelay(50));
-                    await page.mouse.click(clickX, clickY, { delay: baseDelay(50) });
+                    await page.mouse.click(clickX, clickY, clickOptions);
 
                     // Verify the click landed on the target element
                     await page.waitForTimeout(80);
@@ -291,7 +297,7 @@ const executeAction = async (act, context) => {
 
                     if (clickMissed) {
                         logs.push('Click may have missed, falling back to Playwright click.');
-                        await page.click(selectorValue, { delay: baseDelay(50) });
+                        await page.click(selectorValue, clickOptions);
                     }
                     // Update lastMouse after center click
                     const clickBox = await (await page.$(selectorValue))?.boundingBox();
@@ -300,11 +306,11 @@ const executeAction = async (act, context) => {
                     }
                 } else {
                     // getLocationalCoords failed, fall back to standard click
-                    await page.click(selectorValue, { delay: baseDelay(50) });
+                    await page.click(selectorValue, clickOptions);
                 }
             } else {
                 // No randomization — use standard Playwright click
-                await page.click(selectorValue, { delay: baseDelay(50) });
+                await page.click(selectorValue, clickOptions);
                 const clickBox = await (await page.$(selectorValue))?.boundingBox();
                 if (clickBox) {
                     context.lastMouse = { x: clickBox.x + clickBox.width / 2, y: clickBox.y + clickBox.height / 2 };
@@ -313,6 +319,32 @@ const executeAction = async (act, context) => {
             result = true;
             break;
         }
+        case 'check':
+        case 'uncheck': {
+            const selectorValue = resolveMaybe(act.selector);
+            if (!selectorValue) throw new Error(`${type === 'check' ? 'Check' : 'Uncheck'} selector is required.`);
+            logs.push(`${type === 'check' ? 'Checking' : 'Unchecking'}: ${selectorValue}`);
+            await page.waitForSelector(selectorValue, { timeout: actionTimeout });
+            if (type === 'check') await page.check(selectorValue, { timeout: actionTimeout });
+            else await page.uncheck(selectorValue, { timeout: actionTimeout });
+            result = true;
+            break;
+        }
+        case 'drag_and_drop': {
+            const sourceSelector = resolveMaybe(act.selector);
+            const targetSelector = resolveMaybe(act.targetSelector);
+            if (!sourceSelector) throw new Error('Drag source selector is required.');
+            if (!targetSelector) throw new Error('Drag target selector is required.');
+            logs.push(`Dragging ${sourceSelector} to ${targetSelector}`);
+            await page.dragAndDrop(sourceSelector, targetSelector, { timeout: actionTimeout });
+            result = true;
+            break;
+        }
+        case 'reload':
+            logs.push('Reloading page...');
+            await page.reload({ waitUntil: 'domcontentloaded', timeout: actionTimeout });
+            result = page.url();
+            break;
         case 'type':
         case 'fill': {
             const selectorValue = act.selector ? resolveMaybe(act.selector) : null;

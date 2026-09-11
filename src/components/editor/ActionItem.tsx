@@ -6,8 +6,14 @@ import ActionConfigModal from './ActionConfigModal';
 
 const getActionSummary = (action: Action) => {
     let summary = '';
-    if (action.type === 'click' || action.type === 'hover' || action.type === 'scroll' || action.type === 'wait_selector') {
-        summary = action.selector || '';
+    if (action.type === 'click' || action.type === 'hover' || action.type === 'scroll' || action.type === 'wait_selector' || action.type === 'check' || action.type === 'uncheck') {
+        summary = action.type === 'click' && action.clickType && action.clickType !== 'single'
+            ? `${action.clickType} · ${action.selector || ''}`
+            : action.selector || '';
+    } else if (action.type === 'drag_and_drop') {
+        summary = `${action.selector || ''} → ${action.targetSelector || ''}`;
+    } else if (action.type === 'select') {
+        summary = `${action.selector || ''} → ${action.value || ''}`;
     } else if (action.type === 'type' || action.type === 'navigate' || action.type === 'wait' || action.type === 'javascript' || action.type === 'repeat' || action.type === 'start' || action.type === 'screenshot' || action.type === 'wait_downloads' || action.type === 'stop' || action.type === 'upload') {
         summary = action.value || '';
     } else if (action.type === 'set' || action.type === 'foreach' || action.type === 'merge') {
@@ -37,6 +43,11 @@ const renderBlockMarker = (type: Action['type']) => {
     if (type === 'set') return <MaterialIcon name="variable_insert" className={`${iconClass} text-white`} />;
     if (type === 'stop') return <MaterialIcon name="stop" className={`${iconClass} text-white`} />;
     if (type === 'click') return <MaterialIcon name="ads_click" className={`${iconClass} text-white`} />;
+    if (type === 'check') return <MaterialIcon name="check_box" className={`${iconClass} text-white`} />;
+    if (type === 'uncheck') return <MaterialIcon name="check_box_outline_blank" className={`${iconClass} text-white`} />;
+    if (type === 'drag_and_drop') return <MaterialIcon name="drag_indicator" className={`${iconClass} text-white`} />;
+    if (type === 'reload') return <MaterialIcon name="refresh" className={`${iconClass} text-white`} />;
+    if (type === 'select') return <MaterialIcon name="arrow_drop_down_circle" className={`${iconClass} text-white`} />;
     if (type === 'type') return <MaterialIcon name="text_format" className={`${iconClass} text-white`} />;
     if (type === 'hover') return <MaterialIcon name="my_location" className={`${iconClass} text-white`} />;
     if (type === 'press') return <MaterialIcon name="keyboard" className={`${iconClass} text-white`} />;
@@ -61,7 +72,7 @@ const renderBlockMarker = (type: Action['type']) => {
 };
 
 // Block types that have no config and shouldn't open a modal
-const NO_CONFIG_TYPES: Action['type'][] = ['else', 'end', 'on_error', 'do_nothing', 'finalize_uploads'];
+const NO_CONFIG_TYPES: Action['type'][] = ['else', 'end', 'on_error', 'do_nothing', 'reload', 'finalize_uploads'];
 
 interface ActionItemProps {
     action: Action;
@@ -79,7 +90,7 @@ interface ActionItemProps {
     onOpenContextMenu: (e: React.MouseEvent, id: string) => void;
     onPointerDown: (e: React.PointerEvent, id: string, index: number) => void;
     dragTransformY?: number;
-    onStartInspect?: (id: string) => void;
+    onStartInspect?: (id: string, field?: 'selector' | 'targetSelector') => void;
     onCreateVariable?: (name: string) => void;
     onDeleteVariable?: (name: string) => void;
     isSelected?: boolean;

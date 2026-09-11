@@ -23,5 +23,14 @@ assert.deepEqual(getActionInputEntries(action, variables), [
 ]);
 assert.equal(getExpectedOutput(action), 'This block has no direct output value.');
 assert.equal(getExpectedOutput({ id: 'script', type: 'javascript' }), 'The value returned by the script.');
+assert.deepEqual(getActionInputEntries({
+    id: 'drag-card',
+    type: 'drag_and_drop',
+    selector: '{$query}',
+    targetSelector: '.done-column',
+}, variables), [
+    { key: 'selector', label: 'Selector', raw: '{$query}', resolved: 'Figranium' },
+    { key: 'targetSelector', label: 'Target selector', raw: '.done-column', resolved: '.done-column' },
+]);
 
 console.log('Block config workspace helpers passed');
