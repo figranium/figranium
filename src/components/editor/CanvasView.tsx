@@ -462,8 +462,8 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                 value={task.extractionFormat || 'json'}
                                 onChange={(extractionFormat) => onUpdate({ extractionFormat })}
                                 options={[
-                                    { value: 'json', label: 'JSON', icon: 'data_object' },
-                                    { value: 'csv', label: 'CSV', icon: 'table_rows' },
+                                    { value: 'json', label: 'JSON', icon: 'json', iconClassName: '!text-[7px] leading-none' },
+                                    { value: 'csv', label: 'CSV', icon: 'csv' },
                                 ]}
                                 className="!min-h-0 !border-0 !bg-transparent !p-0"
                                 ariaLabel="Extraction format"

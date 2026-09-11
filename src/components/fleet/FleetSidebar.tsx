@@ -10,7 +10,7 @@ interface FleetSidebarProps {
 const FleetSidebar: React.FC<FleetSidebarProps> = ({ activeTab, onTabChange }) => {
     const tabs: { id: FleetTab; label: string; icon: string }[] = [
         { id: 'matrix', label: 'Task Matrix', icon: 'layers' },
-        { id: 'variables', label: 'Variable Tables', icon: 'table_chart' },
+        { id: 'variables', label: 'Variable Tables', icon: 'variables' },
         { id: 'schedules', label: 'Schedules & Drops', icon: 'schedule' },
         { id: 'infrastructure', label: 'Infrastructure', icon: 'dns' },
     ];

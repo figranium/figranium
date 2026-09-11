@@ -57,7 +57,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                         title="Variables"
                         aria-label="Variables"
                     >
-                        <MaterialIcon name="function" className="text-base" />
+                        <MaterialIcon name="variables" className="text-base" />
                     </button>
                     <button
                         onClick={onOpenHistory}

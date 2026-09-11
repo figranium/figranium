@@ -67,7 +67,7 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
         <section className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-4">
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
-                    <MaterialIcon name="data_object" className="text-sm" />
+                    <MaterialIcon name="variables" className="text-sm" />
                     Variables
                 </div>
                 <span className="text-[10px] text-[var(--app-text-faint)]">{entries.length}</span>

@@ -272,7 +272,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                     {/* Tabs Nav */}
                     <div role="tablist" className="flex flex-wrap gap-2 mb-8 bg-[var(--app-input)] p-1 rounded-2xl border border-[var(--app-border)]">
                         {renderTabButton('mode', 'Mode', 'settings_input_component')}
-                        {renderTabButton('variables', 'Vars', 'data_object')}
+                        {renderTabButton('variables', 'Vars', 'variables')}
                         {renderTabButton('behavior', 'Behavior', 'psychology')}
                         {renderTabButton('extraction', 'Extract', 'terminal')}
                         {renderTabButton('api', 'API', 'api')}
@@ -600,8 +600,8 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 value={currentTask.extractionFormat || 'json'}
                                                 onChange={(extractionFormat) => onUpdateTask({ extractionFormat })}
                                                 options={[
-                                                    { value: 'json', label: 'JSON', icon: 'data_object' },
-                                                    { value: 'csv', label: 'CSV', icon: 'table_rows' },
+                                                    { value: 'json', label: 'JSON', icon: 'json', iconClassName: '!text-[7px] leading-none' },
+                                                    { value: 'csv', label: 'CSV', icon: 'csv' },
                                                 ]}
                                                 className="w-[110px] !min-h-8"
                                                 ariaLabel="Extraction format"

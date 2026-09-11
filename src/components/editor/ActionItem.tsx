@@ -34,7 +34,7 @@ const renderBlockMarker = (type: Action['type']) => {
     if (type === 'while' || type === 'repeat') return <MaterialIcon name="repeat" className={`${iconClass} text-white`} />;
     if (type === 'foreach') return <MaterialIcon name="list" className={`${iconClass} text-white`} />;
     if (type === 'on_error') return <MaterialIcon name="warning" className={`${iconClass} text-red-400`} />;
-    if (type === 'set') return <MaterialIcon name="data_object" className={`${iconClass} text-white`} />;
+    if (type === 'set') return <MaterialIcon name="variable_insert" className={`${iconClass} text-white`} />;
     if (type === 'stop') return <MaterialIcon name="stop" className={`${iconClass} text-white`} />;
     if (type === 'click') return <MaterialIcon name="ads_click" className={`${iconClass} text-white`} />;
     if (type === 'type') return <MaterialIcon name="text_format" className={`${iconClass} text-white`} />;
@@ -43,7 +43,7 @@ const renderBlockMarker = (type: Action['type']) => {
     if (type === 'wait') return <MaterialIcon name="schedule" className={`${iconClass} text-white`} />;
     if (type === 'wait_selector') return <MaterialIcon name="schedule" className={`${iconClass} text-white`} />;
     if (type === 'scroll') return <MaterialIcon name="swap_vert" className={`${iconClass} text-white`} />;
-    if (type === 'javascript') return <MaterialIcon name="code" className={`${iconClass} text-white`} />;
+    if (type === 'javascript') return <MaterialIcon name="javascript" className="!text-[28px] leading-none text-white" />;
     if (type === 'csv') return <MaterialIcon name="csv" className={`${iconClass} text-white`} />;
     if (type === 'upload') return <MaterialIcon name="upload_file" className={`${iconClass} text-white`} />;
     if (type === 'finalize_uploads') return <MaterialIcon name="task_alt" className={`${iconClass} text-white`} />;
