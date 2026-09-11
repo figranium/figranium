@@ -278,7 +278,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         {renderTabButton('api', 'API', 'api')}
                         {renderTabButton('output', 'Output', 'table')}
                         {renderTabButton('schedule', 'Schedule', 'event_repeat')}
-                        {renderTabButton('cabinets', 'Cabinets', 'inventory_2')}
+                        {renderTabButton('cabinets', 'Cabinets', 'shelves')}
                         {renderTabButton('history', 'History', 'history')}
                     </div>
 
