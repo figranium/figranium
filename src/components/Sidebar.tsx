@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
             <div className="flex-1 flex flex-col gap-6">
                 <button
                     onClick={onNewTask}
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center border theme-border bg-[var(--app-input)] theme-text transition-all hover:bg-[var(--app-glass-card-hover)] hover:border-[var(--app-border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center border theme-border bg-[var(--app-border)] theme-text transition-all hover:bg-[var(--app-glass-card-hover)] hover:border-[var(--app-border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     title="New Task (Alt/Option + N)"
                     aria-label="New Task (Alt/Option + N)"
                 >

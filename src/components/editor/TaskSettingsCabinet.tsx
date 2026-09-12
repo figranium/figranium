@@ -279,7 +279,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         {renderTabButton('output', 'Output', 'table')}
                         {renderTabButton('schedule', 'Schedule', 'event_repeat')}
                         {renderTabButton('cabinets', 'Cabinets', 'shelves')}
-                        {renderTabButton('history', 'History', 'history')}
+                        {renderTabButton('history', 'History', 'history_toggle')}
                     </div>
 
                     {/* Tab Content */}

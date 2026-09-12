@@ -65,7 +65,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                         title="Version History"
                         aria-label="Version History"
                     >
-                        <TablerIcon name="history" className="text-base" />
+                        <TablerIcon name="history_toggle" className="text-base" />
                     </button>
                 </div>
             </div>
