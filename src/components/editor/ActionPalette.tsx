@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect, useState } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { Action } from '../../types';
 import { ACTION_CATALOG } from './actionCatalog';
 
@@ -94,7 +94,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                         aria-label="Close"
                         title="Close palette"
                     >
-                        <MaterialIcon name="close" className="text-base" />
+                        <TablerIcon name="close" className="text-base" />
                     </button>
                 </div>
                 <div className="relative group/search">
@@ -115,7 +115,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                             aria-label="Clear search"
                             title="Clear search"
                         >
-                            <MaterialIcon name="cancel" className="text-lg" />
+                            <TablerIcon name="cancel" className="text-lg" />
                         </button>
                     )}
                 </div>
@@ -131,7 +131,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                                 onClick={() => onSelect(item.type)}
                                 className={`flex flex-col items-start gap-2 text-left p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 ${idx === activeIndex ? 'bg-white/10 border-white/30 ring-1 ring-white/20' : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.08] hover:border-white/20'}`}
                             >
-                                <MaterialIcon name={item.icon || 'extension'} className="text-2xl text-white/80 group-hover:text-white transition-colors shrink-0 mb-1" />
+                                <TablerIcon name={item.icon || 'extension'} className="text-2xl text-white/80 group-hover:text-white transition-colors shrink-0 mb-1" />
                                 <div>
                                     <div className="text-xs font-bold tracking-widest text-white/90 group-hover:text-white mb-1">{item.label}</div>
                                     <div className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{item.description}</div>
@@ -141,7 +141,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                     </div>
                     {filtered.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
-                            <MaterialIcon name="search_off" className="text-4xl text-white/10" />
+                            <TablerIcon name="search_off" className="text-4xl text-white/10" />
                             <div className="space-y-1">
                                 <p className="text-xs font-bold tracking-widest text-white/40">No matches found</p>
                                 <p className="text-xs text-gray-600">Try a different search term or browse the catalog.</p>

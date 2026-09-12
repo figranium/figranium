@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 type GithubStarPromptProps = {
     runId?: string | null;
@@ -98,7 +98,7 @@ export default function GithubStarPrompt({ runId, onClose }: GithubStarPromptPro
 
             <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--app-surface-3)', border: '1px solid var(--app-border)' }}>
-                    <MaterialIcon name="star" className="text-xl text-[var(--app-accent)]" fill />
+                    <TablerIcon name="star" className="text-xl text-[var(--app-accent)]" fill />
                 </div>
                 <div className="space-y-1 min-w-0 flex-1">
                     <h4 className="text-xs font-bold tracking-widest text-white leading-snug" style={{ color: 'var(--app-text)' }}>
@@ -121,7 +121,7 @@ export default function GithubStarPrompt({ runId, onClose }: GithubStarPromptPro
                     className="flex-1 px-3 py-2 rounded-xl border text-xs font-bold tracking-wider transition-all flex items-center justify-center gap-1.5 hover:brightness-90 bg-transparent"
                     style={{ borderColor: 'var(--app-border)', color: 'var(--app-text)' }}
                 >
-                    <MaterialIcon name="star_border" className="text-sm" />
+                    <TablerIcon name="star_border" className="text-sm" />
                     Star on GitHub
                 </button>
                 <button
@@ -133,7 +133,7 @@ export default function GithubStarPrompt({ runId, onClose }: GithubStarPromptPro
                         border: '1px solid var(--app-border)'
                     }}
                 >
-                    <MaterialIcon name="done" className="text-sm" />
+                    <TablerIcon name="done" className="text-sm" />
                     I've starred it!
                 </button>
                 <button
@@ -143,7 +143,7 @@ export default function GithubStarPrompt({ runId, onClose }: GithubStarPromptPro
                     title="Dismiss"
                     aria-label="Dismiss"
                 >
-                    <MaterialIcon name="close" className="text-sm" />
+                    <TablerIcon name="close" className="text-sm" />
                 </button>
             </div>
         </div>

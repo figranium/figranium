@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Task } from '../types';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 import { copyToClipboard } from '../utils/clipboard';
 import { formatLabel } from '../utils/taskUtils';
 
@@ -63,20 +63,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
                 onClick={(event) => event.stopPropagation()}
             >
                 <button onClick={() => { setMenuPosition(null); onEditTask(task); }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5" role="menuitem">
-                    <MaterialIcon name="open_in_new" className="text-sm text-white/40" />
+                    <TablerIcon name="open_in_new" className="text-sm text-white/40" />
                     Open
                 </button>
                 <button onClick={() => copyMenuValue('share')} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5" role="menuitem">
-                    <MaterialIcon name={copiedItem === 'share' ? 'check' : 'link'} className={copiedItem === 'share' ? 'text-sm text-green-400' : 'text-sm text-white/40'} />
+                    <TablerIcon name={copiedItem === 'share' ? 'check' : 'link'} className={copiedItem === 'share' ? 'text-sm text-green-400' : 'text-sm text-white/40'} />
                     {copiedItem === 'share' ? 'Link copied' : 'Copy Link'}
                 </button>
                 <button onClick={() => copyMenuValue('api')} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5" role="menuitem">
-                    <MaterialIcon name={copiedItem === 'api' ? 'check' : 'data_object'} className={copiedItem === 'api' ? 'text-sm text-green-400' : 'text-sm text-white/40'} />
+                    <TablerIcon name={copiedItem === 'api' ? 'check' : 'data_object'} className={copiedItem === 'api' ? 'text-sm text-green-400' : 'text-sm text-white/40'} />
                     {copiedItem === 'api' ? 'API URL copied' : 'Copy API URL'}
                 </button>
                 <div className="my-1 border-t border-white/10" />
                 <button onClick={() => { setMenuPosition(null); if (task.id) onDeleteTask(task.id); }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-red-400 flex items-center gap-2.5" role="menuitem">
-                    <MaterialIcon name="delete" className="text-sm text-red-400/70" />
+                    <TablerIcon name="delete" className="text-sm text-red-400/70" />
                     Delete
                 </button>
             </div>
@@ -112,7 +112,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
                             }}
                         />
                     ) : (
-                        <MaterialIcon name="public" className="theme-text-faint text-lg" />
+                        <TablerIcon name="public" className="theme-text-faint text-lg" />
                     )}
                 </div>
                 <div className="min-w-0">
@@ -150,7 +150,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
                     aria-expanded={!!menuPosition}
                     title="Task actions"
                 >
-                    <MaterialIcon name="more_vert" className="text-lg" />
+                    <TablerIcon name="more_vert" className="text-lg" />
                 </button>
             </div>
         </div>

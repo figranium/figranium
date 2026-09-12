@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Action, BlockTestResult, Task, Variable, VarType } from '../../types';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import RichInput from '../RichInput';
 import CodeEditor from '../CodeEditor';
 import { ACTION_CATALOG } from './actionCatalog';
@@ -358,7 +358,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     title="Pick Selector in Browser"
                                     aria-label="Pick Selector in Browser"
                                 >
-                                    <MaterialIcon name="my_location" className="text-lg" />
+                                    <TablerIcon name="my_location" className="text-lg" />
                                 </button>
                             )}
                         </div>
@@ -382,7 +382,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                 title="Pick Target Selector in Browser"
                                 aria-label="Pick Target Selector in Browser"
                             >
-                                <MaterialIcon name="my_location" className="text-lg" />
+                                <TablerIcon name="my_location" className="text-lg" />
                             </button>
                         )}
                     </div>
@@ -434,7 +434,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     className="flex items-center gap-1 text-xs font-bold tracking-widest text-white/60 hover:text-white transition-colors"
                                     title="Generate with AI"
                                 >
-                                    <MaterialIcon name="auto_awesome" className="text-sm" />
+                                    <TablerIcon name="auto_awesome" className="text-sm" />
                                     Generate
                                 </button>
                             </div>
@@ -457,7 +457,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                             disabled={aiLoading || !aiDescription.trim()}
                                             className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                         >
-                                            {aiLoading && <MaterialIcon name="autorenew" className="text-xs animate-spin" />}
+                                            {aiLoading && <TablerIcon name="autorenew" className="text-xs animate-spin" />}
                                             {aiLoading ? 'Generating…' : 'Generate'}
                                         </button>
                                     </div>
@@ -598,7 +598,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                                 title="Pick Selector in Browser"
                                                 aria-label="Pick Selector in Browser"
                                             >
-                                                <MaterialIcon name="my_location" className="text-lg" />
+                                                <TablerIcon name="my_location" className="text-lg" />
                                             </button>
                                         )}
                                     </div>

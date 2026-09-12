@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Execution, Results, ConfirmRequest } from '../types';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 import ResultsPane from './editor/ResultsPane';
 import { useHeadfulStatus } from '../hooks/useHeadfulStatus';
 import { normalizeTaskOutcome, taskOutcomeBadgeClass, taskOutcomeLabel } from '../utils/taskOutcome';
@@ -59,7 +59,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
     if (loading) {
         return (
             <main className="app-page custom-scrollbar animate-in fade-in duration-500">
-                <div className="app-page-inner"><div className="app-panel app-empty-state min-h-[260px]"><MaterialIcon name="sync" className="text-2xl theme-text-faint animate-spin" /><p className="text-xs theme-text-faint">Loading execution…</p></div></div>
+                <div className="app-page-inner"><div className="app-panel app-empty-state min-h-[260px]"><TablerIcon name="sync" className="text-2xl theme-text-faint animate-spin" /><p className="text-xs theme-text-faint">Loading execution…</p></div></div>
             </main>
         );
     }
@@ -74,10 +74,10 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                         title="Back to Executions (Alt + 3)"
                         aria-label="Back to Executions (Alt + 3)"
                     >
-                        <MaterialIcon name="arrow_back" className="text-[16px]" />
+                        <TablerIcon name="arrow_back" className="text-[16px]" />
                         Back
                     </button>
-                    <div className="app-panel app-empty-state mt-6"><div className="app-empty-icon"><MaterialIcon name="search_off" className="text-2xl" /></div><h2 className="text-sm font-bold theme-text">Execution not found</h2><p className="text-xs theme-text-faint">This run may have been deleted.</p></div>
+                    <div className="app-panel app-empty-state mt-6"><div className="app-empty-icon"><TablerIcon name="search_off" className="text-2xl" /></div><h2 className="text-sm font-bold theme-text">Execution not found</h2><p className="text-xs theme-text-faint">This run may have been deleted.</p></div>
                 </div>
             </main>
         );
@@ -113,7 +113,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                         title="Back to Executions (Alt + 3)"
                         aria-label="Back to Executions (Alt + 3)"
                     >
-                        <MaterialIcon name="arrow_back" className="text-[16px]" />
+                        <TablerIcon name="arrow_back" className="text-[16px]" />
                         Back
                     </button>
                 </header>

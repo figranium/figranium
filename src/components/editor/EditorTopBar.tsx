@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { Task } from '../../types';
 
 interface EditorTopBarProps {
@@ -41,7 +41,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                         title="API"
                         aria-label="API"
                     >
-                        <MaterialIcon name="api" className="text-base" />
+                        <TablerIcon name="api" className="text-base" />
                     </button>
                     <button
                         onClick={onOpenSchedule}
@@ -49,7 +49,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                         title="Schedule"
                         aria-label="Schedule"
                     >
-                        <MaterialIcon name="event_repeat" className="text-base" />
+                        <TablerIcon name="event_repeat" className="text-base" />
                     </button>
                     <button
                         onClick={onOpenVariables}
@@ -57,7 +57,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                         title="Variables"
                         aria-label="Variables"
                     >
-                        <MaterialIcon name="variables" className="text-base" />
+                        <TablerIcon name="variables" className="text-base" />
                     </button>
                     <button
                         onClick={onOpenHistory}
@@ -65,7 +65,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                         title="Version History"
                         aria-label="Version History"
                     >
-                        <MaterialIcon name="history" className="text-base" />
+                        <TablerIcon name="history_toggle" className="text-base" />
                     </button>
                 </div>
             </div>

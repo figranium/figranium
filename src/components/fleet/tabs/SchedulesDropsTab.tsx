@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import MaterialIcon from '../../MaterialIcon';
+import TablerIcon from '../../TablerIcon';
 
 interface SchedulesDropsTabProps {
     fleetConfig: any;
@@ -75,7 +75,7 @@ const SchedulesDropsTab: React.FC<SchedulesDropsTabProps> = ({ fleetConfig, onNo
                             onClick={handlePreWarm}
                             className="px-3 py-1.5 rounded-lg bg-cyan-400 text-black text-xs font-bold hover:scale-105 transition-all flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
                         >
-                            <MaterialIcon name="rocket_launch" className="text-sm" />
+                            <TablerIcon name="rocket_launch" className="text-sm" />
                             Pre-warm Now
                         </button>
                     </div>

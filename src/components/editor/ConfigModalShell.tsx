@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface ConfigModalShellProps {
     icon: string;
@@ -36,7 +36,7 @@ const ConfigModalShell: React.FC<ConfigModalShellProps> = ({ icon, title, childr
             >
                 <header className="flex shrink-0 items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3">
-                        <MaterialIcon name={icon} className="shrink-0 text-base text-[var(--app-text-muted)]" />
+                        <TablerIcon name={icon} className="shrink-0 text-base text-[var(--app-text-muted)]" />
                         <h2 id="config-modal-title" className="truncate text-base font-semibold normal-case tracking-normal text-[var(--app-text)]">
                             {title}
                         </h2>
@@ -48,7 +48,7 @@ const ConfigModalShell: React.FC<ConfigModalShellProps> = ({ icon, title, childr
                         aria-label="Close"
                         title="Close"
                     >
-                        <MaterialIcon name="close" className="text-[12px]" />
+                        <TablerIcon name="close" className="text-[12px]" />
                     </button>
                 </header>
                 <div className="min-h-0 flex-1 overflow-y-auto pr-1 custom-scrollbar sm:pr-3">

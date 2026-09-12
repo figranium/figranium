@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 interface SidebarProps {
     onNavigate: (screen: 'dashboard' | 'editor' | 'settings' | 'executions' | 'captures' | 'cabinets') => void;
@@ -25,11 +25,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
             <div className="flex-1 flex flex-col gap-6">
                 <button
                     onClick={onNewTask}
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center border theme-border bg-[var(--app-input)] theme-text transition-all hover:bg-[var(--app-glass-card-hover)] hover:border-[var(--app-border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center border theme-border bg-[var(--app-border)] theme-text transition-all hover:bg-[var(--app-glass-card-hover)] hover:border-[var(--app-border-strong)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     title="New Task (Alt/Option + N)"
                     aria-label="New Task (Alt/Option + N)"
                 >
-                    <MaterialIcon name="add" className="text-2xl theme-text" />
+                    <TablerIcon name="add" className="text-2xl theme-text" />
                 </button>
 
                 {([
@@ -47,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
                         title={title}
                         aria-label={title}
                     >
-                        <MaterialIcon name={icon} className="text-2xl theme-text" />
+                        <TablerIcon name={icon} className="text-2xl theme-text" />
                     </button>
                 ))}
             </div>
@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
                 title="Logout (Alt/Option + L)"
                 aria-label="Logout (Alt/Option + L)"
             >
-                <MaterialIcon name="logout" className="text-2xl theme-text-faint" />
+                <TablerIcon name="logout" className="text-2xl theme-text-faint" />
             </button>
         </aside>
     );

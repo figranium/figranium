@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface PanelShellProps {
     icon?: string;
@@ -16,7 +16,7 @@ export function PanelShell({ icon, title, description, headerActions, children }
                 <div className="flex items-center gap-4">
                     {icon && (
                         <div className="w-10 h-10 rounded-xl theme-input border theme-border flex items-center justify-center theme-text-faint">
-                            <MaterialIcon name={icon} className="text-xl" />
+                            <TablerIcon name={icon} className="text-xl" />
                         </div>
                     )}
                     <div>

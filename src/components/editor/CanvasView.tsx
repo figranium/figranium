@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import RichInput from '../RichInput';
 import CodeEditor from '../CodeEditor';
 import ActionItem from './ActionItem';
@@ -176,7 +176,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                 title="Remove field"
                                                 aria-label="Remove field"
                                             >
-                                                <MaterialIcon name="close" className="text-base" />
+                                                <TablerIcon name="close" className="text-base" />
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                     title="Pick Selector in Browser"
                                                     aria-label="Pick Selector in Browser"
                                                 >
-                                                    <MaterialIcon name="my_location" className="text-lg" />
+                                                    <TablerIcon name="my_location" className="text-lg" />
                                                 </button>
                                             )}
                                         </div>
@@ -247,7 +247,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                     onClick={addField}
                                     className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-white/10 text-xs font-bold tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
                                 >
-                                    <MaterialIcon name="add" className="text-base" />
+                                    <TablerIcon name="add" className="text-base" />
                                     Add Field
                                 </button>
 
@@ -271,7 +271,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                     title="Remove group"
                                                     aria-label="Remove group"
                                                 >
-                                                    <MaterialIcon name="close" className="text-base" />
+                                                    <TablerIcon name="close" className="text-base" />
                                                 </button>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -291,7 +291,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                         title="Pick Row Container in Browser"
                                                         aria-label="Pick Row Container in Browser"
                                                     >
-                                                        <MaterialIcon name="my_location" className="text-lg" />
+                                                        <TablerIcon name="my_location" className="text-lg" />
                                                     </button>
                                                 )}
                                             </div>
@@ -328,7 +328,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                                 title="Remove column"
                                                                 aria-label="Remove column"
                                                             >
-                                                                <MaterialIcon name="close" className="text-base" />
+                                                                <TablerIcon name="close" className="text-base" />
                                                             </button>
                                                         </div>
                                                         <div className="flex items-center gap-2">
@@ -348,7 +348,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                                     title="Pick Selector in Browser (within row)"
                                                                     aria-label="Pick Selector in Browser (within row)"
                                                                 >
-                                                                    <MaterialIcon name="my_location" className="text-lg" />
+                                                                    <TablerIcon name="my_location" className="text-lg" />
                                                                 </button>
                                                             )}
                                                         </div>
@@ -388,7 +388,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                     onClick={() => addGroupField(group.id)}
                                                     className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-dashed border-white/10 text-xs font-bold tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
                                                 >
-                                                    <MaterialIcon name="add" className="text-sm" />
+                                                    <TablerIcon name="add" className="text-sm" />
                                                     Add Column
                                                 </button>
                                             </div>
@@ -398,7 +398,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                         onClick={addGroup}
                                         className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-white/10 text-xs font-bold tracking-tight text-white/50 hover:text-white hover:border-white/25 transition-colors"
                                     >
-                                        <MaterialIcon name="add" className="text-base" />
+                                        <TablerIcon name="add" className="text-base" />
                                         Add Group
                                     </button>
                                 </div>
@@ -411,7 +411,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                         className="flex items-center gap-1 text-xs font-bold tracking-widest text-white/60 hover:text-white transition-colors"
                                         title="Generate with AI"
                                     >
-                                        <MaterialIcon name="auto_awesome" className="text-sm" />
+                                        <TablerIcon name="auto_awesome" className="text-sm" />
                                         Generate
                                     </button>
                                 </div>
@@ -434,7 +434,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                 disabled={aiLoading || !aiDescription.trim()}
                                                 className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                                             >
-                                                {aiLoading && <MaterialIcon name="autorenew" className="text-xs animate-spin" />}
+                                                {aiLoading && <TablerIcon name="autorenew" className="text-xs animate-spin" />}
                                                 {aiLoading ? 'Generating…' : 'Generate'}
                                             </button>
                                         </div>
@@ -493,7 +493,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                     onClick={() => { setContextMenu(null); onDelete(); }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-white/5 transition-colors"
                 >
-                    <MaterialIcon name="delete" className="text-sm" />
+                    <TablerIcon name="delete" className="text-sm" />
                     Remove extraction script
                 </button>
             </div>
@@ -511,7 +511,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
             >
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                        <MaterialIcon name="data_object" className="text-[12px] text-white" />
+                        <TablerIcon name="data_object" className="text-[12px] text-white" />
                     </div>
                     <span className="text-xs font-bold tracking-[0.2em] text-white shrink-0">Extraction Script</span>
                     {scriptPreview && (
@@ -805,7 +805,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         aria-label="Add action (Ctrl + K)"
                                         title="Add action (Ctrl + K)"
                                     >
-                                        <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                        <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                     </button>
                                 </div>
                             </div>
@@ -835,7 +835,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                             aria-label="Add action (Ctrl + K)"
                                             title="Add action (Ctrl + K)"
                                         >
-                                            <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                            <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                         </button>
                                     </div>
                             </div>
@@ -848,7 +848,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 aria-label="Add action (Ctrl + K)"
                                 title="Add action (Ctrl + K)"
                             >
-                                <MaterialIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                                <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
                             </button>
                             <div className="w-px h-2 bg-white/25" />
                         </div>
@@ -904,7 +904,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     aria-label="Add action inside loop (Ctrl + K)"
                                     title="Add action inside loop (Ctrl + K)"
                                 >
-                                    <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                    <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                 </button>
                             ) : (
                             <div className="relative z-10 ml-[420px] w-[360px] flex flex-col items-center">
@@ -920,7 +920,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         aria-label="Add action inside loop (Ctrl + K)"
                                         title="Add action inside loop (Ctrl + K)"
                                     >
-                                        <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                        <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                     </button>
                                 </div>
                             </div>
@@ -934,7 +934,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 aria-label="Add action after loop (Ctrl + K)"
                                 title="Add action after loop (Ctrl + K)"
                             >
-                                <MaterialIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                                <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
                             </button>
                             <div className="h-2 border-l border-white/25" />
                         </div>
@@ -983,7 +983,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     aria-label="Add action (Ctrl + K)"
                                     title="Add action (Ctrl + K)"
                                 >
-                                    <MaterialIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                                    <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
                                 </button>
                                 <div className="w-px h-2 bg-white/25" />
                             </div>
@@ -1053,7 +1053,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 onClick={() => setIsExecutionConfigOpen(true)}
                                 className="flex items-center gap-3 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg pr-2 transition-all"
                             >
-                                <MaterialIcon name="bolt" className="text-white/40 text-base" />
+                                <TablerIcon name="bolt" className="text-white/40 text-base" />
                                 <h3 className="text-white/60 font-bold tracking-widest text-xs">On Execution</h3>
                             </button>
                             <button
@@ -1063,7 +1063,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 title="Open Task Settings"
                                 aria-label="Open Task Settings"
                             >
-                                <MaterialIcon name="settings" className="text-lg" />
+                                <TablerIcon name="settings" className="text-lg" />
                             </button>
                         </div>
                         {currentTask.description && (
@@ -1090,7 +1090,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     data-interactive-target="true"
                                     className="w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                 >
-                                    <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                    <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                     <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
                                 </button>
                             )}
@@ -1110,7 +1110,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         title="Add action (Ctrl + K)"
                                     >
                                         <div className="w-10 h-10 rounded-xl bg-white/5 group-hover:bg-white/10 transition-all flex items-center justify-center">
-                                            <MaterialIcon name="add" className="text-2xl text-gray-500 group-hover:text-white transition-colors" />
+                                            <TablerIcon name="add" className="text-2xl text-gray-500 group-hover:text-white transition-colors" />
                                         </div>
                                         <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Action</span>
                                     </button>
@@ -1134,7 +1134,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                             data-interactive-target="true"
                                             className="w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         >
-                                            <MaterialIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                            <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                             <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
                                         </button>
                                     )}
@@ -1183,7 +1183,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 setCanvasContextMenu(null);
                             }}
                         >
-                            <span className="material-symbols-outlined text-white/50" style={{ fontSize: '14px' }}>sticky_note_2</span>
+                            <TablerIcon name="sticky_note_2" className="text-[14px] text-white/50" />
                             Add sticky note
                         </button>
                     </div>

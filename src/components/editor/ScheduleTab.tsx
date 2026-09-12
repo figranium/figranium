@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { Task, TaskSchedule } from '../../types';
 import { normalizeTaskOutcome, taskOutcomeDotClass, taskOutcomeLabel } from '../../utils/taskOutcome';
 import CustomSelect from '../common/CustomSelect';
@@ -14,7 +14,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
         return (
             <div className="flex flex-col items-center justify-center h-64 text-center space-y-4 animate-in fade-in duration-300">
                 <div className="w-12 h-12 rounded-full bg-[var(--app-surface-3)] border border-[var(--app-border)] flex items-center justify-center">
-                    <MaterialIcon name="save" className="text-[var(--app-text-faint)]" />
+                    <TablerIcon name="save" className="text-[var(--app-text-faint)]" />
                 </div>
                 <div>
                     <p className="text-xs text-[var(--app-text)] font-medium">Save Required</p>
@@ -336,7 +336,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
             {description && (
                 <div className="bg-[var(--app-surface-3)] border border-[var(--app-border)] rounded-2xl p-4">
                     <div className="flex items-center gap-2 mb-1">
-                        <MaterialIcon name="event_repeat" className="text-sm text-[var(--app-text-faint)]" />
+                        <TablerIcon name="event_repeat" className="text-sm text-[var(--app-text-faint)]" />
                         <span className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Schedule</span>
                     </div>
                     <p className="text-sm text-[var(--app-text)] font-medium">{description}</p>
@@ -390,7 +390,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                 {saving ? (
                     <div className="w-3 h-3 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                 ) : saveSuccess ? (
-                    <MaterialIcon name="check" className="text-sm" />
+                    <TablerIcon name="check" className="text-sm" />
                 ) : null}
                 {saveSuccess ? 'Schedule Saved' : saving ? 'Saving...' : 'Save Schedule'}
             </button>

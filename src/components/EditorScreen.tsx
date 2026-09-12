@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, Dispatch, SetStateAction, useRef } from 'react';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 import { Task, Action, StickyNote, StickyNoteColor, Results, ConfirmRequest, ViewMode } from '../types';
 import { generateExtractionScript } from '../utils/extractionScriptGen';
 import { TASK_FIELD_INSPECT_PREFIX, taskFieldInspectId, taskGroupContainerInspectId, taskGroupFieldInspectId } from '../utils/extractionFieldIds';
@@ -493,7 +493,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                     aria-label="Reset zoom and center"
                     title="Reset zoom and center"
                 >
-                    <MaterialIcon name="fit_screen" className="text-sm" />
+                    <TablerIcon name="fit_screen" className="text-sm" />
                 </button>
             </div>
 
@@ -518,7 +518,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                             handleAutoSave(next);
                             setContextMenu(null);
                         }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5">
-                            <MaterialIcon name={target.disabled ? 'visibility' : 'visibility_off'} className="text-sm text-white/40" />
+                            <TablerIcon name={target.disabled ? 'visibility' : 'visibility_off'} className="text-sm text-white/40" />
                             {target.disabled ? 'Enable' : 'Disable'} {isTargetSelected ? 'All' : ''}
                         </button>
                         <button onClick={() => {
@@ -529,7 +529,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                             setContextMenu(null);
                             actions.setSelectedActionIds(new Set());
                         }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-red-400 flex items-center gap-2.5">
-                            <MaterialIcon name="delete" className="text-sm text-red-400/70" />
+                            <TablerIcon name="delete" className="text-sm text-red-400/70" />
                             Delete {isTargetSelected ? 'All' : ''}
                         </button>
                         <button onClick={() => {
@@ -541,14 +541,14 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                             actions.setSelectedActionIds(new Set());
                             setContextMenu(null);
                         }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5">
-                            <MaterialIcon name="content_cut" className="text-sm text-white/40" />
+                            <TablerIcon name="content_cut" className="text-sm text-white/40" />
                             Cut {isTargetSelected ? 'All' : ''}
                         </button>
                         <button onClick={() => {
                             setActionClipboard(currentTask.actions.filter(a => affectedIds.includes(a.id)));
                             setContextMenu(null);
                         }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5">
-                            <MaterialIcon name="content_copy" className="text-sm text-white/40" />
+                            <TablerIcon name="content_copy" className="text-sm text-white/40" />
                             Copy {isTargetSelected ? 'All' : ''}
                         </button>
                         <button onClick={() => {
@@ -566,7 +566,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                             handleAutoSave(nextTask);
                             setContextMenu(null);
                         }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5">
-                            <MaterialIcon name="copy_all" className="text-sm text-white/40" />
+                            <TablerIcon name="copy_all" className="text-sm text-white/40" />
                             Duplicate {isTargetSelected ? 'All' : ''}
                         </button>
                     </div>

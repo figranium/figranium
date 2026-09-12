@@ -7,7 +7,7 @@ import VersionPanel from './settings/VersionPanel';
 import ThemePanel from './settings/ThemePanel';
 import DatabasePanel, { DatabaseConfigStatus } from './settings/DatabasePanel';
 import { APP_VERSION } from '@/utils/appInfo';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 import { useTheme } from '../hooks/useTheme';
 import { CustomCombobox } from './common/CustomSelect';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -81,7 +81,7 @@ const ModelRow: React.FC<{
                         {loading ? <span className="opacity-50">Loading…</span> : <span>{value}</span>}
                     </div>
                     <button onClick={handleEdit} disabled={loading || saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest theme-accent-bg hover:bg-white/20 transition-all disabled:opacity-50 flex items-center gap-2">
-                        <MaterialIcon name="edit" className="text-base" />
+                        <TablerIcon name="edit" className="text-base" />
                         Edit
                     </button>
                 </div>
@@ -100,7 +100,7 @@ const ModelRow: React.FC<{
                     </div>
                     <button onClick={handleCancel} disabled={saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest theme-border text-white hover:bg-white/10 transition-all disabled:opacity-50">Cancel</button>
                     <button onClick={handleSave} disabled={saving || !draft.trim()} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest theme-accent-bg hover:bg-blue-400 transition-all disabled:opacity-50 flex items-center gap-2">
-                        <MaterialIcon name="save" className="text-base" />
+                        <TablerIcon name="save" className="text-base" />
                         {saving ? 'Saving…' : 'Save'}
                     </button>
                 </div>
@@ -1189,7 +1189,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 <div className="settings-nav-list">
                     {SETTINGS_SECTIONS.map((item) => (
                         <button key={item.id} onClick={() => selectSection(item.id)} className={`settings-nav-item ${section === item.id ? 'settings-nav-item-active' : ''}`} aria-current={section === item.id ? 'page' : undefined}>
-                            <MaterialIcon name={item.icon} className="text-lg" />
+                            <TablerIcon name={item.icon} className="text-lg" />
                             <span>{item.label}</span>
                         </button>
                     ))}
