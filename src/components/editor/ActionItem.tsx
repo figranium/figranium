@@ -54,7 +54,7 @@ const renderBlockMarker = (type: Action['type']) => {
     if (type === 'wait') return <TablerIcon name="schedule" className={`${iconClass} text-white`} />;
     if (type === 'wait_selector') return <TablerIcon name="schedule" className={`${iconClass} text-white`} />;
     if (type === 'scroll') return <TablerIcon name="swap_vert" className={`${iconClass} text-white`} />;
-    if (type === 'javascript') return <TablerIcon name="javascript" className="!text-[28px] leading-none text-white" />;
+    if (type === 'javascript') return <TablerIcon name="javascript" className={`${iconClass} text-white`} />;
     if (type === 'csv') return <TablerIcon name="csv" className={`${iconClass} text-white`} />;
     if (type === 'upload') return <TablerIcon name="upload_file" className={`${iconClass} text-white`} />;
     if (type === 'finalize_uploads') return <TablerIcon name="task_alt" className={`${iconClass} text-white`} />;
