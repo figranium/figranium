@@ -31,4 +31,5 @@ jobs:
             exit 0
           fi
           git commit -m "Update lockfile for Fiptcha"
+          git pull --rebase origin refactor/extract-fiptcha
           git push origin HEAD:refactor/extract-fiptcha
