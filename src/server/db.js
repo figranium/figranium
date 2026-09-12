@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const { getEnvironmentDatabaseConfig, loadDatabaseConfig } = require('./database-config');
+const { getEnvironmentDatabaseConfig } = require('./database-config');
 
 let pool = null;
 let initPromise = null;
@@ -9,13 +9,11 @@ async function initDB() {
     if (initPromise) return initPromise;
 
     initPromise = (async () => {
-        const config = getEnvironmentDatabaseConfig() || await loadDatabaseConfig();
+        const config = getEnvironmentDatabaseConfig();
 
-        // Parse SSL safely as a string, checking for 'true' and '1'
-        const sslEnv = String(process.env.DB_POSTGRESDB_SSL || '').toLowerCase();
+        const sslEnv = String(process.env.DB_SSL || process.env.db_ssl || process.env.DB_POSTGRESDB_SSL || '').toLowerCase();
         const sslEnabled = sslEnv === 'true' || sslEnv === '1';
 
-        // Handle database type check
         const dbType = config?.db_protocol;
         if (dbType && !['postgres', 'pg'].includes(dbType.toLowerCase())) {
             initError = new Error('Only postgres is supported as a cloud database.');
@@ -41,11 +39,9 @@ async function initDB() {
                 user: config.db_username,
                 password: config.db_password,
                 database: config.db_database || 'postgres',
-                // Set rejectUnauthorized: false if active, otherwise set to false
                 ssl: sslEnabled ? { rejectUnauthorized: false } : false
             });
 
-            // Test connection and create tables
             const client = await pool.connect();
             try {
                 await client.query(`
@@ -97,13 +93,11 @@ async function initDB() {
                     );
                 `);
 
-                // Migration: Ensure API key columns are TEXT to support longer keys
                 await client.query('ALTER TABLE api_key ALTER COLUMN key TYPE TEXT');
                 await client.query('ALTER TABLE gemini_api_key ALTER COLUMN key TYPE TEXT');
                 await client.query('ALTER TABLE openai_api_key ALTER COLUMN key TYPE TEXT');
                 await client.query('ALTER TABLE claude_api_key ALTER COLUMN key TYPE TEXT');
 
-                // Define new tables for other storage types
                 await client.query(`
                     CREATE TABLE IF NOT EXISTS ollama_api_key (
                         id SERIAL PRIMARY KEY,
@@ -148,7 +142,7 @@ async function initDB() {
         } catch (err) {
             pool = null;
             initError = err;
-            initPromise = null; // Allow retry on failure
+            initPromise = null;
             throw err;
         }
     })();
