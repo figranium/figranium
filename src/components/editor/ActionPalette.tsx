@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect, useState } from 'react';
 import TablerIcon from '../TablerIcon';
 import { Action } from '../../types';
-import { ACTION_CATALOG } from './actionCatalog';
+import { EDITOR_ACTION_CATALOG } from './actionCatalog';
 
 interface ActionPaletteProps {
     open: boolean;
@@ -26,7 +26,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
-        return !q ? ACTION_CATALOG : ACTION_CATALOG.filter((item) =>
+        return !q ? EDITOR_ACTION_CATALOG : EDITOR_ACTION_CATALOG.filter((item) =>
             item.label.toLowerCase().includes(q) || item.description.toLowerCase().includes(q)
         );
     }, [query]);

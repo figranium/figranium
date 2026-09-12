@@ -37,3 +37,12 @@ export const ACTION_CATALOG: { type: Action['type']; label: string; description:
     { type: 'wait_captcha', label: 'Wait for Captcha', description: 'Wait until a captcha interaction is ready', icon: 'hourglass_top' },
     { type: 'do_nothing', label: 'Do Nothing', description: 'No operation block', icon: 'block' }
 ];
+
+// These are structural markers managed by the visual editor itself. Keep them in
+// ACTION_CATALOG so API/MCP-created tasks still render with friendly labels, but
+// never offer them as blocks a user can add manually in the editor.
+export const EDITOR_AUTOMATIC_ACTION_TYPES = new Set<Action['type']>(['else', 'end']);
+
+export const EDITOR_ACTION_CATALOG = ACTION_CATALOG.filter(
+    (item) => !EDITOR_AUTOMATIC_ACTION_TYPES.has(item.type),
+);
