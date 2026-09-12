@@ -12,6 +12,12 @@ function hasEnvironmentDatabaseConfig() {
         process.env.DB_HOST ||
         process.env.DB_PORT ||
         process.env.DB_DATABASE ||
+        process.env.db_protocol ||
+        process.env.db_username ||
+        process.env.db_password ||
+        process.env.db_host ||
+        process.env.db_port ||
+        process.env.db_database ||
         process.env.DB_TYPE ||
         process.env.DB_POSTGRESDB_HOST ||
         process.env.DB_POSTGRESDB_PORT ||
@@ -25,12 +31,12 @@ function getEnvironmentDatabaseConfig() {
     if (!hasEnvironmentDatabaseConfig()) return null;
 
     return {
-        db_protocol: firstDefined(process.env.DB_PROTOCOL, process.env.DB_TYPE, 'postgres').toLowerCase(),
-        db_username: firstDefined(process.env.DB_USERNAME, process.env.DB_POSTGRESDB_USER),
-        db_password: firstDefined(process.env.DB_PASSWORD, process.env.DB_POSTGRESDB_PASSWORD),
-        db_host: firstDefined(process.env.DB_HOST, process.env.DB_POSTGRESDB_HOST),
-        db_port: firstDefined(process.env.DB_PORT, process.env.DB_POSTGRESDB_PORT),
-        db_database: firstDefined(process.env.DB_DATABASE, process.env.DB_POSTGRESDB_DATABASE, 'postgres')
+        db_protocol: firstDefined(process.env.DB_PROTOCOL, process.env.db_protocol, process.env.DB_TYPE, 'postgres').toLowerCase(),
+        db_username: firstDefined(process.env.DB_USERNAME, process.env.db_username, process.env.DB_POSTGRESDB_USER),
+        db_password: firstDefined(process.env.DB_PASSWORD, process.env.db_password, process.env.DB_POSTGRESDB_PASSWORD),
+        db_host: firstDefined(process.env.DB_HOST, process.env.db_host, process.env.DB_POSTGRESDB_HOST),
+        db_port: firstDefined(process.env.DB_PORT, process.env.db_port, process.env.DB_POSTGRESDB_PORT),
+        db_database: firstDefined(process.env.DB_DATABASE, process.env.db_database, process.env.DB_POSTGRESDB_DATABASE, 'postgres')
     };
 }
 
