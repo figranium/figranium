@@ -2,20 +2,10 @@ const assert = require('assert');
 const { getEnvironmentDatabaseConfig, hasEnvironmentDatabaseConfig } = require('../src/server/database-config');
 
 const envKeys = [
-    'DB_PROTOCOL',
-    'DB_USERNAME',
-    'DB_PASSWORD',
-    'DB_HOST',
-    'DB_PORT',
-    'DB_DATABASE',
-    'DB_SSL',
-    'DB_TYPE',
-    'DB_POSTGRESDB_HOST',
-    'DB_POSTGRESDB_PORT',
-    'DB_POSTGRESDB_USER',
-    'DB_POSTGRESDB_PASSWORD',
-    'DB_POSTGRESDB_DATABASE',
-    'DB_POSTGRESDB_SSL'
+    'DB_PROTOCOL', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_SSL',
+    'db_protocol', 'db_username', 'db_password', 'db_host', 'db_port', 'db_database', 'db_ssl',
+    'DB_TYPE', 'DB_POSTGRESDB_HOST', 'DB_POSTGRESDB_PORT', 'DB_POSTGRESDB_USER',
+    'DB_POSTGRESDB_PASSWORD', 'DB_POSTGRESDB_DATABASE', 'DB_POSTGRESDB_SSL'
 ];
 
 const original = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
@@ -24,7 +14,6 @@ const clearEnv = () => {
 };
 
 clearEnv();
-
 assert.strictEqual(hasEnvironmentDatabaseConfig(), false);
 assert.strictEqual(getEnvironmentDatabaseConfig(), null);
 
@@ -34,53 +23,45 @@ process.env.DB_PASSWORD = 'a-secret-password';
 process.env.DB_HOST = 'db.example.test';
 process.env.DB_PORT = '5432';
 process.env.DB_DATABASE = 'figranium';
-
-assert.strictEqual(hasEnvironmentDatabaseConfig(), true);
 assert.deepStrictEqual(getEnvironmentDatabaseConfig(), {
-    db_protocol: 'postgres',
-    db_username: 'figranium',
-    db_password: 'a-secret-password',
-    db_host: 'db.example.test',
-    db_port: '5432',
-    db_database: 'figranium'
+    db_protocol: 'postgres', db_username: 'figranium', db_password: 'a-secret-password',
+    db_host: 'db.example.test', db_port: '5432', db_database: 'figranium'
 });
 
-// DigitalOcean-friendly names remain fully supported for existing deployments.
+// DigitalOcean App Platform-friendly lowercase names remain fully supported.
+clearEnv();
+process.env.db_protocol = 'postgres';
+process.env.db_username = 'do-user';
+process.env.db_password = 'do-password';
+process.env.db_host = 'private-db-do-user-123.db.ondigitalocean.com';
+process.env.db_port = '25060';
+process.env.db_database = 'defaultdb';
+process.env.db_ssl = 'true';
+assert.strictEqual(hasEnvironmentDatabaseConfig(), true);
+assert.deepStrictEqual(getEnvironmentDatabaseConfig(), {
+    db_protocol: 'postgres', db_username: 'do-user', db_password: 'do-password',
+    db_host: 'private-db-do-user-123.db.ondigitalocean.com', db_port: '25060', db_database: 'defaultdb'
+});
+
+// Existing uppercase compatibility names remain supported too.
 clearEnv();
 process.env.DB_TYPE = 'postgres';
-process.env.DB_POSTGRESDB_USER = 'do-user';
-process.env.DB_POSTGRESDB_PASSWORD = 'do-password';
-process.env.DB_POSTGRESDB_HOST = 'private-db-do-user-123.db.ondigitalocean.com';
+process.env.DB_POSTGRESDB_USER = 'legacy-user';
+process.env.DB_POSTGRESDB_PASSWORD = 'legacy-password';
+process.env.DB_POSTGRESDB_HOST = 'legacy-db.example.test';
 process.env.DB_POSTGRESDB_PORT = '25060';
 process.env.DB_POSTGRESDB_DATABASE = 'defaultdb';
-process.env.DB_POSTGRESDB_SSL = 'true';
-
-assert.strictEqual(hasEnvironmentDatabaseConfig(), true);
 assert.deepStrictEqual(getEnvironmentDatabaseConfig(), {
-    db_protocol: 'postgres',
-    db_username: 'do-user',
-    db_password: 'do-password',
-    db_host: 'private-db-do-user-123.db.ondigitalocean.com',
-    db_port: '25060',
-    db_database: 'defaultdb'
+    db_protocol: 'postgres', db_username: 'legacy-user', db_password: 'legacy-password',
+    db_host: 'legacy-db.example.test', db_port: '25060', db_database: 'defaultdb'
 });
 
-// Short names take precedence when both naming schemes are present.
-process.env.DB_PROTOCOL = 'pg';
-process.env.DB_USERNAME = 'short-user';
-process.env.DB_PASSWORD = 'short-password';
-process.env.DB_HOST = 'short-db.example.test';
-process.env.DB_PORT = '5433';
-process.env.DB_DATABASE = 'shortdb';
-
-assert.deepStrictEqual(getEnvironmentDatabaseConfig(), {
-    db_protocol: 'pg',
-    db_username: 'short-user',
-    db_password: 'short-password',
-    db_host: 'short-db.example.test',
-    db_port: '5433',
-    db_database: 'shortdb'
-});
+// Canonical uppercase names take precedence, followed by lowercase DO names, then legacy aliases.
+process.env.db_username = 'lowercase-user';
+process.env.DB_USERNAME = 'canonical-user';
+assert.strictEqual(getEnvironmentDatabaseConfig().db_username, 'canonical-user');
+delete process.env.DB_USERNAME;
+assert.strictEqual(getEnvironmentDatabaseConfig().db_username, 'lowercase-user');
 
 clearEnv();
 for (const key of envKeys) {
