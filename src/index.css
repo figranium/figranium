@@ -1,3 +1,5 @@
+@import '@fontsource/questrial/400.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

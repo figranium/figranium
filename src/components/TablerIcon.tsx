@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconGitBranch, IconPlus, IconClick, IconApi, IconArrowLeft, IconCircleChevronDown, IconFileText, IconWand, IconTrash, IconRefresh, IconBan, IconBolt, IconCircleX, IconCategory, IconFocusCentered, IconCheck, IconSquareCheck, IconSquare, IconCircleCheck, IconCircle, IconX, IconCode, IconDeviceDesktop, IconCopy, IconCut, IconCopyPlus, IconFolderPlus, IconFileTypeCsv, IconBraces, IconDatabase, IconTrashX, IconFileDescription, IconServer, IconDownload, IconArrowsMove, IconGripVertical, IconEdit, IconAlertCircle, IconCalendarRepeat, IconChevronDown, IconCompassOff, IconFile, IconMaximize, IconFolder, IconFileZip, IconListNumbers, IconHistory, IconHourglassEmpty, IconHourglassHigh, IconPhoto, IconLogin, IconPackage, IconBrandJavascript, IconJson, IconKeyboard, IconKey, IconWorld, IconLayersLinked, IconList, IconLogout, IconDotsVertical, IconMouse, IconMovie, IconLocation, IconNavigation, IconNumbers, IconBrowser, IconExternalLink, IconPalette, IconUserSearch, IconCamera, IconPlayerPlay, IconLoader2, IconRepeat, IconRocket, IconDeviceFloppy, IconClock, IconFlask, IconSearch, IconSearchOff, IconShield, IconSettings, IconArrowsShuffle, IconCpu, IconSortAscendingLetters, IconAbc, IconStar, IconPlayerStop, IconCornerDownRight, IconArrowsUpDown, IconTerminal2, IconTypography, IconTextSize, IconToggleRight, IconLanguage, IconAdjustmentsHorizontal, IconArrowsMaximize, IconUpload, IconFileUpload, IconVariable, IconShieldCheck, IconVideoOff, IconEye, IconEyeOff, IconLock, IconAlertTriangle, IconWifi, IconNote, IconInfoCircle, IconLink, IconTag, IconHome, IconFiles, IconCloud, IconDeviceDesktopCog, IconPuzzle } from '@tabler/icons-react';
+import { IconGitBranch, IconPlus, IconClick, IconApi, IconArrowLeft, IconCircleChevronDown, IconFileText, IconWand, IconTrash, IconRefresh, IconBan, IconBolt, IconCircleX, IconCategory, IconFocusCentered, IconCheck, IconSquareCheck, IconSquare, IconCircleCheck, IconCircle, IconX, IconCode, IconDeviceDesktop, IconCopy, IconCut, IconCopyPlus, IconFolderPlus, IconFileTypeCsv, IconBraces, IconDatabase, IconTrashX, IconFileDescription, IconServer, IconDownload, IconArrowsMove, IconGripVertical, IconEdit, IconAlertCircle, IconCalendarRepeat, IconChevronDown, IconCompassOff, IconFile, IconMaximize, IconFolder, IconFileZip, IconListNumbers, IconHistory, IconHourglassEmpty, IconHourglassHigh, IconPhoto, IconLogin, IconPackage, IconBrandJavascript, IconJson, IconKeyboard, IconKey, IconWorld, IconLayersLinked, IconList, IconLogout, IconDotsVertical, IconMouse, IconMovie, IconLocation, IconNavigation, IconNumbers, IconBrowserMaximize, IconExternalLink, IconPalette, IconUserSearch, IconCamera, IconPlayerPlay, IconLoader2, IconRepeat, IconRocket, IconDeviceFloppy, IconClock, IconFlask, IconSearch, IconSearchOff, IconShield, IconSettings, IconArrowsShuffle, IconCpu, IconSortAscendingLetters, IconAbc, IconStar, IconPlayerStop, IconCornerDownRight, IconArrowsUpDown, IconTerminal2, IconTypography, IconTextSize, IconToggleRight, IconLanguage, IconAdjustmentsHorizontal, IconArrowsMaximize, IconUpload, IconFileUpload, IconVariable, IconShieldCheck, IconVideoOff, IconEye, IconEyeOff, IconLock, IconAlertTriangle, IconWifi, IconNote, IconInfoCircle, IconLink, IconTag, IconHome, IconFiles, IconCloud, IconDeviceDesktopCog, IconPuzzle } from '@tabler/icons-react';
 
 type TablerIconProps = {
     /** Legacy Material symbol name retained while feature code migrates to semantic names. */
@@ -29,7 +29,7 @@ const iconNames: Record<string, string> = {
     javascript: 'IconBrandJavascript', json: 'IconJson', keyboard: 'IconKeyboard', key: 'IconKey',
     label: 'IconTag', language: 'IconWorld', layers: 'IconLayersLinked', link: 'IconLink', list: 'IconList', logout: 'IconLogout', more_vert: 'IconDotsVertical',
     mouse: 'IconMouse', monitor: 'IconDeviceDesktopCog', movie: 'IconMovie', my_location: 'IconLocation', near_me: 'IconLocation',
-    navigation: 'IconNavigation', numbers: 'IconNumbers', open_in_browser: 'IconBrowser', open_in_new: 'IconExternalLink',
+    navigation: 'IconNavigation', numbers: 'IconNumbers', open_in_browser: 'IconBrowserMaximize', open_in_new: 'IconExternalLink',
     output: 'IconLogout', palette: 'IconPalette', person_search: 'IconUserSearch', photo_camera: 'IconCamera',
     play_arrow: 'IconPlayerPlay', play_circle: 'IconPlayerPlay', progress_activity: 'IconLoader2', public: 'IconWorld',
     published_with_changes: 'IconRefresh', refresh: 'IconRefresh', reload: 'IconRefresh', repeat: 'IconRepeat', shelves: 'IconFiles',
@@ -114,7 +114,7 @@ const tablerIcons: Record<string, IconComponent> = {
     IconLocation,
     IconNavigation,
     IconNumbers,
-    IconBrowser,
+    IconBrowserMaximize,
     IconExternalLink,
     IconPalette,
     IconUserSearch,
