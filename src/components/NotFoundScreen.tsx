@@ -1,4 +1,4 @@
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 interface NotFoundScreenProps {
     title?: string;
@@ -14,7 +14,7 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
     return (
         <main className="app-page flex items-center justify-center px-8">
             <div className="app-panel app-empty-state w-full max-w-xl">
-                <div className="app-empty-icon"><MaterialIcon name="explore_off" className="text-2xl" /></div>
+                <div className="app-empty-icon"><TablerIcon name="explore_off" className="text-2xl" /></div>
                 <div className="app-page-kicker !mt-0">Error 404</div>
                 <h2 className="text-2xl font-bold tracking-tight theme-text">{title}</h2>
                 <p className="text-xs theme-text-faint">{subtitle}</p>
@@ -23,7 +23,7 @@ const NotFoundScreen: React.FC<NotFoundScreenProps> = ({
                         onClick={onBack}
                         className="app-button-primary"
                     >
-                        <MaterialIcon name="arrow_back" className="text-base" />
+                        <TablerIcon name="arrow_back" className="text-base" />
                         Back
                     </button>
                 )}

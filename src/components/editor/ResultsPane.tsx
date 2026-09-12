@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useMemo, memo } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { ConfirmRequest, Results, CaptureEntry } from '../../types';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import CaptureCard from '../CaptureCard';
@@ -330,7 +330,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
         const boolValue = normalizeBoolean(value);
         if (boolValue !== null) {
             if (!boolValue) return '';
-            return <MaterialIcon name="check" className="text-xs text-blue-400" />;
+            return <TablerIcon name="check" className="text-xs text-blue-400" />;
         }
         if (value !== null && typeof value === 'object') {
             try {
@@ -498,7 +498,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
         return (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-20">
                 <div className="w-16 h-16 border border-white/10 rounded-full flex items-center justify-center">
-                    <MaterialIcon name="terminal" className="text-2xl text-white" />
+                    <TablerIcon name="terminal" className="text-2xl text-white" />
                 </div>
                 <p className="text-xs font-bold tracking-[0.3em]">Ready</p>
             </div>
@@ -569,7 +569,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                             title="Copy activity log"
                             aria-label="Copy activity log"
                         >
-                            <MaterialIcon name={copied === 'logs' ? "check" : "content_copy"} className="text-[12px]" />
+                            <TablerIcon name={copied === 'logs' ? "check" : "content_copy"} className="text-[12px]" />
                             {copied === 'logs' ? 'Copied' : 'Copy'}
                         </button>
                     </div>
@@ -763,7 +763,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                 className="px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10"
                                 title={activeResults?.downloads?.length === 1 ? 'Download File' : 'Download ZIP'}
                             >
-                                <MaterialIcon name="folder_zip" className="text-[14px]" />
+                                <TablerIcon name="folder_zip" className="text-[14px]" />
                                 {activeResults?.downloads?.length === 1 ? 'Download' : 'Download ZIP'}
                             </button>
                         )}
@@ -810,7 +810,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                 className={`px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${copied === 'data' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
                                 title="Copy extracted data"
                             >
-                                {copied === 'data' ? <MaterialIcon name="check" className="text-sm" /> : <MaterialIcon name="content_copy" className="text-sm" />}
+                                {copied === 'data' ? <TablerIcon name="check" className="text-sm" /> : <TablerIcon name="content_copy" className="text-sm" />}
                                 {copied === 'data' ? 'Copied' : 'Copy'}
                             </button>
                         )}
@@ -857,7 +857,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                                     title="Download file"
                                                     aria-label="Download file"
                                                 >
-                                                    <MaterialIcon name="download" className="text-[18px]" />
+                                                    <TablerIcon name="download" className="text-[18px]" />
                                                 </a>
                                             </div>
                                         ))}

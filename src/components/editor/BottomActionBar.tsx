@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface BottomActionBarProps {
     isExecuting: boolean;
@@ -31,7 +31,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
             >
                 {isExecuting ? (
                     <div className="w-3 h-3 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                ) : <MaterialIcon name="play_arrow" className="text-sm text-black" />}
+                ) : <TablerIcon name="play_arrow" className="text-sm text-black" />}
                 <span>
                     {isStopping ? 'Stopping...' : (isExecuting ? 'Running...' : 'Run Task')}
                 </span>
@@ -44,7 +44,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
                     title={isStopping ? 'Stopping task' : 'Stop task'}
                     aria-label={isStopping ? 'Stopping task' : 'Stop task'}
                 >
-                    <MaterialIcon name={isStopping ? 'progress_activity' : 'stop'} className={`text-base ${isStopping ? 'animate-spin' : ''}`} />
+                    <TablerIcon name={isStopping ? 'progress_activity' : 'stop'} className={`text-base ${isStopping ? 'animate-spin' : ''}`} />
                 </button>
             )}
             <button
@@ -62,7 +62,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
                     }`}
                 title={isHeadfulOpen ? 'Stop headful browser' : 'Open browser to log in'}
             >
-                <MaterialIcon name={isHeadfulOpen ? 'stop' : 'open_in_browser'} className="text-base" />
+                <TablerIcon name={isHeadfulOpen ? 'stop' : 'open_in_browser'} className="text-base" />
                 {isHeadfulOpen ? 'Close Browser' : 'Open Browser'}
             </button>
         </div>

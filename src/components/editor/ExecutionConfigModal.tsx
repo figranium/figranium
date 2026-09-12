@@ -1,5 +1,5 @@
 import { Task } from '../../types';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import RichInput from '../RichInput';
 import ConfigModalShell from './ConfigModalShell';
 import ConfigVariableList from './ConfigVariableList';
@@ -67,7 +67,7 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                                         aria-pressed={selected}
                                         className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-border-strong)] ${selected ? 'border-[var(--app-border-strong)] bg-[var(--app-surface-2)] ring-1 ring-[var(--app-border-strong)]' : 'theme-border bg-[var(--app-surface-3)] opacity-70 hover:opacity-100'}`}
                                     >
-                                        <MaterialIcon name={option.icon} className="mt-0.5 text-lg text-[var(--app-text-muted)]" />
+                                        <TablerIcon name={option.icon} className="mt-0.5 text-lg text-[var(--app-text-muted)]" />
                                         <span>
                                             <span className="block text-xs font-bold text-[var(--app-text)]">{option.label}</span>
                                             <span className="mt-1 block text-xs leading-5 text-[var(--app-text-faint)]">{option.description}</span>

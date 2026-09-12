@@ -1,6 +1,6 @@
 import React from 'react';
 import { ThemeDefinition, THEMES } from '../../utils/theme';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface ThemePanelProps {
     currentThemeId: string;
@@ -12,7 +12,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ currentThemeId, onSelect }) => 
         <div className="app-panel p-7">
             <div className="mb-6">
                 <h3 className="text-sm font-bold theme-text flex items-center gap-2">
-                    <MaterialIcon name="palette" className="text-xl" />
+                    <TablerIcon name="palette" className="text-xl" />
                     Theme
                 </h3>
                 <p className="text-xs theme-text-faint mt-1">Choose how Figranium looks</p>
@@ -43,7 +43,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ currentThemeId, onSelect }) => 
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                                 {isActive && (
                                     <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center shadow-xl">
-                                        <MaterialIcon name="check" className="text-lg" />
+                                        <TablerIcon name="check" className="text-lg" />
                                     </div>
                                 )}
                             </div>

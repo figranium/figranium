@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { StickyNote as StickyNoteType, StickyNoteColor } from '../../types';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import CopyButton from '../CopyButton';
 
 interface StickyNoteProps {
@@ -200,7 +200,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                             title="Edit note"
                             aria-label="Edit note"
                         >
-                            <MaterialIcon name="edit" className="text-[14px]" />
+                            <TablerIcon name="edit" className="text-[14px]" />
                         </button>
                         <CopyButton
                             text={note.content}
@@ -215,7 +215,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                             title="Delete note"
                             aria-label="Delete note"
                         >
-                            <MaterialIcon name="close" className="text-[14px]" />
+                            <TablerIcon name="close" className="text-[14px]" />
                         </button>
                     </div>
                 </div>
@@ -279,7 +279,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5"
                         onClick={() => { onDuplicate(note); setContextMenu(null); }}
                     >
-                        <span className="material-symbols-outlined text-white/40" style={{ fontSize: '14px' }}>copy_all</span>
+                        <TablerIcon name="copy_all" className="text-[14px] text-white/40" />
                         Duplicate
                     </button>
                     <button
@@ -289,7 +289,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                             setContextMenu(null);
                         }}
                     >
-                        <span className="material-symbols-outlined text-white/40" style={{ fontSize: '14px' }}>content_copy</span>
+                        <TablerIcon name="content_copy" className="text-[14px] text-white/40" />
                         Copy
                     </button>
                     <button
@@ -300,14 +300,14 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                             setContextMenu(null);
                         }}
                     >
-                        <span className="material-symbols-outlined text-white/40" style={{ fontSize: '14px' }}>content_cut</span>
+                        <TablerIcon name="content_cut" className="text-[14px] text-white/40" />
                         Cut
                     </button>
                     <button
                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-red-400 flex items-center gap-2.5"
                         onClick={() => { onDelete(note.id); setContextMenu(null); }}
                     >
-                        <span className="material-symbols-outlined text-red-400/70" style={{ fontSize: '14px' }}>delete</span>
+                        <TablerIcon name="delete" className="text-[14px] text-red-400/70" />
                         Delete
                     </button>
                 </div>

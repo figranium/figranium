@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { FleetTab } from '../../types';
 
 interface FleetSidebarProps {
@@ -30,7 +30,7 @@ const FleetSidebar: React.FC<FleetSidebarProps> = ({ activeTab, onTabChange }) =
                                     : 'text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'
                             }`}
                         >
-                            <MaterialIcon name={tab.icon} className="text-sm" />
+                            <TablerIcon name={tab.icon} className="text-sm" />
                             <span className="text-xs font-bold tracking-widest">{tab.label}</span>
                         </button>
                     ))}
@@ -41,19 +41,19 @@ const FleetSidebar: React.FC<FleetSidebarProps> = ({ activeTab, onTabChange }) =
             <div className="mt-auto p-3 border-t border-white/10">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center gap-1.5 text-gray-500">
-                        <MaterialIcon name="circle" className="text-xs text-cyan-400" />
+                        <TablerIcon name="circle" className="text-xs text-cyan-400" />
                         <span>Active workers</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-gray-500">
-                        <MaterialIcon name="circle" className="text-xs text-green-400" />
+                        <TablerIcon name="circle" className="text-xs text-green-400" />
                         <span>Healthy proxies</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-gray-500">
-                        <MaterialIcon name="circle" className="text-xs text-yellow-400" />
+                        <TablerIcon name="circle" className="text-xs text-yellow-400" />
                         <span>Signals live</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-gray-500">
-                        <MaterialIcon name="circle" className="text-xs text-white/20" />
+                        <TablerIcon name="circle" className="text-xs text-white/20" />
                         <span>System ready</span>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import CopyButton from '../CopyButton';
 
 export interface ProviderConfig {
@@ -108,7 +108,7 @@ const ApiKeyRow: React.FC<{
             ) : config.iconComponent ? (
                 <config.iconComponent className="w-5 h-5" />
             ) : (
-                <MaterialIcon name={config.icon || 'key'} className="text-xl" />
+                <TablerIcon name={config.icon || 'key'} className="text-xl" />
             )}
         </div>
     );
@@ -126,7 +126,7 @@ const ApiKeyRow: React.FC<{
             title="Delete"
             aria-label="Delete"
         >
-            <MaterialIcon name="delete" className="text-base" />
+            <TablerIcon name="delete" className="text-base" />
         </button>
     );
 
@@ -162,7 +162,7 @@ const ApiKeyRow: React.FC<{
                         </div>
                         {!config.readOnly && (
                             <button onClick={handleEditStart} disabled={config.loading || config.saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white/10 text-white hover:bg-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0">
-                                <MaterialIcon name="edit" className="text-base" />
+                                <TablerIcon name="edit" className="text-base" />
                                 Edit
                             </button>
                         )}
@@ -184,7 +184,7 @@ const ApiKeyRow: React.FC<{
                         <div className="flex items-center gap-3">
                             <button onClick={handleCancel} disabled={config.saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-transparent border border-white/20 text-white hover:bg-white/10 transition-all disabled:opacity-50">Cancel</button>
                             <button onClick={handleSave} disabled={config.saving || !editUrl.trim()} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-blue-500 text-white hover:bg-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                                <MaterialIcon name="save" className="text-base" />
+                                <TablerIcon name="save" className="text-base" />
                                 {config.saving ? 'Saving...' : 'Save'}
                             </button>
                         </div>
@@ -226,7 +226,7 @@ const ApiKeyRow: React.FC<{
                             disabled={config.loading || config.saving}
                             className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white/10 text-white hover:bg-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            <MaterialIcon name="edit" className="text-base" />
+                            <TablerIcon name="edit" className="text-base" />
                             Edit
                         </button>
                     )}
@@ -236,7 +236,7 @@ const ApiKeyRow: React.FC<{
                             disabled={config.loading || config.saving}
                             className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white text-black hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            <MaterialIcon name="autorenew" className="text-base" />
+                            <TablerIcon name="autorenew" className="text-base" />
                             {config.saving ? 'Generating...' : 'Regenerate'}
                         </button>
                     )}
@@ -268,7 +268,7 @@ const ApiKeyRow: React.FC<{
                             title={showPlaintext ? 'Hide value' : 'Show value'}
                             aria-label={showPlaintext ? 'Hide value' : 'Show value'}
                         >
-                            <MaterialIcon name={showPlaintext ? 'visibility_off' : 'visibility'} className="text-base" />
+                            <TablerIcon name={showPlaintext ? 'visibility_off' : 'visibility'} className="text-base" />
                         </button>
                     </div>
                     <button
@@ -283,7 +283,7 @@ const ApiKeyRow: React.FC<{
                         disabled={config.saving}
                         className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-blue-500 text-white hover:bg-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                        <MaterialIcon name="save" className="text-base" />
+                        <TablerIcon name="save" className="text-base" />
                         {config.saving ? 'Saving...' : 'Save'}
                     </button>
                 </div>
@@ -373,7 +373,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, o
                             onClick={() => setShowAddMenu(true)}
                             className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all flex items-center gap-2 border border-blue-500/10"
                         >
-                            <MaterialIcon name="add" className="text-base" />
+                            <TablerIcon name="add" className="text-base" />
                             Add API Key
                         </button>
 
@@ -389,7 +389,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, o
                                         className="absolute top-6 right-6 p-3 rounded-2xl text-white/50 hover:text-white hover:bg-white/10 transition-all"
                                         aria-label="Close"
                                     >
-                                        <MaterialIcon name="close" className="text-2xl" />
+                                        <TablerIcon name="close" className="text-2xl" />
                                     </button>
 
                                     {modalView === 'list' && (
@@ -422,7 +422,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, o
                                                                     ) : provider.iconComponent ? (
                                                                         <provider.iconComponent className="w-6 h-6 text-white" />
                                                                     ) : (
-                                                                        <MaterialIcon name="api" className="text-xl text-white" />
+                                                                        <TablerIcon name="api" className="text-xl text-white" />
                                                                     )}
                                                                 </div>
                                                                 <div className="flex-1">
@@ -453,7 +453,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, o
                                                                     {p.iconUrl ? (
                                                                         <img src={p.iconUrl} alt={p.name} className="w-8 h-8 object-contain drop-shadow-md" />
                                                                     ) : (
-                                                                        <MaterialIcon name="database" className="text-xl text-white" />
+                                                                        <TablerIcon name="database" className="text-xl text-white" />
                                                                     )}
                                                                 </div>
                                                                 <div className="flex-1">
@@ -474,7 +474,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, o
                                                 onClick={() => setModalView('list')}
                                                 className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-white tracking-widest mb-6 transition-colors"
                                             >
-                                                <MaterialIcon name="arrow_back" className="text-sm" />
+                                                <TablerIcon name="arrow_back" className="text-sm" />
                                                 Back
                                             </button>
                                             <h3 className="text-2xl font-bold text-white tracking-wide mb-2">Add {selectedDb.name}</h3>

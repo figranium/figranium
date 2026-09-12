@@ -1,6 +1,6 @@
 import React from 'react';
 import { THEMES, ThemeDefinition, ThemeId } from '../../utils/theme';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface ThemeIntroModalProps {
     open: boolean;
@@ -22,7 +22,7 @@ const ThemeIntroModal: React.FC<ThemeIntroModalProps> = ({ open, currentThemeId,
             <div className="glass-card w-full max-w-3xl max-h-[85vh] flex flex-col rounded-[32px] border border-white/10 p-8 text-left shadow-2xl overflow-hidden">
                 <div className="flex justify-between items-center mb-2 shrink-0">
                     <h2 className="text-lg md:text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                        <MaterialIcon name="palette" className="text-3xl" />
+                        <TablerIcon name="palette" className="text-3xl" />
                         Choose your theme
                     </h2>
                 </div>
@@ -55,7 +55,7 @@ const ThemeIntroModal: React.FC<ThemeIntroModalProps> = ({ open, currentThemeId,
                                     <div className="absolute top-3 right-3 flex items-center gap-2">
                                         {isActive && (
                                             <span className="bg-white text-black px-2 py-1 rounded-full text-xs font-bold tracking-widest shadow-xl flex items-center gap-1">
-                                                <MaterialIcon name="check" className="text-xs" />
+                                                <TablerIcon name="check" className="text-xs" />
                                                 Active
                                             </span>
                                         )}

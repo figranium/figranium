@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { Task, VarType, Credential, TaskOutput, ExtractionField, ExtractionGroup } from '../../types';
 import CodeEditor from '../CodeEditor';
 import CopyButton from '../CopyButton';
@@ -229,7 +229,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                     : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:bg-[var(--app-glass-card-hover)] focus-visible:ring-white/50'
                     }`}
             >
-                <MaterialIcon name={icon} className="text-sm" />
+                <TablerIcon name={icon} className="text-sm" />
                 {label}
             </button>
         );
@@ -253,7 +253,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                             aria-label="Close settings"
                             title="Close settings"
                         >
-                            <MaterialIcon name="close" />
+                            <TablerIcon name="close" />
                         </button>
                     </div>
 
@@ -297,7 +297,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 }`}
                                         >
                                             <div className="w-8 h-8 rounded-full bg-[var(--app-input)] flex items-center justify-center">
-                                                <MaterialIcon name="smart_toy" className="text-[var(--app-text-muted)]" />
+                                                <TablerIcon name="smart_toy" className="text-[var(--app-text-muted)]" />
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-[var(--app-text)]">Agent Mode</div>
@@ -312,7 +312,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 }`}
                                         >
                                             <div className="w-8 h-8 rounded-full bg-[var(--app-input)] flex items-center justify-center">
-                                                <MaterialIcon name="api" className="text-[var(--app-text-muted)]" />
+                                                <TablerIcon name="api" className="text-[var(--app-text-muted)]" />
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-[var(--app-text)]">Scrape Mode</div>
@@ -366,7 +366,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                     aria-label="Remove variable"
                                                     title="Remove variable"
                                                 >
-                                                    <MaterialIcon name="delete" className="text-sm" />
+                                                    <TablerIcon name="delete" className="text-sm" />
                                                 </button>
                                             </div>
                                             <div className="pl-1">
@@ -427,7 +427,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                     } ${item.disabled ? 'opacity-20 cursor-not-allowed' : ''}`}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <MaterialIcon name={item.icon} className="text-sm opacity-70" />
+                                                    <TablerIcon name={item.icon} className="text-sm opacity-70" />
                                                     <span className="text-xs font-medium">{item.label}</span>
                                                 </div>
                                                 <div className={`w-8 h-4 rounded-full relative transition-colors ${currentTask[item.key as keyof Task] ? 'bg-[var(--app-accent)]' : 'bg-[var(--app-border-strong)]'}`}>
@@ -443,7 +443,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4">
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-3">
-                                                <MaterialIcon name="translate" className="text-sm opacity-70" />
+                                                <TablerIcon name="translate" className="text-sm opacity-70" />
                                                 <div>
                                                     <p className="text-xs font-medium text-[var(--app-text)]">Translate visited pages</p>
                                                     <p className="mt-1 text-xs text-[var(--app-text-faint)]">Uses translate.js in browser-backed task runs.</p>
@@ -503,7 +503,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                     : 'bg-[var(--app-surface-3)] border-[var(--app-border)] text-[var(--app-text-muted)] opacity-60 hover:opacity-100 hover:border-[var(--app-border-strong)]'
                                                     }`}
                                             >
-                                                <MaterialIcon name={item.icon} className="text-sm opacity-70" />
+                                                <TablerIcon name={item.icon} className="text-sm opacity-70" />
                                                 <span className="text-xs font-bold tracking-tight">{item.label}</span>
                                             </button>
                                         ))}
@@ -524,7 +524,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     options={cabinets.length ? cabinets.map(c => ({ value: c.id, label: `${c.name}${c.isDefault ? ' (Default)' : ''}`, icon: 'inventory_2' })) : [{ value: '', label: 'Loading cabinets…', disabled: true }]}
                                     ariaLabel="Download cabinet"
                                 />
-                                <a href="/cabinets" className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-[var(--app-accent)] hover:opacity-80"><MaterialIcon name="open_in_new" className="text-sm" /> Manage Cabinets</a>
+                                <a href="/cabinets" className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Cabinets</a>
                             </div>
                         )}
 
@@ -630,7 +630,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                                 title="Remove field"
                                                                 aria-label="Remove field"
                                                             >
-                                                                <MaterialIcon name="close" className="text-base" />
+                                                                <TablerIcon name="close" className="text-base" />
                                                             </button>
                                                         </div>
                                                         <div className="flex items-center gap-2">
@@ -650,7 +650,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                                     title="Pick Selector in Browser"
                                                                     aria-label="Pick Selector in Browser"
                                                                 >
-                                                                    <MaterialIcon name="my_location" className="text-lg" />
+                                                                    <TablerIcon name="my_location" className="text-lg" />
                                                                 </button>
                                                             )}
                                                         </div>
@@ -701,7 +701,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                     onClick={addField}
                                                     className="flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-[var(--app-border)] text-xs font-bold tracking-tight text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:border-[var(--app-border-strong)] transition-colors"
                                                 >
-                                                    <MaterialIcon name="add" className="text-base" />
+                                                    <TablerIcon name="add" className="text-base" />
                                                     Add Field
                                                 </button>
 
@@ -725,7 +725,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                                     title="Remove group"
                                                                     aria-label="Remove group"
                                                                 >
-                                                                    <MaterialIcon name="close" className="text-base" />
+                                                                    <TablerIcon name="close" className="text-base" />
                                                                 </button>
                                                             </div>
                                                             <div className="flex items-center gap-2">
@@ -745,7 +745,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                                         title="Pick Row Container in Browser"
                                                                         aria-label="Pick Row Container in Browser"
                                                                     >
-                                                                        <MaterialIcon name="my_location" className="text-lg" />
+                                                                        <TablerIcon name="my_location" className="text-lg" />
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -782,7 +782,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                                                 title="Remove column"
                                                                                 aria-label="Remove column"
                                                                             >
-                                                                                <MaterialIcon name="close" className="text-base" />
+                                                                                <TablerIcon name="close" className="text-base" />
                                                                             </button>
                                                                         </div>
                                                                         <div className="flex items-center gap-2">
@@ -802,7 +802,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                                                     title="Pick Selector in Browser (within row)"
                                                                                     aria-label="Pick Selector in Browser (within row)"
                                                                                 >
-                                                                                    <MaterialIcon name="my_location" className="text-lg" />
+                                                                                    <TablerIcon name="my_location" className="text-lg" />
                                                                                 </button>
                                                                             )}
                                                                         </div>
@@ -842,7 +842,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                                     onClick={() => addGroupField(group.id)}
                                                                     className="flex items-center justify-center gap-1.5 py-1.5 w-full rounded-lg border border-dashed border-[var(--app-border)] text-xs font-bold tracking-tight text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:border-[var(--app-border-strong)] transition-colors"
                                                                 >
-                                                                    <MaterialIcon name="add" className="text-sm" />
+                                                                    <TablerIcon name="add" className="text-sm" />
                                                                     Add Column
                                                                 </button>
                                                             </div>
@@ -852,7 +852,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                         onClick={addGroup}
                                                         className="flex items-center justify-center gap-1.5 py-2 w-full rounded-xl border border-dashed border-[var(--app-border)] text-xs font-bold tracking-tight text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:border-[var(--app-border-strong)] transition-colors"
                                                     >
-                                                        <MaterialIcon name="add" className="text-base" />
+                                                        <TablerIcon name="add" className="text-base" />
                                                         Add Group
                                                     </button>
                                                 </div>
@@ -980,7 +980,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 onClick={() => setShowNewCredForm(v => !v)}
                                                 className="text-xs font-bold text-[var(--app-text-muted)] hover:text-[var(--app-text)] transition-colors flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded"
                                             >
-                                                <MaterialIcon name="add" className="text-xs" />
+                                                <TablerIcon name="add" className="text-xs" />
                                                 New
                                             </button>
                                         </div>
@@ -1048,7 +1048,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                             <span className="text-xs text-[var(--app-text-faint)] ml-2">{c.config.baseUrl}</span>
                                                         </div>
                                                         <button onClick={() => deleteCredential(c.id)} className="text-[var(--app-text-faint)] hover:text-red-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded">
-                                                            <MaterialIcon name="delete" className="text-sm" />
+                                                            <TablerIcon name="delete" className="text-sm" />
                                                         </button>
                                                     </div>
                                                 ))}
@@ -1145,7 +1145,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                             disabled={isCreatingVersion || versionsLoading}
                                             className="theme-accent-bg flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-border-strong)]"
                                         >
-                                            <MaterialIcon name={isCreatingVersion ? 'progress_activity' : 'add'} className={`text-sm ${isCreatingVersion ? 'animate-spin' : ''}`} />
+                                            <TablerIcon name={isCreatingVersion ? 'progress_activity' : 'add'} className={`text-sm ${isCreatingVersion ? 'animate-spin' : ''}`} />
                                             {isCreatingVersion ? 'Creating…' : 'New Version'}
                                         </button>
                                     </div>
@@ -1179,7 +1179,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                     title="Preview version"
                                                     aria-label="Preview version"
                                                 >
-                                                    <MaterialIcon name="visibility" className="text-sm" />
+                                                    <TablerIcon name="visibility" className="text-sm" />
                                                 </button>
                                                 <button
                                                     onClick={() => onRollback(v.id)}
@@ -1187,7 +1187,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                     title="Rollback to this version"
                                                     aria-label="Rollback to this version"
                                                 >
-                                                    <MaterialIcon name="restore" className="text-sm" />
+                                                    <TablerIcon name="restore" className="text-sm" />
                                                 </button>
                                             </div>
                                         </div>
@@ -1230,7 +1230,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                             }}
                             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-500 transition-colors hover:bg-red-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
                         >
-                            <MaterialIcon name="delete" className="text-sm" />
+                            <TablerIcon name="delete" className="text-sm" />
                             Delete version
                         </button>
                     </div>

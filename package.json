@@ -63,6 +63,7 @@
   "description": "Stack blocks visually to build complex browser workflows and execute them via API",
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
+    "@tabler/icons-react": "^3.46.0",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.2.0",
     "cloakbrowser": "^0.5.8",

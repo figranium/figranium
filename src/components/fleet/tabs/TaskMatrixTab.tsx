@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import MaterialIcon from '../../MaterialIcon';
+import TablerIcon from '../../TablerIcon';
 import { FleetWorkerState } from '../../../types';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -125,7 +125,7 @@ const TaskMatrixTab: React.FC<TaskMatrixTabProps> = ({ workers, rows, fleetConfi
                                         className="p-1 rounded hover:bg-white/5 text-white/40 hover:text-cyan-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         title="Center viewport on active node"
                                     >
-                                        <MaterialIcon name="center_focus_strong" className="text-xs" />
+                                        <TablerIcon name="center_focus_strong" className="text-xs" />
                                     </button>
                                 </div>
                             </div>

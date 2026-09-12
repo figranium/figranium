@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 export interface DatabaseConfigStatus {
     configured: boolean;
@@ -46,7 +46,7 @@ const DatabasePanel: React.FC<DatabasePanelProps> = ({ config, loading, saving, 
             <div className="mb-6">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--app-surface-2)]">
-                        <MaterialIcon name="database" className="text-lg text-[var(--app-text)]" />
+                        <TablerIcon name="database" className="text-lg text-[var(--app-text)]" />
                     </div>
                     <div>
                         <h3 className="text-lg font-bold text-[var(--app-text)]">PostgreSQL</h3>
@@ -90,7 +90,7 @@ const DatabasePanel: React.FC<DatabasePanelProps> = ({ config, loading, saving, 
                     disabled={loading || saving}
                     className="inline-flex items-center gap-2 rounded-xl bg-[var(--app-accent)] px-4 py-2.5 text-xs font-bold text-[var(--app-accent-text)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    <MaterialIcon name="save" className="text-sm" />
+                    <TablerIcon name="save" className="text-sm" />
                     {saving ? 'Saving…' : 'Save configuration'}
                 </button>
             </div>

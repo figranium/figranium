@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface HeadfulModalProps {
     isHeadfulOpen: boolean;
@@ -60,7 +60,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             {isInspectLoading ? (
                                 <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                             ) : (
-                                <MaterialIcon name={isInspectMode ? 'visibility_off' : 'center_focus_strong'} className="text-[14px]" />
+                                <TablerIcon name={isInspectMode ? 'visibility_off' : 'center_focus_strong'} className="text-[14px]" />
                             )}
                             {isInspectMode ? 'Stop Inspect' : 'Inspect UI'}
                         </button>
@@ -71,7 +71,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             title="Toggle fullscreen"
                             aria-label="Toggle fullscreen"
                         >
-                            <MaterialIcon name="fullscreen" className="text-[16px]" />
+                            <TablerIcon name="fullscreen" className="text-[16px]" />
                         </button>
                         <button
                             type="button"
@@ -80,7 +80,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             title="Close Browser"
                             aria-label="Close Browser"
                         >
-                            <MaterialIcon name="close" className="text-[16px]" />
+                            <TablerIcon name="close" className="text-[16px]" />
                         </button>
                     </div>
                 </div>
@@ -92,7 +92,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                         </div>
                     ) : useNovnc === false ? (
                         <div className="text-center p-8 animate-in fade-in duration-300">
-                            <MaterialIcon name="open_in_new" className="text-6xl text-white/20 mb-4 block" />
+                            <TablerIcon name="open_in_new" className="text-6xl text-white/20 mb-4 block" />
                             <h3 className="text-white text-lg font-bold mb-2">Browser Opened Natively</h3>
                             <p className="text-white/60 text-sm max-w-md mx-auto leading-relaxed mb-6">
                                 The headful browser has been launched in a separate window on your desktop.

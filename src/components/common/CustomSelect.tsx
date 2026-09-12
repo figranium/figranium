@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 export type SelectValue = string | number;
 
@@ -168,10 +168,10 @@ export default function CustomSelect<T extends SelectValue>({
             >
                 <span className="flex items-center gap-2 min-w-0">
                     {selected?.iconUrl ? <img src={selected.iconUrl} alt="" className={`w-4 h-4 object-contain shrink-0 ${selected.iconImageClassName || ''}`} /> : null}
-                    {!selected?.iconUrl && selected?.icon ? <MaterialIcon name={selected.icon} className={`text-base shrink-0 ${selected.iconClassName || 'theme-text-faint'}`} /> : null}
+                    {!selected?.iconUrl && selected?.icon ? <TablerIcon name={selected.icon} className={`text-base shrink-0 ${selected.iconClassName || 'theme-text-faint'}`} /> : null}
                     <span className={`truncate ${selected ? '' : 'theme-text-faint'}`}>{selected?.label || placeholder}</span>
                 </span>
-                <MaterialIcon name="expand_more" className={`text-base shrink-0 transition-transform ${position ? 'rotate-180' : ''}`} />
+                <TablerIcon name="expand_more" className={`text-base shrink-0 transition-transform ${position ? 'rotate-180' : ''}`} />
             </button>
             {position ? createPortal(
                 <div
@@ -197,10 +197,10 @@ export default function CustomSelect<T extends SelectValue>({
                         >
                             <span className="flex items-center gap-2 min-w-0">
                                 {option.iconUrl ? <img src={option.iconUrl} alt="" className={`w-4 h-4 object-contain shrink-0 ${option.iconImageClassName || ''}`} /> : null}
-                                {!option.iconUrl && option.icon ? <MaterialIcon name={option.icon} className={`text-base shrink-0 ${option.iconClassName || 'theme-text-faint'}`} /> : null}
+                                {!option.iconUrl && option.icon ? <TablerIcon name={option.icon} className={`text-base shrink-0 ${option.iconClassName || 'theme-text-faint'}`} /> : null}
                                 <span className="truncate">{option.label}</span>
                             </span>
-                            {option.value === value ? <MaterialIcon name="check" className="text-sm shrink-0" /> : null}
+                            {option.value === value ? <TablerIcon name="check" className="text-sm shrink-0" /> : null}
                         </button>
                     ))}
                 </div>,
@@ -289,7 +289,7 @@ export function CustomCombobox({ value, options, onChange, ariaLabel, placeholde
                     autoFocus={autoFocus}
                 />
                 <button type="button" onClick={() => position ? close() : open()} className="absolute right-0 top-1/2 -translate-y-1/2 theme-text-faint" tabIndex={-1} aria-hidden="true">
-                    <MaterialIcon name="expand_more" className="text-base" />
+                    <TablerIcon name="expand_more" className="text-base" />
                 </button>
             </div>
             {position && filtered.length ? createPortal(
@@ -297,7 +297,7 @@ export function CustomCombobox({ value, options, onChange, ariaLabel, placeholde
                     {filtered.map((option, index) => (
                         <button key={option} type="button" role="option" aria-selected={option === value} onMouseEnter={() => setActiveIndex(index)} onClick={() => choose(option)} className={`custom-dropdown-option ${activeIndex === index ? 'custom-dropdown-option-active' : ''}`}>
                             <span className="truncate font-mono normal-case tracking-normal">{option}</span>
-                            {option === value ? <MaterialIcon name="check" className="text-sm" /> : null}
+                            {option === value ? <TablerIcon name="check" className="text-sm" /> : null}
                         </button>
                     ))}
                 </div>,

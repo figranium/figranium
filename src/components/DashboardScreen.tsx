@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Execution, Task } from '../types';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 import TaskCard from './TaskCard';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
 import CustomSelect from './common/CustomSelect';
@@ -100,13 +100,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                         </div>
                         <div className="app-toolbar">
                             <button onClick={() => { setSelectedTaskIds([]); setIsExportModalOpen(true); }} className="app-button-secondary" title="Export Tasks">
-                                <MaterialIcon name="download" className="text-base" /> Export
+                                <TablerIcon name="download" className="text-base" /> Export
                             </button>
                             <button onClick={() => fileInputRef.current?.click()} className="app-button-secondary" title="Import Tasks">
-                                <MaterialIcon name="upload" className="text-base" /> Import
+                                <TablerIcon name="upload" className="text-base" /> Import
                             </button>
                             <button onClick={onNewTask} className="app-button-primary shine-effect" aria-label="Create new Task (Alt + N)" title="Create new Task (Alt + N)">
-                                <MaterialIcon name="add" className="text-base" /> Create Task
+                                <TablerIcon name="add" className="text-base" /> Create Task
                             </button>
                             <input ref={fileInputRef} type="file" accept="application/json" multiple className="hidden" onChange={handleFileChange} />
                         </div>
@@ -129,9 +129,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                             </div>
                             <div className="app-toolbar">
                                 <label className="relative block w-[240px] max-sm:w-full">
-                                    <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-base theme-text-faint" />
+                                    <TablerIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-base theme-text-faint" />
                                     <input ref={searchInputRef} value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search Tasks…  /" className="app-input-control w-full pl-9 pr-8" aria-label="Search Tasks" />
-                                    {searchQuery ? <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 theme-text-faint" aria-label="Clear search"><MaterialIcon name="close" className="text-sm" /></button> : null}
+                                    {searchQuery ? <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 theme-text-faint" aria-label="Clear search"><TablerIcon name="close" className="text-sm" /></button> : null}
                                 </label>
                                 <CustomSelect
                                     value={sortBy}
@@ -154,13 +154,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                             </div>
                         ) : (
                             <div className="app-empty-state">
-                                <div className="app-empty-icon"><MaterialIcon name={tasks.length ? 'search_off' : 'account_tree'} className="text-2xl" /></div>
+                                <div className="app-empty-icon"><TablerIcon name={tasks.length ? 'search_off' : 'account_tree'} className="text-2xl" /></div>
                                 <div>
                                     <h3 className="text-sm font-bold theme-text">{tasks.length ? 'No matching Tasks' : 'Create your first Task'}</h3>
                                     <p className="mt-2 text-xs theme-text-faint">{tasks.length ? 'Try another search term.' : 'Build a Task in the visual editor and run it when you are ready.'}</p>
                                 </div>
                                 <button onClick={tasks.length ? () => setSearchQuery('') : onNewTask} className="app-button-primary">
-                                    <MaterialIcon name={tasks.length ? 'close' : 'add'} className="text-base" /> {tasks.length ? 'Clear search' : 'Create Task'}
+                                    <TablerIcon name={tasks.length ? 'close' : 'add'} className="text-base" /> {tasks.length ? 'Clear search' : 'Create Task'}
                                 </button>
                             </div>
                         )}
@@ -182,7 +182,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-2">
                             {tasks.map((task) => task.id ? (
                                 <button key={task.id} onClick={() => toggleExportSelection(task.id!)} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedTaskIds.includes(task.id) ? 'bg-blue-500/10 border-blue-500/30' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
-                                    <div className={`w-5 h-5 rounded flex items-center justify-center border ${selectedTaskIds.includes(task.id) ? 'bg-blue-500 border-blue-400 text-white' : 'border-white/20'}`}>{selectedTaskIds.includes(task.id) ? <MaterialIcon name="check" className="text-[14px]" /> : null}</div>
+                                    <div className={`w-5 h-5 rounded flex items-center justify-center border ${selectedTaskIds.includes(task.id) ? 'bg-blue-500 border-blue-400 text-white' : 'border-white/20'}`}>{selectedTaskIds.includes(task.id) ? <TablerIcon name="check" className="text-[14px]" /> : null}</div>
                                     <div className="flex-1 min-w-0"><div className="text-sm font-bold text-white truncate">{task.name || 'Untitled'}</div><div className="text-xs text-white/40 font-mono truncate">{task.url || 'No URL'}</div></div>
                                 </button>
                             ) : null)}

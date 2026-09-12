@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface CenterAlertProps {
     message: string;
@@ -31,9 +31,9 @@ const CenterAlert: React.FC<CenterAlertProps> = ({ message, tone, onClose }) => 
             >
                 <div className="mt-0.5">
                     {tone === 'error' ? (
-                        <MaterialIcon name="error" className="text-red-400 text-lg" />
+                        <TablerIcon name="error" className="text-red-400 text-lg" />
                     ) : (
-                        <MaterialIcon name="check_circle" className="text-emerald-400 text-lg" />
+                        <TablerIcon name="check_circle" className="text-emerald-400 text-lg" />
                     )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -48,7 +48,7 @@ const CenterAlert: React.FC<CenterAlertProps> = ({ message, tone, onClose }) => 
                     aria-label="Close notification"
                     title="Close"
                 >
-                    <MaterialIcon name="close" className="text-base" />
+                    <TablerIcon name="close" className="text-base" />
                 </button>
             </div>
         </div>

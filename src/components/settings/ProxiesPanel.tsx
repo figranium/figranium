@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { PanelShell, LoadingState, EmptyState } from '../common/ListState';
 import CustomSelect from '../common/CustomSelect';
 
@@ -252,7 +252,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                     title="Refresh proxy list"
                     aria-label="Refresh proxy list"
                 >
-                    <MaterialIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} />
+                    <TablerIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} />
                     Refresh
                 </button>
             )}
@@ -388,7 +388,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                         onClick={handleBulkDelete}
                         className="ml-auto inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-bold tracking-widest text-red-400 transition-all hover:bg-red-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     >
-                        <MaterialIcon name="delete" className="text-base" />
+                        <TablerIcon name="delete" className="text-base" />
                         Delete Selected
                     </button>
                 )}
@@ -496,7 +496,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                             />
                                         ) : (
                                             <div title="Host IP (Cannot be deleted)" className="flex items-center justify-center opacity-70">
-                                                <MaterialIcon name="computer" className="text-lg text-white" />
+                                                <TablerIcon name="computer" className="text-lg text-white" />
                                             </div>
                                         )}
                                     </div>
@@ -508,7 +508,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                             <span>{proxy.server}</span>
                                             {proxy.isRotatingPool && (
                                                 <span className="px-1.5 py-0.5 rounded bg-white/10 text-white font-bold inline-flex items-center gap-1">
-                                                    <MaterialIcon name="autorenew" className="text-xs" />
+                                                    <TablerIcon name="autorenew" className="text-xs" />
                                                     Pool
                                                     {proxy.estimatedPoolSize ? `(~${proxy.estimatedPoolSize})` : ''}
                                                 </span>
@@ -522,7 +522,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                             title={isDefault ? "Current default proxy" : "Set as default proxy"}
                                             aria-label={isDefault ? "Current default proxy" : "Set as default proxy"}
                                         >
-                                            {isDefault ? <MaterialIcon name="star" className="text-base" /> : <MaterialIcon name="star_outline" className="text-base" />}
+                                            {isDefault ? <TablerIcon name="star" className="text-base" /> : <TablerIcon name="star_outline" className="text-base" />}
                                             {isDefault ? 'Default' : 'Set Default'}
                                         </button>
                                         {proxy.id !== 'host' && (
@@ -541,7 +541,7 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                                                     title="Delete proxy"
                                                     aria-label="Delete proxy"
                                                 >
-                                                    <MaterialIcon name="delete" className="text-base" />
+                                                    <TablerIcon name="delete" className="text-base" />
                                                     Delete
                                                 </button>
                                             </>

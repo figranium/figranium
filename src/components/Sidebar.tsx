@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 interface SidebarProps {
     onNavigate: (screen: 'dashboard' | 'editor' | 'settings' | 'executions' | 'captures' | 'cabinets') => void;
@@ -29,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
                     title="New Task (Alt/Option + N)"
                     aria-label="New Task (Alt/Option + N)"
                 >
-                    <MaterialIcon name="add" className="text-2xl theme-text" />
+                    <TablerIcon name="add" className="text-2xl theme-text" />
                 </button>
 
                 {([
@@ -47,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
                         title={title}
                         aria-label={title}
                     >
-                        <MaterialIcon name={icon} className="text-2xl theme-text" />
+                        <TablerIcon name={icon} className="text-2xl theme-text" />
                     </button>
                 ))}
             </div>
@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
                 title="Logout (Alt/Option + L)"
                 aria-label="Logout (Alt/Option + L)"
             >
-                <MaterialIcon name="logout" className="text-2xl theme-text-faint" />
+                <TablerIcon name="logout" className="text-2xl theme-text-faint" />
             </button>
         </aside>
     );

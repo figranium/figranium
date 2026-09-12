@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router-dom';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 import { Execution, ConfirmRequest } from '../types';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { normalizeTaskOutcome, taskOutcomeBadgeClass, taskOutcomeLabel } from '../utils/taskOutcome';
@@ -41,7 +41,7 @@ const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<Exec
             >
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-xl border theme-border theme-input flex items-center justify-center shrink-0">
-                        <MaterialIcon name={execution.source === 'api' ? 'cloud' : 'monitor'} className="text-lg theme-text-faint" />
+                        <TablerIcon name={execution.source === 'api' ? 'cloud' : 'monitor'} className="text-lg theme-text-faint" />
                     </div>
                     <div className="min-w-0">
                         {execution.taskName ? (
@@ -64,7 +64,7 @@ const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<Exec
                     aria-label={`Delete execution ${execution.id}`}
                     title="Delete execution"
                 >
-                    <MaterialIcon name="delete" className="text-base" />
+                    <TablerIcon name="delete" className="text-base" />
                 </button>
             </div>
         </div>
@@ -146,9 +146,9 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                     <div><h1 className="app-page-title">Executions</h1><p className="app-page-subtitle">Run history and task outcomes</p></div>
                     <div className="app-toolbar">
                         <button onClick={loadExecutions} disabled={loading} className="app-button-secondary" aria-busy={loading}>
-                            <MaterialIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} /> Refresh
+                            <TablerIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} /> Refresh
                         </button>
-                        <button onClick={clearExecutions} className="app-button-danger"><MaterialIcon name="delete" className="text-base" /> Clear all</button>
+                        <button onClick={clearExecutions} className="app-button-danger"><TablerIcon name="delete" className="text-base" /> Clear all</button>
                     </div>
                 </header>
 
@@ -166,14 +166,14 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                         </div>
                     </div>
                     {loading ? (
-                        <div className="app-empty-state min-h-[220px]"><MaterialIcon name="sync" className="text-2xl theme-text-faint animate-spin" /><p className="text-xs theme-text-faint">Loading executions…</p></div>
+                        <div className="app-empty-state min-h-[220px]"><TablerIcon name="sync" className="text-2xl theme-text-faint animate-spin" /><p className="text-xs theme-text-faint">Loading executions…</p></div>
                     ) : filtered.length ? (
                         <FixedSizeList height={Math.min(Math.max(EXECUTION_ITEM_SIZE, filtered.length * EXECUTION_ITEM_SIZE), EXECUTION_ITEM_SIZE * EXECUTION_LIST_MAX_VISIBLE)} itemCount={filtered.length} itemSize={EXECUTION_ITEM_SIZE} width="100%" overscanCount={EXECUTION_OVERSCAN} itemData={itemData} className="custom-scrollbar">
                             {renderExecutionRow}
                         </FixedSizeList>
                     ) : (
                         <div className="app-empty-state">
-                            <div className="app-empty-icon"><MaterialIcon name="history" className="text-2xl" /></div>
+                            <div className="app-empty-icon"><TablerIcon name="history" className="text-2xl" /></div>
                             <div><h3 className="text-sm font-bold theme-text">No executions found</h3><p className="mt-2 text-xs theme-text-faint">Run a Task from the dashboard or editor to see it here.</p></div>
                             <button onClick={() => navigate('/dashboard')} className="app-button-primary">Go to Tasks</button>
                         </div>

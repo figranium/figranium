@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import MaterialIcon from '../../MaterialIcon';
+import TablerIcon from '../../TablerIcon';
 import { ProxyPreset } from '../../../types';
 
 interface InfrastructureTabProps {
@@ -146,14 +146,14 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                                         className="p-1 rounded-lg hover:bg-white/5 text-white/40 hover:text-cyan-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         title="Test"
                                     >
-                                        <MaterialIcon name="wifi" className="text-xs" />
+                                        <TablerIcon name="wifi" className="text-xs" />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteProxy(p.id)}
                                         className="p-1 rounded-lg hover:bg-white/5 text-white/40 hover:text-red-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         title="Delete"
                                     >
-                                        <MaterialIcon name="delete" className="text-xs" />
+                                        <TablerIcon name="delete" className="text-xs" />
                                     </button>
                                 </div>
                             </div>

@@ -1,6 +1,6 @@
 import { ReactNode, useMemo } from 'react';
 import { Action, BlockTestResult, Variable } from '../../types';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import ConfigVariableList from './ConfigVariableList';
 import { isBlockStartAction } from '../../utils/actionBlocks';
 
@@ -107,7 +107,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                 {configuration}
                 <section className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-4">
                     <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
-                        <MaterialIcon name="input" className="text-sm" /> Inputs
+                        <TablerIcon name="input" className="text-sm" /> Inputs
                     </div>
                     <div className="mt-3 space-y-2">
                         {inputEntries.map((entry) => {
@@ -125,7 +125,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                     </div>
                     <div className="mt-4 border-t theme-border pt-4">
                         <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
-                            <MaterialIcon name="output" className="text-sm" /> Output
+                            <TablerIcon name="output" className="text-sm" /> Output
                         </div>
                         <p className="mt-2 text-xs leading-5 text-[var(--app-text-muted)]">{getExpectedOutput(action)}</p>
                         {action.varName && <p className="mt-2 font-mono text-[11px] text-blue-500">Stores in {action.varName}</p>}
@@ -138,7 +138,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                 <section className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-4" aria-live="polite">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
-                            <MaterialIcon name="science" className="text-sm" /> Test block
+                            <TablerIcon name="science" className="text-sm" /> Test block
                         </div>
                         {testResult && <span className={`text-[10px] font-bold tracking-wider ${statusTone[testResult.status]}`}>{testResult.status.replace('_', ' ')}</span>}
                     </div>
@@ -149,7 +149,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                         aria-busy={isTesting}
                         className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-all ${isTesting ? 'border border-red-400/30 bg-red-500/10 text-red-500 hover:bg-red-500/15' : 'theme-accent-bg hover:opacity-90'}`}
                     >
-                        <MaterialIcon name={isTesting ? 'stop' : 'play_arrow'} className={isTesting ? 'text-sm' : 'text-base'} />
+                        <TablerIcon name={isTesting ? 'stop' : 'play_arrow'} className={isTesting ? 'text-sm' : 'text-base'} />
                         {isTesting ? 'Stop test' : 'Run through block'}
                     </button>
                     {testError && <p className="mt-3 text-xs leading-5 text-red-500">{testError}</p>}

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import MaterialIcon from '../../MaterialIcon';
+import TablerIcon from '../../TablerIcon';
 
 interface VariableTablesTabProps {
     rows: any[];
@@ -121,7 +121,7 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
                             onClick={() => fileInputRef.current?.click()}
                             className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 flex items-center gap-1"
                         >
-                            <MaterialIcon name="upload_file" className="text-sm" />
+                            <TablerIcon name="upload_file" className="text-sm" />
                             From File
                         </button>
                         <input

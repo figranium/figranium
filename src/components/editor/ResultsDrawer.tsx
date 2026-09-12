@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import ResultsPane from './ResultsPane';
 import { Results, ConfirmRequest } from '../../types';
 
@@ -44,7 +44,7 @@ const ResultsDrawer: React.FC<ResultsDrawerProps> = ({
                 aria-label={isOpen ? "Close Results Drawer" : "Open Results Drawer"}
                 title={isOpen ? "Close Results Drawer" : "Open Results Drawer"}
             >
-                <MaterialIcon name="drag_indicator" className={`text-white/30 text-xl transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`} />
+                <TablerIcon name="drag_indicator" className={`text-white/30 text-xl transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             <div className="h-full w-full overflow-y-auto custom-scrollbar p-4">
                 <ResultsPane

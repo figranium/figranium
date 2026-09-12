@@ -1,5 +1,5 @@
 import React from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface SettingsHeaderProps {
     tab: 'system' | 'proxies';
@@ -29,7 +29,7 @@ const SettingsHeader: React.FC<SettingsHeaderProps> = ({ tab, onTabChange }) => 
                         onClick={() => onTabChange(t)}
                         className={`px-4 py-2 text-xs font-bold tracking-widest rounded-lg transition-all focus:outline-none focus-visible:ring-2 flex items-center gap-2 ${tab === t ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                     >
-                        <MaterialIcon name={TAB_ICONS[t]} className="text-[14px]" />
+                        <TablerIcon name={TAB_ICONS[t]} className="text-[14px]" />
                         {t}
                     </button>
                 ))}

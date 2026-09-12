@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import MaterialIcon from "./MaterialIcon";
+import TablerIcon from "./TablerIcon";
 import { copyToClipboard } from "../utils/clipboard";
 
 interface CopyButtonProps {
@@ -49,12 +49,12 @@ const CopyButton: React.FC<CopyButtonProps> = ({
       aria-label={label || title || "Copy to clipboard"}
     >
       {copied ? (
-        <MaterialIcon
+        <TablerIcon
           name="check"
           className={`${iconClassName || "text-sm"} text-green-400`}
         />
       ) : (
-        <MaterialIcon
+        <TablerIcon
           name="content_copy"
           className={iconClassName || "text-sm"}
         />

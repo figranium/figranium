@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Variable } from '../../types';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { BLOCK_OUTPUT_VARIABLE, MORE_RESERVED_VARIABLES, ReservedVariableDefinition } from '../../utils/reservedVariables';
 
 interface ConfigVariableListProps {
@@ -55,7 +55,7 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
                 title={unavailable ? 'Available only inside a For Each loop' : canInsertVariable ? `Insert {$${variable.name}}` : `Drag {$${variable.name}} into a field`}
             >
                 <span className="flex w-8 shrink-0 items-center justify-center border-r theme-border text-[var(--app-text-muted)]">
-                    <MaterialIcon name={variable.icon} className="text-sm" />
+                    <TablerIcon name={variable.icon} className="text-sm" />
                 </span>
                 <span className="truncate px-3 py-2 font-mono text-xs text-[var(--app-text)]">{variable.name}</span>
             </button>
@@ -67,7 +67,7 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
         <section className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-4">
             <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
-                    <MaterialIcon name="variables" className="text-sm" />
+                    <TablerIcon name="variables" className="text-sm" />
                     Variables
                 </div>
                 <span className="text-[10px] text-[var(--app-text-faint)]">{entries.length}</span>
@@ -89,7 +89,7 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
                             title={canInsertVariable ? `Insert {$${name}}` : `Drag {$${name}} into a field`}
                         >
                             <span className="flex w-8 shrink-0 items-center justify-center border-r theme-border text-[var(--app-text-muted)]">
-                                <MaterialIcon name={variableTypeIcon[variable.type]} className="text-sm" />
+                                <TablerIcon name={variableTypeIcon[variable.type]} className="text-sm" />
                             </span>
                             <span className="truncate px-3 py-2 font-mono text-xs text-[var(--app-text)]">{name}</span>
                         </button>

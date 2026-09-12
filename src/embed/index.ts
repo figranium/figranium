@@ -10,7 +10,7 @@ export { default as CanvasView } from '../components/editor/CanvasView';
 export { default as ActionItem } from '../components/editor/ActionItem';
 export { default as EditorTopBar } from '../components/editor/EditorTopBar';
 export { default as StickyNote } from '../components/editor/StickyNote';
-export { default as MaterialIcon } from '../components/MaterialIcon';
+export { default as TablerIcon } from '../components/TablerIcon';
 export { default as RichInput } from '../components/RichInput';
 export { default as CodeEditor } from '../components/CodeEditor';
 export { default as CustomSelect } from '../components/common/CustomSelect';

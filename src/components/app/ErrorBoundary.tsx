@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 
 interface ErrorBoundaryProps {
     children: ReactNode;
@@ -36,7 +36,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <div className="fixed inset-0 z-[999] theme-bg flex items-center justify-center p-6">
                 <div className="glass-card p-10 rounded-[40px] text-center space-y-4 max-w-lg">
                     <div className="w-12 h-12 mx-auto rounded-full border theme-border flex items-center justify-center">
-                        <MaterialIcon name="error" className="text-lg theme-text" />
+                        <TablerIcon name="error" className="text-lg theme-text" />
                     </div>
                     <div className="space-y-2">
                         <p className="text-xs font-bold tracking-[0.4em] theme-text-muted">Something went wrong</p>

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmRequest, CaptureEntry } from '../types';
 import CaptureCard from './CaptureCard';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 interface CapturesScreenProps {
     onConfirm: (request: string | ConfirmRequest) => Promise<boolean>;
@@ -72,14 +72,14 @@ const CapturesScreen: React.FC<CapturesScreenProps> = ({ onConfirm, onNotify }) 
                             title="Refresh captures"
                             aria-label="Refresh captures"
                         >
-                            <MaterialIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} />
+                            <TablerIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} />
                             Refresh
                         </button>
                         <button onClick={clearCaptures} className="app-button-danger"
                             title="Clear all"
                             aria-label="Clear all captures"
                         >
-                            <MaterialIcon name="delete" className="text-base" /> Clear all
+                            <TablerIcon name="delete" className="text-base" /> Clear all
                         </button>
                         <button
                             onClick={() => navigate('/executions')}
@@ -87,7 +87,7 @@ const CapturesScreen: React.FC<CapturesScreenProps> = ({ onConfirm, onNotify }) 
                             title="Go to Executions (Alt + 3)"
                             aria-label="Go to Executions (Alt + 3)"
                         >
-                            <MaterialIcon name="history" className="text-[16px]" />
+                            <TablerIcon name="history" className="text-[16px]" />
                             Executions
                         </button>
                     </div>
@@ -97,13 +97,13 @@ const CapturesScreen: React.FC<CapturesScreenProps> = ({ onConfirm, onNotify }) 
                     <div className="app-panel-header"><div><h2 className="text-sm font-bold theme-text">Media library</h2><p className="mt-1 text-[10px] tracking-[0.14em] theme-text-faint">{captures.length} captures</p></div></div>
                     {loading && (
                         <div className="app-empty-state min-h-[220px]">
-                            <MaterialIcon name="sync" className="text-base animate-spin" />
+                            <TablerIcon name="sync" className="text-base animate-spin" />
                             <p className="text-xs theme-text-faint">Loading captures…</p>
                         </div>
                     )}
                     {!loading && captures.length === 0 && (
                         <div className="app-empty-state">
-                            <div className="app-empty-icon"><MaterialIcon name="image" className="text-2xl" /></div>
+                            <div className="app-empty-icon"><TablerIcon name="image" className="text-2xl" /></div>
                             <div>
                                 <h3 className="text-sm font-bold theme-text">No captures found</h3>
                                 <p className="text-xs theme-text-faint max-w-[320px] mx-auto leading-relaxed mt-2">

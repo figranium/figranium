@@ -1,7 +1,7 @@
 import React from 'react';
 import { CaptureEntry } from '../types';
 import CopyButton from './CopyButton';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 interface CaptureCardProps {
     capture: CaptureEntry;
@@ -24,7 +24,7 @@ const CaptureCard: React.FC<CaptureCardProps> = ({ capture, onDelete }) => {
         <article className="h-full min-h-[300px] flex flex-col theme-surface-3 overflow-hidden group">
             <div className="px-4 py-3 border-b theme-border flex items-center justify-between flex-shrink-0">
                 <div className="text-[10px] font-bold theme-text-muted tracking-widest flex items-center gap-1.5">
-                    <MaterialIcon
+                    <TablerIcon
                         name={capture.type === 'recording' ? 'play_circle' : 'photo_camera'}
                         className="text-xs theme-text-faint"
                     />
@@ -44,7 +44,7 @@ const CaptureCard: React.FC<CaptureCardProps> = ({ capture, onDelete }) => {
                         title="Download"
                         aria-label="Download capture"
                     >
-                        <MaterialIcon name="download" className="text-sm" />
+                        <TablerIcon name="download" className="text-sm" />
                     </a>
                     <a
                         href={capture.url}
@@ -54,7 +54,7 @@ const CaptureCard: React.FC<CaptureCardProps> = ({ capture, onDelete }) => {
                         title="Open in new tab"
                         aria-label="Open capture in new tab"
                     >
-                        <MaterialIcon name="open_in_new" className="text-sm" />
+                        <TablerIcon name="open_in_new" className="text-sm" />
                     </a>
                     {onDelete && (
                         <button
@@ -63,7 +63,7 @@ const CaptureCard: React.FC<CaptureCardProps> = ({ capture, onDelete }) => {
                             title="Delete"
                             aria-label="Delete capture"
                         >
-                            <MaterialIcon name="delete" className="text-sm" />
+                            <TablerIcon name="delete" className="text-sm" />
                         </button>
                     )}
                 </div>

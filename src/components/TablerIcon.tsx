@@ -1,0 +1,179 @@
+import React from 'react';
+import { IconGitBranch, IconPlus, IconClick, IconApi, IconArrowLeft, IconCircleChevronDown, IconFileText, IconWand, IconTrash, IconRefresh, IconBan, IconBolt, IconCircleX, IconCategory, IconFocusCentered, IconCheck, IconSquareCheck, IconSquare, IconCircleCheck, IconCircle, IconX, IconCode, IconDeviceDesktop, IconCopy, IconCut, IconCopyPlus, IconFolderPlus, IconFileTypeCsv, IconBraces, IconDatabase, IconTrashX, IconFileDescription, IconServer, IconDownload, IconArrowsMove, IconGripVertical, IconEdit, IconAlertCircle, IconCalendarRepeat, IconChevronDown, IconCompassOff, IconFile, IconMaximize, IconFolder, IconFileZip, IconListNumbers, IconHistory, IconHourglassEmpty, IconHourglassHigh, IconPhoto, IconLogin, IconPackage, IconBrandJavascript, IconJson, IconKeyboard, IconKey, IconWorld, IconLayersLinked, IconList, IconLogout, IconDotsVertical, IconMouse, IconMovie, IconLocation, IconNavigation, IconNumbers, IconBrowser, IconExternalLink, IconPalette, IconUserSearch, IconCamera, IconPlayerPlay, IconLoader2, IconRepeat, IconRocket, IconDeviceFloppy, IconClock, IconFlask, IconSearch, IconSearchOff, IconShield, IconSettings, IconArrowsShuffle, IconCpu, IconSortAscendingLetters, IconAbc, IconStar, IconPlayerStop, IconCornerDownRight, IconArrowsUpDown, IconTerminal2, IconTypography, IconTextSize, IconToggleRight, IconLanguage, IconAdjustmentsHorizontal, IconArrowsMaximize, IconUpload, IconFileUpload, IconVariable, IconShieldCheck, IconVideoOff, IconEye, IconEyeOff, IconLock, IconAlertTriangle, IconWifi, IconNote } from '@tabler/icons-react';
+
+type TablerIconProps = {
+    /** Legacy Material symbol name retained while feature code migrates to semantic names. */
+    name: string;
+    className?: string;
+    fill?: boolean;
+};
+
+type IconComponent = React.ElementType;
+
+const iconNames: Record<string, string> = {
+    account_tree: 'IconGitBranch', add: 'IconPlus', ads_click: 'IconClick', api: 'IconApi',
+    arrow_back: 'IconArrowLeft', arrow_drop_down_circle: 'IconCircleChevronDown', article: 'IconFileText',
+    auto_awesome: 'IconWand', auto_delete: 'IconTrash', autorenew: 'IconRefresh', block: 'IconBan',
+    bolt: 'IconBolt', call_split: 'IconGitBranch', cancel: 'IconCircleX', category: 'IconCategory',
+    center_focus_strong: 'IconFocusCentered', check: 'IconCheck', check_box: 'IconSquareCheck',
+    check_box_outline_blank: 'IconSquare', check_circle: 'IconCircleCheck', circle: 'IconCircle', close: 'IconX',
+    code: 'IconCode', computer: 'IconDeviceDesktop', content_copy: 'IconCopy', content_cut: 'IconCut',
+    copy_all: 'IconCopyPlus', create_new_folder: 'IconFolderPlus', csv: 'IconFileTypeCsv', data_object: 'IconBraces',
+    database: 'IconDatabase', delete: 'IconTrash', delete_sweep: 'IconTrashX', description: 'IconFileDescription',
+    dns: 'IconServer', done: 'IconCheck', download: 'IconDownload', drag_and_drop: 'IconArrowsMove',
+    drag_indicator: 'IconGripVertical', edit: 'IconEdit', error: 'IconAlertCircle', event_repeat: 'IconCalendarRepeat',
+    expand_more: 'IconChevronDown', explore_off: 'IconCompassOff', file: 'IconFile', fit_screen: 'IconMaximize',
+    folder: 'IconFolder', folder_zip: 'IconFileZip', format_list_numbered: 'IconListNumbers', fullscreen: 'IconMaximize',
+    get_content: 'IconFileText', history: 'IconHistory', hourglass_empty: 'IconHourglassEmpty',
+    hourglass_top: 'IconHourglassHigh', image: 'IconPhoto', input: 'IconLogin', inventory_2: 'IconPackage',
+    javascript: 'IconBrandJavascript', json: 'IconJson', keyboard: 'IconKeyboard', key: 'IconKey',
+    language: 'IconWorld', layers: 'IconLayersLinked', list: 'IconList', logout: 'IconLogout', more_vert: 'IconDotsVertical',
+    mouse: 'IconMouse', movie: 'IconMovie', my_location: 'IconLocation', near_me: 'IconLocation',
+    navigation: 'IconNavigation', numbers: 'IconNumbers', open_in_browser: 'IconBrowser', open_in_new: 'IconExternalLink',
+    output: 'IconLogout', palette: 'IconPalette', person_search: 'IconUserSearch', photo_camera: 'IconCamera',
+    play_arrow: 'IconPlayerPlay', play_circle: 'IconPlayerPlay', progress_activity: 'IconLoader2', public: 'IconWorld',
+    published_with_changes: 'IconRefresh', refresh: 'IconRefresh', reload: 'IconRefresh', repeat: 'IconRepeat',
+    restart_alt: 'IconRefresh', restore: 'IconHistory', rocket_launch: 'IconRocket', save: 'IconDeviceFloppy',
+    schedule: 'IconClock', science: 'IconFlask', search: 'IconSearch', search_off: 'IconSearchOff', security: 'IconShield',
+    select: 'IconChevronDown', settings: 'IconSettings', shuffle: 'IconArrowsShuffle', smart_toy: 'IconCpu',
+    sort_by_alpha: 'IconSortAscendingLetters', spellcheck: 'IconAbc', star: 'IconStar', star_border: 'IconStar',
+    star_outline: 'IconStar', stop: 'IconPlayerStop', subdirectory_arrow_right: 'IconCornerDownRight',
+    swap_vert: 'IconArrowsUpDown', sync: 'IconRefresh', task_alt: 'IconCircleCheck', terminal: 'IconTerminal2',
+    text_fields: 'IconTypography', text_format: 'IconTextSize', toggle_on: 'IconToggleRight', translate: 'IconLanguage',
+    tune: 'IconAdjustmentsHorizontal', unarchive: 'IconFileZip', unfold_more: 'IconArrowsMaximize', upload: 'IconUpload',
+    upload_file: 'IconFileUpload', variable_insert: 'IconVariable', variables: 'IconVariable', verified_user: 'IconShieldCheck',
+    videocam_off: 'IconVideoOff', visibility: 'IconEye', visibility_off: 'IconEyeOff', vpn_lock: 'IconLock',
+    wait: 'IconClock', wait_captcha: 'IconHourglassHigh', wait_downloads: 'IconDownload', wait_selector: 'IconClock',
+    warning: 'IconAlertTriangle', wifi: 'IconWifi', sticky_note_2: 'IconNote',
+};
+
+const tablerIcons: Record<string, IconComponent> = {
+    IconGitBranch,
+    IconPlus,
+    IconClick,
+    IconApi,
+    IconArrowLeft,
+    IconCircleChevronDown,
+    IconFileText,
+    IconWand,
+    IconTrash,
+    IconRefresh,
+    IconBan,
+    IconBolt,
+    IconCircleX,
+    IconCategory,
+    IconFocusCentered,
+    IconCheck,
+    IconSquareCheck,
+    IconSquare,
+    IconCircleCheck,
+    IconCircle,
+    IconX,
+    IconCode,
+    IconDeviceDesktop,
+    IconCopy,
+    IconCut,
+    IconCopyPlus,
+    IconFolderPlus,
+    IconFileTypeCsv,
+    IconBraces,
+    IconDatabase,
+    IconTrashX,
+    IconFileDescription,
+    IconServer,
+    IconDownload,
+    IconArrowsMove,
+    IconGripVertical,
+    IconEdit,
+    IconAlertCircle,
+    IconCalendarRepeat,
+    IconChevronDown,
+    IconCompassOff,
+    IconFile,
+    IconMaximize,
+    IconFolder,
+    IconFileZip,
+    IconListNumbers,
+    IconHistory,
+    IconHourglassEmpty,
+    IconHourglassHigh,
+    IconPhoto,
+    IconLogin,
+    IconPackage,
+    IconBrandJavascript,
+    IconJson,
+    IconKeyboard,
+    IconKey,
+    IconWorld,
+    IconLayersLinked,
+    IconList,
+    IconLogout,
+    IconDotsVertical,
+    IconMouse,
+    IconMovie,
+    IconLocation,
+    IconNavigation,
+    IconNumbers,
+    IconBrowser,
+    IconExternalLink,
+    IconPalette,
+    IconUserSearch,
+    IconCamera,
+    IconPlayerPlay,
+    IconLoader2,
+    IconRepeat,
+    IconRocket,
+    IconDeviceFloppy,
+    IconClock,
+    IconFlask,
+    IconSearch,
+    IconSearchOff,
+    IconShield,
+    IconSettings,
+    IconArrowsShuffle,
+    IconCpu,
+    IconSortAscendingLetters,
+    IconAbc,
+    IconStar,
+    IconPlayerStop,
+    IconCornerDownRight,
+    IconArrowsUpDown,
+    IconTerminal2,
+    IconTypography,
+    IconTextSize,
+    IconToggleRight,
+    IconLanguage,
+    IconAdjustmentsHorizontal,
+    IconArrowsMaximize,
+    IconUpload,
+    IconFileUpload,
+    IconVariable,
+    IconShieldCheck,
+    IconVideoOff,
+    IconEye,
+    IconEyeOff,
+    IconLock,
+    IconAlertTriangle,
+    IconWifi,
+    IconNote,
+};
+
+const fallback = IconCircle as IconComponent;
+
+// Material Symbols relied on the surrounding font-size. Tabler icons have a
+// consistent native 24px size, so remove only legacy sizing utilities while
+// retaining colors, animation, opacity, and layout classes.
+const withoutMaterialSize = (className: string) => className
+    .replace(/\btext-(?:xs|sm|base|lg|xl|[2-9]xl)\b/g, '')
+    .replace(/\btext-\[[^\]]*(?:px|rem|em|%)\]\b/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+const TablerIcon = React.memo(({ name, className = '', fill = false }: TablerIconProps) => {
+    const componentName = iconNames[name] || name;
+    const Icon = tablerIcons[componentName] || fallback;
+
+    return <Icon className={`inline-block shrink-0 ${withoutMaterialSize(className)}`} stroke={1.8} fill={fill ? 'currentColor' : 'none'} aria-hidden="true" />;
+});
+
+export default TablerIcon;

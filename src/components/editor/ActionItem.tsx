@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Action, BlockTestResult, Task, Variable } from '../../types';
-import MaterialIcon from '../MaterialIcon';
+import TablerIcon from '../TablerIcon';
 import { ACTION_CATALOG } from './actionCatalog';
 import ActionConfigModal from './ActionConfigModal';
 
@@ -35,39 +35,39 @@ const getActionSummary = (action: Action) => {
 
 const renderBlockMarker = (type: Action['type']) => {
     const iconClass = "text-[12px]";
-    if (type === 'if' || type === 'else') return <MaterialIcon name="call_split" className={`${iconClass} text-white`} />;
-    if (type === 'end') return <MaterialIcon name="subdirectory_arrow_right" className={`${iconClass} text-gray-500`} />;
-    if (type === 'while' || type === 'repeat') return <MaterialIcon name="repeat" className={`${iconClass} text-white`} />;
-    if (type === 'foreach') return <MaterialIcon name="list" className={`${iconClass} text-white`} />;
-    if (type === 'on_error') return <MaterialIcon name="warning" className={`${iconClass} text-red-400`} />;
-    if (type === 'set') return <MaterialIcon name="variable_insert" className={`${iconClass} text-white`} />;
-    if (type === 'stop') return <MaterialIcon name="stop" className={`${iconClass} text-white`} />;
-    if (type === 'click') return <MaterialIcon name="ads_click" className={`${iconClass} text-white`} />;
-    if (type === 'check') return <MaterialIcon name="check_box" className={`${iconClass} text-white`} />;
-    if (type === 'uncheck') return <MaterialIcon name="check_box_outline_blank" className={`${iconClass} text-white`} />;
-    if (type === 'drag_and_drop') return <MaterialIcon name="drag_indicator" className={`${iconClass} text-white`} />;
-    if (type === 'reload') return <MaterialIcon name="refresh" className={`${iconClass} text-white`} />;
-    if (type === 'select') return <MaterialIcon name="arrow_drop_down_circle" className={`${iconClass} text-white`} />;
-    if (type === 'type') return <MaterialIcon name="text_format" className={`${iconClass} text-white`} />;
-    if (type === 'hover') return <MaterialIcon name="my_location" className={`${iconClass} text-white`} />;
-    if (type === 'press') return <MaterialIcon name="keyboard" className={`${iconClass} text-white`} />;
-    if (type === 'wait') return <MaterialIcon name="schedule" className={`${iconClass} text-white`} />;
-    if (type === 'wait_selector') return <MaterialIcon name="schedule" className={`${iconClass} text-white`} />;
-    if (type === 'scroll') return <MaterialIcon name="swap_vert" className={`${iconClass} text-white`} />;
-    if (type === 'javascript') return <MaterialIcon name="javascript" className="!text-[28px] leading-none text-white" />;
-    if (type === 'csv') return <MaterialIcon name="csv" className={`${iconClass} text-white`} />;
-    if (type === 'upload') return <MaterialIcon name="upload_file" className={`${iconClass} text-white`} />;
-    if (type === 'finalize_uploads') return <MaterialIcon name="task_alt" className={`${iconClass} text-white`} />;
-    if (type === 'merge') return <MaterialIcon name="layers" className={`${iconClass} text-white`} />;
-    if (type === 'screenshot') return <MaterialIcon name="photo_camera" className={`${iconClass} text-white`} />;
-    if (type === 'start') return <MaterialIcon name="play_circle" className={`${iconClass} text-white`} />;
-    if (type === 'navigate') return <MaterialIcon name="navigation" className={`${iconClass} text-white`} />;
-    if (type === 'http_request') return <MaterialIcon name="language" className={`${iconClass} text-white`} />;
-    if (type === 'wait_downloads') return <MaterialIcon name="download" className={`${iconClass} text-white`} />;
-    if (type === 'get_content') return <MaterialIcon name="article" className={`${iconClass} text-white`} />;
-    if (type === 'solve_captcha') return <MaterialIcon name="verified_user" className={`${iconClass} text-white`} />;
-    if (type === 'wait_captcha') return <MaterialIcon name="hourglass_top" className={`${iconClass} text-white`} />;
-    if (type === 'do_nothing') return <MaterialIcon name="block" className={`${iconClass} text-white/50`} />;
+    if (type === 'if' || type === 'else') return <TablerIcon name="call_split" className={`${iconClass} text-white`} />;
+    if (type === 'end') return <TablerIcon name="subdirectory_arrow_right" className={`${iconClass} text-gray-500`} />;
+    if (type === 'while' || type === 'repeat') return <TablerIcon name="repeat" className={`${iconClass} text-white`} />;
+    if (type === 'foreach') return <TablerIcon name="list" className={`${iconClass} text-white`} />;
+    if (type === 'on_error') return <TablerIcon name="warning" className={`${iconClass} text-red-400`} />;
+    if (type === 'set') return <TablerIcon name="variable_insert" className={`${iconClass} text-white`} />;
+    if (type === 'stop') return <TablerIcon name="stop" className={`${iconClass} text-white`} />;
+    if (type === 'click') return <TablerIcon name="ads_click" className={`${iconClass} text-white`} />;
+    if (type === 'check') return <TablerIcon name="check_box" className={`${iconClass} text-white`} />;
+    if (type === 'uncheck') return <TablerIcon name="check_box_outline_blank" className={`${iconClass} text-white`} />;
+    if (type === 'drag_and_drop') return <TablerIcon name="drag_indicator" className={`${iconClass} text-white`} />;
+    if (type === 'reload') return <TablerIcon name="refresh" className={`${iconClass} text-white`} />;
+    if (type === 'select') return <TablerIcon name="arrow_drop_down_circle" className={`${iconClass} text-white`} />;
+    if (type === 'type') return <TablerIcon name="text_format" className={`${iconClass} text-white`} />;
+    if (type === 'hover') return <TablerIcon name="my_location" className={`${iconClass} text-white`} />;
+    if (type === 'press') return <TablerIcon name="keyboard" className={`${iconClass} text-white`} />;
+    if (type === 'wait') return <TablerIcon name="schedule" className={`${iconClass} text-white`} />;
+    if (type === 'wait_selector') return <TablerIcon name="schedule" className={`${iconClass} text-white`} />;
+    if (type === 'scroll') return <TablerIcon name="swap_vert" className={`${iconClass} text-white`} />;
+    if (type === 'javascript') return <TablerIcon name="javascript" className="!text-[28px] leading-none text-white" />;
+    if (type === 'csv') return <TablerIcon name="csv" className={`${iconClass} text-white`} />;
+    if (type === 'upload') return <TablerIcon name="upload_file" className={`${iconClass} text-white`} />;
+    if (type === 'finalize_uploads') return <TablerIcon name="task_alt" className={`${iconClass} text-white`} />;
+    if (type === 'merge') return <TablerIcon name="layers" className={`${iconClass} text-white`} />;
+    if (type === 'screenshot') return <TablerIcon name="photo_camera" className={`${iconClass} text-white`} />;
+    if (type === 'start') return <TablerIcon name="play_circle" className={`${iconClass} text-white`} />;
+    if (type === 'navigate') return <TablerIcon name="navigation" className={`${iconClass} text-white`} />;
+    if (type === 'http_request') return <TablerIcon name="language" className={`${iconClass} text-white`} />;
+    if (type === 'wait_downloads') return <TablerIcon name="download" className={`${iconClass} text-white`} />;
+    if (type === 'get_content') return <TablerIcon name="article" className={`${iconClass} text-white`} />;
+    if (type === 'solve_captcha') return <TablerIcon name="verified_user" className={`${iconClass} text-white`} />;
+    if (type === 'wait_captcha') return <TablerIcon name="hourglass_top" className={`${iconClass} text-white`} />;
+    if (type === 'do_nothing') return <TablerIcon name="block" className={`${iconClass} text-white/50`} />;
     return <span className="text-xs text-white/20">|</span>;
 };
 
@@ -243,7 +243,7 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
                             aria-label="Configure block"
                             title="Configure block"
                         >
-                            <MaterialIcon name="tune" className="text-sm" />
+                            <TablerIcon name="tune" className="text-sm" />
                         </button>
                     )}
                 </div>

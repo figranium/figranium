@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 interface AuthScreenProps {
     status: 'login' | 'setup';
@@ -91,7 +91,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                                     aria-label={showPass ? "Hide password" : "Show password"}
                                     title={showPass ? "Hide password" : "Show password"}
                                 >
-                                    <MaterialIcon name={showPass ? "visibility_off" : "visibility"} className="text-lg" />
+                                    <TablerIcon name={showPass ? "visibility_off" : "visibility"} className="text-lg" />
                                 </button>
                             </div>
                         </div>
@@ -116,7 +116,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                                         aria-label={showPassConfirm ? "Hide password confirmation" : "Show password confirmation"}
                                         title={showPassConfirm ? "Hide password confirmation" : "Show password confirmation"}
                                     >
-                                        <MaterialIcon name={showPassConfirm ? "visibility_off" : "visibility"} className="text-lg" />
+                                        <TablerIcon name={showPassConfirm ? "visibility_off" : "visibility"} className="text-lg" />
                                     </button>
                                 </div>
                             </div>

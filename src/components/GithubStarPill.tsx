@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { PointerEvent } from 'react';
-import MaterialIcon from './MaterialIcon';
+import TablerIcon from './TablerIcon';
 
 type GithubStarPillProps = {
     className?: string;
@@ -79,7 +79,7 @@ export default function GithubStarPill({ className = '' }: GithubStarPillProps) 
             <GithubLogo className="h-3.5 w-3.5" />
             GitHub
             <span className="mx-0.5 h-3 w-px bg-white/20" aria-hidden="true" />
-            <MaterialIcon name="star" className="text-sm" fill />
+            <TablerIcon name="star" className="text-sm" fill />
             {count}
         </a>
     );
