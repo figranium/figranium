@@ -54,6 +54,7 @@
   "dependencies": {
     "@fontsource/questrial": "^5.3.0",
     "@fontsource/space-mono": "^5.3.0",
+    "@huggingface/transformers": "^3.8.1",
     "@tabler/icons-react": "^3.46.0",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.2.0",
@@ -76,7 +77,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.11.0",
     "react-window": "^1.8.8",
-    "remark-gfm": "^4.1.18",
+    "remark-gfm": "^4.0.1",
     "session-file-store": "^1.5.0",
     "tree": "^0.1.3"
   },
