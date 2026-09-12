@@ -1,3 +1,5 @@
+const DB_FIELDS = ['db_protocol', 'db_username', 'db_password', 'db_host', 'db_port', 'db_database'];
+
 function firstDefined(...values) {
     return values.find((value) => typeof value === 'string' && value.trim() !== '') || '';
 }
@@ -32,7 +34,31 @@ function getEnvironmentDatabaseConfig() {
     };
 }
 
+async function loadDatabaseConfig() {
+    return null;
+}
+
+async function saveDatabaseConfig() {
+    throw new Error('Database configuration is managed with environment variables.');
+}
+
+function maskedDatabaseConfig(config) {
+    return {
+        configured: Boolean(config),
+        db_protocol: config?.db_protocol ? '••••••••' : '',
+        db_username: config?.db_username ? '••••••••' : '',
+        db_password: config?.db_password ? '••••••••' : '',
+        db_host: config?.db_host ? '••••••••' : '',
+        db_port: config?.db_port ? '••••••••' : '',
+        db_database: config?.db_database ? '••••••••' : ''
+    };
+}
+
 module.exports = {
+    DB_FIELDS,
     getEnvironmentDatabaseConfig,
-    hasEnvironmentDatabaseConfig
+    hasEnvironmentDatabaseConfig,
+    loadDatabaseConfig,
+    maskedDatabaseConfig,
+    saveDatabaseConfig
 };
