@@ -1,1 +1,1 @@
-module.exports = require('@figranium/fiptcha');
+module.exports = require('fiptcha');
