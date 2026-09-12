@@ -11,7 +11,7 @@ async function initDB() {
     initPromise = (async () => {
         const config = getEnvironmentDatabaseConfig();
 
-        const sslEnv = String(process.env.DB_SSL || process.env.DB_POSTGRESDB_SSL || '').toLowerCase();
+        const sslEnv = String(process.env.DB_SSL || process.env.db_ssl || process.env.DB_POSTGRESDB_SSL || '').toLowerCase();
         const sslEnabled = sslEnv === 'true' || sslEnv === '1';
 
         const dbType = config?.db_protocol;
