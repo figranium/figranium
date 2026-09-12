@@ -57,7 +57,6 @@
   "license": "GPL-3.0-only",
   "description": "Stack blocks visually to build complex browser workflows and execute them via API",
   "dependencies": {
-    "fiptcha": "^0.1.0",
     "@fontsource/questrial": "^5.3.0",
     "@fontsource/space-mono": "^5.3.0",
     "@tabler/icons-react": "^3.46.0",
@@ -69,6 +68,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
+    "fiptcha": "^0.1.0",
     "got-scraping": "^4.2.1",
     "idcac-playwright": "^0.2.0",
     "jsdom": "^22.1.0",
