@@ -95,20 +95,7 @@ cd figranium-server
 
 Create a docker-compose.yml file in your project directory:
 ```bash
-services:
-  figranium:
-    image: ghcr.io/figranium/figranium:latest
-    container_name: figranium
-    ports:
-      - "11345:11345"
-      - "54311:54311"
-    volumes:
-      - ./data:/app/data
-      - ./captures:/app/public/captures
-    environment:
-      - PORT=11345
-      - SESSION_SECRET=your_secure_random_string
-    restart: unless-stopped
+wget https://raw.githubusercontent.com/figranium/figranium/main/docker-compose.deploy.yml -O docker-compose.yml
 ```
 ### 3. Start with Docker Compose
 
