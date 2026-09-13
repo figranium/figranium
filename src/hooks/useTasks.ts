@@ -10,6 +10,7 @@ export function useTasks(
     const [tasks, setTasks] = useState<Task[]>([]);
     const [currentTask, setCurrentTask] = useState<Task | null>(null);
     const currentTaskRef = useRef<Task | null>(null);
+    const latestSaveRequestRef = useRef(0);
 
     useEffect(() => {
         currentTaskRef.current = currentTask;
@@ -93,6 +94,7 @@ export function useTasks(
     const saveTask = useCallback(async (markTaskAsSaved: (task: Task | null) => void, currentPath: string, taskOverride?: Task, createVersion: boolean = false) => {
         const taskToUpdate = taskOverride || currentTaskRef.current;
         if (!taskToUpdate) return;
+        const requestId = ++latestSaveRequestRef.current;
         const taskToSave = { ...taskToUpdate, last_opened: Date.now() };
         const query = createVersion ? '?version=true' : '';
         const res = await fetch(`/api/tasks${query}`, {
@@ -101,6 +103,11 @@ export function useTasks(
             body: JSON.stringify(taskToSave)
         });
         const saved = await res.json();
+
+        // Autosaves can overlap. Never let an older response replace newer editor state.
+        if (requestId !== latestSaveRequestRef.current) return;
+
+        currentTaskRef.current = saved;
         setCurrentTask(saved);
         markTaskAsSaved(saved);
         loadTasks();
