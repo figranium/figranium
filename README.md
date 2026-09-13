@@ -9,7 +9,6 @@ Figranium is an open-source, self-hosted alternative to Apify and SaaS cloud scr
 <div align="center">
   <img src="screenshot.png" alt="Figranium Demo" width="100%">
   <p align="center">
-    <i>Watch a video walkthrough of Figranium usage: <b><a href="demo.webm">demo.webm</a></b> or <b><a href="demo.mp4">demo.mp4</a></b></i>
   </p>
 </div>
 
