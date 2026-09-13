@@ -1,7 +1,7 @@
 const assert = require('assert');
 const http = require('http');
 const { chromium } = require('playwright');
-const { solveLocalCaptcha } = require('../src/agent/figranite/captcha-local-solver');
+const { solveLocalCaptcha } = require('fiptcha');
 
 const FIXTURE_HOST = 'captcha.test';
 

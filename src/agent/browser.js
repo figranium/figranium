@@ -6,7 +6,7 @@ const { getProxySelection } = require('../../proxy-rotation');
 const { setupNavigationProtection } = require('../../url-utils');
 const { installMouseHelper } = require('./dom-utils');
 const { getInjectableScript } = require('idcac-playwright');
-const { installTurnstileInterceptor } = require('./figranite/captcha-interceptor');
+const { installTurnstileInterceptor } = require('fiptcha');
 const { loadSharedBrowserState } = require('../../browser-storage-state');
 
 const PROFILE_DIR = path.join(__dirname, '../../data/browser-profile');

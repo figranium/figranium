@@ -608,7 +608,7 @@ findAvailablePort(port, 20)
 
             // Reconcile the optional downloaded CAPTCHA model independently of browser
             // startup. The skip flag returns before resource probing or downloads.
-            const { captchaModelManager } = require('./src/agent/figranite/captcha-model-manager');
+            const { captchaModelManager } = require('fiptcha');
             captchaModelManager.start().catch(err => console.warn('[CAPTCHA_MODEL] Startup skipped:', err.message));
         });
         server.on('upgrade', async (req, socket, head) => {
@@ -688,7 +688,7 @@ findAvailablePort(port, 20)
             } catch { }
 
             try {
-                const { captchaModelManager } = require('./src/agent/figranite/captcha-model-manager');
+                const { captchaModelManager } = require('fiptcha');
                 await captchaModelManager.stop();
             } catch { }
 

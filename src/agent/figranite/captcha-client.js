@@ -1,6 +1,5 @@
 const { loadCaptchaSettings } = require('../../server/storage');
-const { solveLocalCaptcha, readToken } = require('./captcha-local-solver');
-const { parseFlag } = require('./captcha-model-manager');
+const { solveLocalCaptcha, readToken, parseFlag } = require('fiptcha');
 const { validateUrl } = require('../../../url-utils');
 
 const TASK_TYPES = Object.freeze({
