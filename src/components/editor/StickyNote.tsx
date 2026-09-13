@@ -55,6 +55,8 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
     const [isEditing, setIsEditing] = useState(note.content === '');
     const [draft, setDraft] = useState(note.content);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+    const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
+    const [resizeSize, setResizeSize] = useState<{ width: number; height: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
     const resizeRef = useRef<{ startX: number; startY: number; origW: number; origH: number } | null>(null);
@@ -68,7 +70,29 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
         }
     }, [isEditing]);
 
-    // Drag header to move note
+    const getDragPosition = useCallback((clientX: number, clientY: number) => {
+        if (!dragRef.current) return null;
+        const dx = (clientX - dragRef.current.startX) / canvasScale;
+        const dy = (clientY - dragRef.current.startY) / canvasScale;
+        return {
+            x: Math.round(dragRef.current.origX + dx),
+            y: Math.round(dragRef.current.origY + dy),
+        };
+    }, [canvasScale]);
+
+    const getResizeSize = useCallback((clientX: number, clientY: number) => {
+        if (!resizeRef.current) return null;
+        const dx = (clientX - resizeRef.current.startX) / canvasScale;
+        const dy = (clientY - resizeRef.current.startY) / canvasScale;
+        return {
+            width: Math.round(Math.max(160, resizeRef.current.origW + dx)),
+            height: Math.round(Math.max(100, resizeRef.current.origH + dy)),
+        };
+    }, [canvasScale]);
+
+    // Keep drag feedback local and persist only once at the end of the gesture.
+    // Persisting every pointermove creates many concurrent saves whose responses can
+    // arrive out of order and snap the note back to stale coordinates.
     const handleDragPointerDown = useCallback((e: React.PointerEvent) => {
         e.stopPropagation();
         e.preventDefault();
@@ -78,26 +102,28 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
             origX: note.x,
             origY: note.y,
         };
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        setDragPosition({ x: note.x, y: note.y });
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     }, [note.x, note.y]);
 
     const handleDragPointerMove = useCallback((e: React.PointerEvent) => {
         e.stopPropagation();
-        if (!dragRef.current) return;
-        const dx = (e.clientX - dragRef.current.startX) / canvasScale;
-        const dy = (e.clientY - dragRef.current.startY) / canvasScale;
-        onUpdate(note.id, {
-            x: Math.round(dragRef.current.origX + dx),
-            y: Math.round(dragRef.current.origY + dy),
-        });
-    }, [canvasScale, note.id, onUpdate]);
+        const next = getDragPosition(e.clientX, e.clientY);
+        if (next) setDragPosition(next);
+    }, [getDragPosition]);
 
     const handleDragPointerUp = useCallback((e: React.PointerEvent) => {
         e.stopPropagation();
+        const next = getDragPosition(e.clientX, e.clientY) || dragPosition;
         dragRef.current = null;
-    }, []);
+        setDragPosition(null);
+        if (next && (next.x !== note.x || next.y !== note.y)) {
+            onUpdate(note.id, next);
+        }
+    }, [dragPosition, getDragPosition, note.id, note.x, note.y, onUpdate]);
 
-    // Resize handle (bottom-right corner)
+    // Resize handle (bottom-right corner). As with dragging, keep the transient
+    // size local and write it back once to avoid autosave storms.
     const handleResizePointerDown = useCallback((e: React.PointerEvent) => {
         e.stopPropagation();
         e.preventDefault();
@@ -107,29 +133,35 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
             origW: note.width,
             origH: note.height,
         };
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        setResizeSize({ width: note.width, height: note.height });
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     }, [note.width, note.height]);
 
     const handleResizePointerMove = useCallback((e: React.PointerEvent) => {
         e.stopPropagation();
-        if (!resizeRef.current) return;
-        const dx = (e.clientX - resizeRef.current.startX) / canvasScale;
-        const dy = (e.clientY - resizeRef.current.startY) / canvasScale;
-        onUpdate(note.id, {
-            width: Math.round(Math.max(160, resizeRef.current.origW + dx)),
-            height: Math.round(Math.max(100, resizeRef.current.origH + dy)),
-        });
-    }, [canvasScale, note.id, onUpdate]);
+        const next = getResizeSize(e.clientX, e.clientY);
+        if (next) setResizeSize(next);
+    }, [getResizeSize]);
 
     const handleResizePointerUp = useCallback((e: React.PointerEvent) => {
         e.stopPropagation();
+        const next = getResizeSize(e.clientX, e.clientY) || resizeSize;
         resizeRef.current = null;
-    }, []);
+        setResizeSize(null);
+        if (next && (next.width !== note.width || next.height !== note.height)) {
+            onUpdate(note.id, next);
+        }
+    }, [getResizeSize, note.height, note.id, note.width, onUpdate, resizeSize]);
 
     const commitEdit = useCallback(() => {
         onUpdate(note.id, { content: draft });
         setIsEditing(false);
     }, [note.id, draft, onUpdate]);
+
+    const displayX = dragPosition?.x ?? note.x;
+    const displayY = dragPosition?.y ?? note.y;
+    const displayWidth = resizeSize?.width ?? note.width;
+    const displayHeight = resizeSize?.height ?? note.height;
 
     return (
         <>
@@ -137,10 +169,10 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
             data-sticky-note-id={note.id}
             className="absolute select-none group"
             style={{
-                left: note.x,
-                top: note.y,
-                width: note.width,
-                minHeight: note.height,
+                left: displayX,
+                top: displayY,
+                width: displayWidth,
+                minHeight: displayHeight,
                 zIndex: 5,
             }}
             onPointerDown={(e) => e.stopPropagation()}
@@ -163,7 +195,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
             >
                 {/* Header / drag handle */}
                 <div
-                    className="flex items-center justify-between px-2.5 py-1.5 cursor-grab active:cursor-grabbing shrink-0"
+                    className="flex items-center justify-between px-2.5 py-1.5 cursor-grab active:cursor-grabbing shrink-0 touch-none"
                     style={{ background: colors.header }}
                     onPointerDown={handleDragPointerDown}
                     onPointerMove={handleDragPointerMove}
@@ -251,7 +283,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
 
                 {/* Resize handle */}
                 <div
-                    className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize flex items-end justify-end pb-1 pr-1"
+                    className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize flex items-end justify-end pb-1 pr-1 touch-none"
                     onPointerDown={handleResizePointerDown}
                     onPointerMove={handleResizePointerMove}
                     onPointerUp={handleResizePointerUp}
