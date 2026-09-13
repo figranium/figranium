@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.18.1] - 2026-09-13
+
+### CAPTCHA and runtime
+- Extracted Figranium's built-in CAPTCHA solver into the standalone `fiptcha` package while preserving the existing Agent actions, settings, companion commands, and automatic solving flow.
+- Updated Figranium to Fiptcha v0.1.1, which correctly detects and clicks interactable reCAPTCHA v2 checkbox controls and improves iframe readiness handling for CAPTCHA providers.
+
+### Browser, editor, and interface
+- Fixed headful browser sessions so authenticated tabs no longer reopen unexpectedly while cookie synchronization remains intact.
+- Replaced Material Symbols with Tabler icons across the interface, completed missing icon aliases, refined global sizing and task controls, and adopted Tabler folder icons for Cabinets.
+- Bundled Questrial and Space Mono locally to avoid third-party font latency, refreshed the task-editor product capture, and removed obsolete demo video assets and links.
+- Hid automatically managed control-flow markers from the visual editor catalog while keeping them available through the API/MCP contract.
+
+### Configuration and documentation
+- Moved PostgreSQL configuration out of Settings and into environment variables only, preserving both standard variables and DigitalOcean-friendly lowercase aliases, including SSL configuration.
+- Added the password-manager/injector roadmap item and removed outdated README/tagline material.
+
 ## [0.18.0] - 2026-09-11
 
 ### Browser interactions and task building
