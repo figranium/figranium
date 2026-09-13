@@ -103,26 +103,6 @@ Run the following command to start the application in detached mode:
 ```bash
 docker compose up -d
 ```
-## Git Clone (Multi-arch / ARM / Apple Silicon)
-
-The easiest way to run Figranium on any architecture (including M1/M2/M3 Macs) is via Docker Compose.
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/figranium/figranium.git
-cd figranium
-```
-
-2. Start the services:
-
-```bash
-docker compose up --build -d
-```
-
-Visit `http://localhost:11345`.
-
-> The first visit loads the login/setup screen. After you create the admin account and sign in, the dashboard replaces the login view and stays visible for as long as the session remains valid; returning users are redirected straight to the dashboard until they explicitly log out or the session expires.
 
 ## Session Secret
 
