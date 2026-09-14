@@ -4,7 +4,7 @@
 
 # Figranium
 
-Figranium is an open-source, self-hosted alternative to Apify and SaaS cloud scrapers, built to turn browser workflows into instant API endpoints for developers, API pipelines, and low-code tools like n8n and Activepieces. Powered by a React/Vite control plane and an Express/Playwright runtime, it lets you visually build stealth browser tasks, pass dynamic variables during runtime, handle automatic proxy rotation, and stream structured results or CSV exports on your own infrastructure—delivering the instant API convenience of cloud actors without usage credits, rate caps, or third-party data hosting.
+Figranium is an open-source, deterministic browser automation platform that lets you build visual browser tasks that can be called as API endpoints. Create scraping and automation workflows visually, pass dynamic inputs at runtime, and get structured results—without usage credits or third-party data hosting.
 
 <div align="center">
   <img src="screenshot.png" alt="Figranium Demo" width="100%">
