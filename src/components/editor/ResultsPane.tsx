@@ -133,7 +133,6 @@ const getResultsPreview = (payload: Results | null): { text: string; truncated: 
     }
     const raw = payload.data;
     if (typeof raw === 'string') {
-        // ⚡ Bolt: Use a small sample (2000 chars) for language detection to avoid O(N) trim/includes on large strings.
         const sample = raw.slice(0, 2000).trim();
         const language: SyntaxLanguage = sample.startsWith('<') && sample.includes('>')
             ? 'html'
@@ -224,14 +223,11 @@ const parseCsvRows = (text: string, limit?: number) => {
 const getTableData = (raw: any) => {
     if (!raw) return null;
     if (typeof raw === 'string') {
-        // ⚡ Bolt: Fast-path skip for strings that look like JSON (starting with { or [).
-        // Also use a small sample (2000 chars) for comma/newline checks to avoid O(N) scanning.
         const sample = raw.slice(0, 2000).trim();
         if (sample.startsWith('{') || sample.startsWith('[')) return null;
         if (!sample.includes(',') || !sample.includes('\n')) return null;
 
         const text = raw.trim();
-        // ⚡ Bolt: Limit CSV parsing to MAX_PREVIEW_ITEMS + 1 (header) to avoid O(N) overhead on large files.
         const rows = parseCsvRows(text, MAX_PREVIEW_ITEMS + 1).filter((r) => r.some((cell) => String(cell || '').trim() !== ''));
         if (rows.length < 2) return null;
         const header = rows[0].map((cell, idx) => {
@@ -244,13 +240,10 @@ const getTableData = (raw: any) => {
     }
     if (Array.isArray(raw)) {
         if (raw.length === 0) return null;
-        // ⚡ Bolt: Limit type detection to MAX_PREVIEW_ITEMS to avoid O(N) overhead on large arrays.
         const sample = raw.slice(0, MAX_PREVIEW_ITEMS);
         if (sample.every((item) => item && typeof item === 'object' && !Array.isArray(item))) {
             const headers: string[] = [];
             const headerSet = new Set<string>();
-            // ⚡ Bolt: Limit header discovery and row mapping to MAX_PREVIEW_ITEMS to ensure UI responsiveness.
-            // Using a Set for header tracking improves lookup from O(H) to O(1).
             sample.forEach((item) => {
                 Object.keys(item).forEach((key) => {
                     if (!headerSet.has(key)) {
@@ -264,7 +257,6 @@ const getTableData = (raw: any) => {
             return { headers, rows };
         }
         if (sample.every((item) => Array.isArray(item))) {
-            // ⚡ Bolt: Limit array mapping to MAX_PREVIEW_ITEMS to ensure UI responsiveness.
             const maxCols = Math.max(...sample.map((item) => item.length));
             const headers = Array.from({ length: maxCols }, (_, idx) => `column_${idx + 1}`);
             return { headers, rows: sample };
@@ -316,13 +308,13 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     const [capturesOpen, setCapturesOpen] = useState(false);
     const [capturesLoading, setCapturesLoading] = useState(false);
     const [captures, setCaptures] = useState<CaptureEntry[]>([]);
+    const wasExecutingRef = useRef(isExecuting);
     const headfulFrameRef = useRef<HTMLDivElement | null>(null);
     const activeResults = resultView === 'pinned' && pinnedResults ? pinnedResults : results;
     const tableData = useMemo(() => getTableData(activeResults?.data), [activeResults?.data]);
     const preview = useMemo(() => activeResults && activeResults.data !== undefined && activeResults.data !== null && activeResults.data !== ''
         ? getResultsPreview(activeResults)
         : null, [activeResults?.data]);
-    // ⚡ Bolt: Cache bust screenshotUrl only when the url itself changes, not when other activeResults fields (like logs) update
     const screenshotSrc = useMemo(() => activeResults?.screenshotUrl
         ? `${activeResults.screenshotUrl}${resultView === 'latest' ? `?t=${Date.now()}` : ''}`
         : null, [activeResults?.screenshotUrl, resultView]);
@@ -382,6 +374,13 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     }, [pinnedResults, resultView]);
 
     useEffect(() => {
+        if (wasExecutingRef.current && !isExecuting) {
+            setCapturesOpen(false);
+        }
+        wasExecutingRef.current = isExecuting;
+    }, [isExecuting]);
+
+    useEffect(() => {
         if (!capturesOpen) return;
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
@@ -391,7 +390,6 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [capturesOpen]);
-
 
     const handleCopy = async (text: string, id: string, options?: { skipSizeConfirm?: boolean; truncatedNotice?: boolean }) => {
         if (!text) {
