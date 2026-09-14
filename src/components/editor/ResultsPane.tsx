@@ -587,7 +587,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                 <span className="text-white/10 shrink-0">›</span> <span>{log}</span>
                             </div>
                         ))}
-                        {isExecuting && resultView === 'latest' && (!activeResults?.logs || activeResults?.logs.length === 0) && <div className="animate-pulse">Connecting to kernel...</div>}
+                        {isExecuting && resultView === 'latest' && (!activeResults?.logs || activeResults?.logs.length === 0) && <div className="animate-pulse">Waiting for activity…</div>}
                     </div>
                 </div>
             </div>
