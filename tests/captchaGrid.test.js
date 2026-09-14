@@ -1,6 +1,6 @@
 const assert = require('assert');
 const { captchaModelManager } = require('../src/agent/figranite/captcha-model-manager');
-const { normalizePrompt, normalizeBox, mapDetectionsToCells, solveImageGrid, PROVIDERS } = require('../src/agent/figranite/captcha-grid-solver');
+const { classifyGrid, normalizePrompt, normalizeBox, normalizeModelLabel, mapDetectionsToCells, solveImageGrid, PROVIDERS } = require('../src/agent/figranite/captcha-grid-solver');
 
 function fixture(captchaType, size) {
     const adapter = PROVIDERS[captchaType];
@@ -58,15 +58,44 @@ async function runFixture(captchaType, size) {
     }
 }
 
+async function testTileFallbackWhenWholeGridHasNoDetection() {
+    const originalDetect = captchaModelManager.detect;
+    const gridPng = Buffer.alloc(24);
+    gridPng.write('PNG', 1, 'ascii');
+    gridPng.writeUInt32BE(300, 16);
+    gridPng.writeUInt32BE(300, 20);
+    const cells = Array.from({ length: 9 }, (_, index) => ({
+        boundingBox: async () => ({ x: (index % 3) * 100, y: Math.floor(index / 3) * 100, width: 100, height: 100 }),
+        screenshot: async () => Buffer.from(`tile-${index}`)
+    }));
+    const locator = { count: async () => cells.length, nth: (index) => cells[index] };
+    const grid = {
+        boundingBox: async () => ({ x: 0, y: 0, width: 300, height: 300 }),
+        screenshot: async () => gridPng
+    };
+    const frame = { locator: (selector) => selector === PROVIDERS.recaptcha_v2.grid ? { first: () => grid } : locator };
+    captchaModelManager.detect = async (image) => image === gridPng ? [] : (String(image) === 'tile-4' ? [{ score: 0.9 }] : []);
+    try {
+        assert.deepStrictEqual(
+            await classifyGrid(frame, PROVIDERS.recaptcha_v2, locator, 'fire hydrants', new Map()),
+            [4]
+        );
+    } finally {
+        captchaModelManager.detect = originalDetect;
+    }
+}
+
 async function main() {
     assert.strictEqual(normalizePrompt(PROVIDERS.recaptcha_v2, 'Select all squares with buses.'), 'buses');
     assert.strictEqual(normalizePrompt(PROVIDERS.hcaptcha, 'Please click all images containing bicycles'), 'bicycles');
+    assert.strictEqual(normalizeModelLabel('traffic lights'), 'traffic light');
     assert.deepStrictEqual(normalizeBox({ box: { left: 1, top: 2, right: 5, bottom: 7 } }), { xmin: 1, ymin: 2, xmax: 5, ymax: 7 });
     assert.deepStrictEqual(mapDetectionsToCells([{ box: [1, 1, 99, 99] }], { x: 10, y: 20 }, [
         { x: 10, y: 20, width: 100, height: 100 }, { x: 110, y: 20, width: 100, height: 100 }
     ]), [0]);
     await runFixture('recaptcha_v2', 9);
     await runFixture('hcaptcha', 16);
+    await testTileFallbackWhenWholeGridHasNoDetection();
     console.log('All CAPTCHA grid-adapter tests passed!');
 }
 
