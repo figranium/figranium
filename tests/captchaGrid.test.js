@@ -23,14 +23,21 @@ function fixture(captchaType, size) {
             boundingBox: async () => ({ x: 0, y: 0, width: side * 100, height: side * 100 }),
             screenshot: async () => Buffer.from(`grid-${state.replacementVersion}`)
         };
-        if (selector === adapter.instruction) return { innerText: async () => captchaType === 'hcaptcha' ? 'Please click all images containing buses' : 'Select all squares with buses' };
-        if (selector === adapter.error) return { innerText: async () => '' };
+        if (selector === adapter.instruction) return {
+            isVisible: async () => true,
+            innerText: async () => captchaType === 'hcaptcha' ? 'Please click all images containing buses' : 'Select all squares with buses'
+        };
+        if (selector === adapter.error) return { isVisible: async () => false, innerText: async () => '' };
         if (selector === adapter.submit || selector === adapter.noMatch) return { click: async () => { state.submitted = true; } };
         throw new Error(`Unexpected selector ${selector}`);
     };
     const frame = {
         url: () => captchaType === 'hcaptcha' ? 'https://newassets.hcaptcha.com/captcha/v1/challenge' : 'https://www.google.com/recaptcha/api2/bframe',
-        locator: (selector) => selector === adapter.cells ? cells : { first: () => first(selector) }
+        locator: (selector) => {
+            if (selector === adapter.cells) return cells;
+            const target = first(selector);
+            return { first: () => target, count: async () => 1, nth: () => target };
+        }
     };
     return {
         state,
