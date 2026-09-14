@@ -13,6 +13,15 @@ const EventEmitter = require('events');
 const headfulEventEmitter = new EventEmitter();
 
 let activeSession = null;
+const INSPECT_SYNC_TIMEOUT_MS = 1000;
+
+const withTimeout = (promise, timeoutMs, message) => {
+    let timeoutId;
+    const timeout = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
+};
 
 function setActiveHeadfulPage(nextPage) {
     if (!activeSession || !nextPage || nextPage.isClosed()) return;
@@ -74,7 +83,13 @@ async function runHeadful(data, options = {}) {
 
     const inspectModeEnabled = !!(data.targetActionId);
 
-    activeSession = { status: 'starting', startedAt: Date.now(), inspectModeEnabled };
+    activeSession = {
+        status: 'starting',
+        startedAt: Date.now(),
+        inspectModeEnabled,
+        inspectScopeSelector: null,
+        inspectRevision: 0
+    };
 
     const selectedUA = await selectUserAgent(false);
 
@@ -448,12 +463,26 @@ async function runHeadful(data, options = {}) {
                 }
             };
 
+            window.__figraniumApplyInspectState = (state) => {
+                if (!state) return false;
+                const revision = Number(state.revision) || 0;
+                const appliedRevision = Number(window.__figraniumInspectRevision) || 0;
+                if (revision < appliedRevision) return false;
+
+                window.__figraniumInspectRevision = revision;
+                window.__figraniumInspectScopeSelector = state.scopeSelector || null;
+                if (state.enabled) {
+                    window.__figraniumInspectInit();
+                } else {
+                    window.__figraniumInspectDestroy();
+                }
+                return true;
+            };
+
             window.addEventListener('DOMContentLoaded', async () => {
-                if (window.__figraniumIsInspectEnabled) {
-                    const enabled = await window.__figraniumIsInspectEnabled();
-                    if (enabled) {
-                        window.__figraniumInspectInit();
-                    }
+                if (window.__figraniumGetInspectState) {
+                    const state = await window.__figraniumGetInspectState();
+                    window.__figraniumApplyInspectState(state);
                 }
             });
         };
@@ -463,6 +492,15 @@ async function runHeadful(data, options = {}) {
 
         await context.exposeBinding('__figraniumIsInspectEnabled', () => {
             return activeSession ? !!activeSession.inspectModeEnabled : false;
+        });
+
+        await context.exposeBinding('__figraniumGetInspectState', () => {
+            if (!activeSession) return { enabled: false, scopeSelector: null, revision: 0 };
+            return {
+                enabled: !!activeSession.inspectModeEnabled,
+                scopeSelector: activeSession.inspectScopeSelector || null,
+                revision: Number(activeSession.inspectRevision) || 0
+            };
         });
 
         await context.exposeBinding('__figraniumOnElementSelected', (source, selector) => {
@@ -520,7 +558,18 @@ async function runHeadful(data, options = {}) {
                 saveSharedBrowserState(activeSession.context).catch(() => {});
             }
         }, 30000);
-        activeSession = { browser, context, page, status: 'running', startedAt: activeSession.startedAt, inspectModeEnabled: activeSession.inspectModeEnabled, statelessExecution, interval: syncInterval };
+        activeSession = {
+            browser,
+            context,
+            page,
+            status: 'running',
+            startedAt: activeSession.startedAt,
+            inspectModeEnabled: activeSession.inspectModeEnabled,
+            inspectScopeSelector: activeSession.inspectScopeSelector || null,
+            inspectRevision: Number(activeSession.inspectRevision) || 0,
+            statelessExecution,
+            interval: syncInterval
+        };
 
         const responseData = {
             message: 'Headful session started.',
@@ -594,27 +643,36 @@ async function toggleInspectMode(req, res) {
     if (!activeSession || !activeSession.context) {
         return res.status(400).json({ error: 'No active headful session.' });
     }
+    const session = activeSession;
     const enabled = req.body.enabled === true || req.body.enabled === 'true';
     const scopeSelector = typeof req.body.scopeSelector === 'string' && req.body.scopeSelector.trim()
         ? req.body.scopeSelector.trim()
         : null;
-    activeSession.inspectModeEnabled = enabled;
-    activeSession.inspectScopeSelector = scopeSelector;
+    session.inspectModeEnabled = enabled;
+    session.inspectScopeSelector = scopeSelector;
+    session.inspectRevision = (Number(session.inspectRevision) || 0) + 1;
 
-    try {
-        const pages = activeSession.context.pages();
-        await Promise.all(pages.map(page => page.evaluate(({ enabled, scopeSelector }) => {
-            window.__figraniumInspectScopeSelector = scopeSelector || null;
-            if (enabled) {
-                if (window.__figraniumInspectInit) window.__figraniumInspectInit();
-            } else {
-                if (window.__figraniumInspectDestroy) window.__figraniumInspectDestroy();
-            }
-        }, { enabled, scopeSelector })));
-        res.json({ message: `Inspect mode ${enabled ? 'enabled' : 'disabled'}` });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to toggle inspect mode', details: String(error) });
+    let applied = false;
+    const page = session.page;
+
+    if (page && !page.isClosed()) {
+        try {
+            applied = await withTimeout(page.evaluate(async () => {
+                if (!window.__figraniumGetInspectState || !window.__figraniumApplyInspectState) return false;
+                const latestState = await window.__figraniumGetInspectState();
+                return window.__figraniumApplyInspectState(latestState);
+            }), INSPECT_SYNC_TIMEOUT_MS, 'Inspect overlay synchronization timed out');
+        } catch (error) {
+            console.warn('[HEADFUL] Inspect state accepted but overlay synchronization was deferred:', error && error.message ? error.message : error);
+        }
     }
+
+    res.json({
+        message: `Inspect mode ${enabled ? 'enabled' : 'disabled'}`,
+        enabled,
+        revision: session.inspectRevision,
+        applied: !!applied
+    });
 }
 
 function getActiveSession() {

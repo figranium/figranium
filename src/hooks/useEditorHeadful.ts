@@ -34,14 +34,26 @@ export const useEditorHeadful = (
     const activeInspectScopeSelectorRef = useRef<string | null>(null);
     useEffect(() => { activeInspectScopeSelectorRef.current = activeInspectScopeSelector; }, [activeInspectScopeSelector]);
 
+    const inspectDesiredStateRef = useRef(false);
+    const inspectConfirmedStateRef = useRef(false);
+    const inspectRequestIdRef = useRef(0);
+    const inspectAbortControllerRef = useRef<AbortController | null>(null);
+
     const onStopHeadfulRef = useRef(onStopHeadful);
     useEffect(() => { onStopHeadfulRef.current = onStopHeadful; }, [onStopHeadful]);
 
     useEffect(() => {
         if (!isHeadfulOpen) {
+            inspectRequestIdRef.current += 1;
+            inspectAbortControllerRef.current?.abort();
+            inspectAbortControllerRef.current = null;
+            inspectDesiredStateRef.current = false;
+            inspectConfirmedStateRef.current = false;
             setIsInspectMode(false);
             setIsInspectLoading(false);
         } else if (activeInspectActionIdRef.current) {
+            inspectDesiredStateRef.current = true;
+            inspectConfirmedStateRef.current = true;
             setIsInspectMode(true);
         }
     }, [isHeadfulOpen]);
@@ -84,23 +96,45 @@ export const useEditorHeadful = (
     }, [isHeadfulOpen, updateAction]);
 
     const handleToggleInspect = useCallback(async () => {
-        const nextState = !isInspectMode;
+        const nextState = !inspectDesiredStateRef.current;
+        const requestId = inspectRequestIdRef.current + 1;
+        inspectRequestIdRef.current = requestId;
+        inspectDesiredStateRef.current = nextState;
+        setIsInspectMode(nextState);
         setIsInspectLoading(true);
+
+        inspectAbortControllerRef.current?.abort();
+        const controller = new AbortController();
+        inspectAbortControllerRef.current = controller;
+
         try {
             const res = await fetch('/api/headful/inspect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled: nextState, scopeSelector: nextState ? activeInspectScopeSelectorRef.current : null })
+                body: JSON.stringify({ enabled: nextState, scopeSelector: nextState ? activeInspectScopeSelectorRef.current : null }),
+                signal: controller.signal
             });
             if (!res.ok) throw new Error('Failed to toggle inspect mode');
-            setIsInspectMode(nextState);
-            onNotify(`Inspect mode ${nextState ? 'enabled' : 'disabled'}`, 'success');
+            const data = await res.json().catch(() => ({}));
+            if (requestId !== inspectRequestIdRef.current) return;
+
+            const acceptedState = typeof data.enabled === 'boolean' ? data.enabled : nextState;
+            inspectConfirmedStateRef.current = acceptedState;
+            inspectDesiredStateRef.current = acceptedState;
+            setIsInspectMode(acceptedState);
+            onNotify(`Inspect mode ${acceptedState ? 'enabled' : 'disabled'}`, 'success');
         } catch (e) {
+            if (controller.signal.aborted || requestId !== inspectRequestIdRef.current) return;
+            inspectDesiredStateRef.current = inspectConfirmedStateRef.current;
+            setIsInspectMode(inspectConfirmedStateRef.current);
             onNotify('Failed to toggle inspect mode', 'error');
         } finally {
-            setIsInspectLoading(false);
+            if (requestId === inspectRequestIdRef.current) {
+                inspectAbortControllerRef.current = null;
+                setIsInspectLoading(false);
+            }
         }
-    }, [isInspectMode, onNotify]);
+    }, [onNotify]);
 
     return {
         isInspectMode,

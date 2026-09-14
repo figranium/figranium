@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.18.2] - 2026-09-14
+
+### Browser and editor reliability
+- Made the headful selector picker responsive by synchronizing only the active page with a bounded timeout, preserving the latest requested inspect state across delayed evaluations and navigation, and keeping Stop Inspect available while synchronization is pending.
+- Stabilized sticky-note dragging and resizing by keeping gesture updates local until pointer release, and prevented stale overlapping autosave responses from replacing newer task state.
+- Made embedded task canvases fully read-only while retaining viewport panning, and fixed the captures modal so it closes when a rerun finishes.
+- Replaced the misleading initial execution message with a neutral activity-waiting status.
+
+### CAPTCHA and qualification
+- Updated Fiptcha from v0.1.1 to v0.1.4 for grid-solver fixes and no-scroll CAPTCHA interactions, including per-tile local-model fallback when whole-grid detection finds no match.
+- Repaired the npm lockfile and changed V1 qualification dependency setup to use the repository's supported install path.
+
+### Documentation and maintenance
+- Tightened the README introduction around deterministic visual browser automation and API endpoints.
+- Removed an obsolete generated verification video artifact.
+
 ## [0.18.1] - 2026-09-13
 
 ### CAPTCHA and runtime

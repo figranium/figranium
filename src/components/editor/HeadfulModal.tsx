@@ -50,7 +50,8 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                         <button
                             type="button"
                             onClick={onToggleInspect}
-                            disabled={isInspectLoading || isExecuting}
+                            disabled={isExecuting}
+                            aria-busy={isInspectLoading}
                             className={`px-3 py-1.5 rounded-xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${isInspectMode
                                 ? 'border-green-500/30 bg-green-500/20 text-green-400 hover:bg-green-500/30'
                                 : 'border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
