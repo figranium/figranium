@@ -316,6 +316,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     const [capturesOpen, setCapturesOpen] = useState(false);
     const [capturesLoading, setCapturesLoading] = useState(false);
     const [captures, setCaptures] = useState<CaptureEntry[]>([]);
+    const wasExecutingRef = useRef(isExecuting);
     const headfulFrameRef = useRef<HTMLDivElement | null>(null);
     const activeResults = resultView === 'pinned' && pinnedResults ? pinnedResults : results;
     const tableData = useMemo(() => getTableData(activeResults?.data), [activeResults?.data]);
@@ -380,6 +381,13 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
             setResultView('latest');
         }
     }, [pinnedResults, resultView]);
+
+    useEffect(() => {
+        if (wasExecutingRef.current && !isExecuting) {
+            setCapturesOpen(false);
+        }
+        wasExecutingRef.current = isExecuting;
+    }, [isExecuting]);
 
     useEffect(() => {
         if (!capturesOpen) return;
