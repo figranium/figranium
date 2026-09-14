@@ -13,6 +13,7 @@ const VIEWPORT_PADDING = 20;
 
 /** Canonical immutable Figranium task canvas for embeds and previews. */
 const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' }) => {
+  const interactionRef = useRef<HTMLDivElement>(null!);
   const canvasViewportRef = useRef<HTMLDivElement>(null!);
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 20 });
   const panRef = useRef<{ pointerId: number; x: number; y: number; offsetX: number; offsetY: number } | null>(null);
@@ -42,32 +43,9 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
     return () => observer.disconnect();
   }, [task]);
 
-  useLayoutEffect(() => {
-    const viewport = canvasViewportRef.current;
-    if (!viewport) return;
-
-    const lockStickyNotes = () => {
-      viewport.querySelectorAll<HTMLElement>('[data-sticky-note-id]').forEach(note => {
-        note.style.pointerEvents = 'none';
-        note.setAttribute('inert', '');
-
-        note.querySelectorAll<HTMLTextAreaElement>('textarea').forEach(textarea => {
-          textarea.readOnly = true;
-          textarea.tabIndex = -1;
-          if (document.activeElement === textarea) textarea.blur();
-        });
-      });
-    };
-
-    lockStickyNotes();
-    const observer = new MutationObserver(lockStickyNotes);
-    observer.observe(viewport, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, [task]);
-
   useEffect(() => {
-    const viewport = canvasViewportRef.current;
-    if (!viewport) return;
+    const interactionSurface = interactionRef.current;
+    if (!interactionSurface) return;
 
     const handleWheel = (event: WheelEvent) => {
       if (event.ctrlKey || event.metaKey) return;
@@ -78,8 +56,8 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
       }));
     };
 
-    viewport.addEventListener('wheel', handleWheel, { passive: false });
-    return () => viewport.removeEventListener('wheel', handleWheel);
+    interactionSurface.addEventListener('wheel', handleWheel, { passive: false });
+    return () => interactionSurface.removeEventListener('wheel', handleWheel);
   }, []);
 
   const startPanning = (event: React.PointerEvent) => {
@@ -111,6 +89,7 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
 
   return (
     <div
+      ref={interactionRef}
       className={`figranium-readonly-canvas relative flex h-full w-full select-none cursor-grab active:cursor-grabbing ${className}`.trim()}
       aria-label="Read-only Figranium task canvas. Drag or scroll to pan."
       style={{ '--app-dot': 'rgba(255, 255, 255, 0.12)', touchAction: 'none' } as React.CSSProperties}
@@ -123,42 +102,49 @@ const ReadOnlyCanvas: React.FC<ReadOnlyCanvasProps> = ({ task, className = '' })
       onPointerUp={stopPanning}
       onPointerCancel={stopPanning}
     >
-      <CanvasView
-        currentTask={task}
-        setCurrentTask={noop as (task: Task) => void}
-        canvasOffset={canvasOffset}
-        canvasScale={1}
-        canvasViewportRef={canvasViewportRef}
-        triggerExpanded={false}
-        setTriggerExpanded={noop}
-        onOpenCabinet={noop}
-        handleAutoSave={noop}
-        dragState={null}
-        dragOverIndex={null}
-        selectedActionIds={new Set()}
-        setSelectedActionIds={noop as (ids: Set<string>) => void}
-        actionStatusById={{}}
-        availableTasks={[]}
-        selectorOptionsById={{}}
-        updateAction={noop as any}
-        openActionPalette={noop as any}
-        openContextMenu={noop as any}
-        handleActionPointerDown={noop as any}
-        onOpenHeadful={noop as any}
-        isHeadfulOpen={false}
-        onPointerDown={noop as any}
-        onPointerMove={noop as any}
-        onPointerUp={noop}
-        onPointerCancel={noop}
-        selectionBox={null}
-        onAddStickyNote={noop as any}
-        onUpdateStickyNote={noop as any}
-        onDeleteStickyNote={noop as any}
-        onDuplicateStickyNote={noop as any}
-        selectedNoteIds={new Set()}
-        autoOpenActionId={null}
-        onClearAutoOpenActionId={noop}
-      />
+      <div
+        className="flex h-full w-full"
+        inert
+        aria-hidden="true"
+        style={{ pointerEvents: 'none' }}
+      >
+        <CanvasView
+          currentTask={task}
+          setCurrentTask={noop as (task: Task) => void}
+          canvasOffset={canvasOffset}
+          canvasScale={1}
+          canvasViewportRef={canvasViewportRef}
+          triggerExpanded={false}
+          setTriggerExpanded={noop}
+          onOpenCabinet={noop}
+          handleAutoSave={noop}
+          dragState={null}
+          dragOverIndex={null}
+          selectedActionIds={new Set()}
+          setSelectedActionIds={noop as (ids: Set<string>) => void}
+          actionStatusById={{}}
+          availableTasks={[]}
+          selectorOptionsById={{}}
+          updateAction={noop as any}
+          openActionPalette={noop as any}
+          openContextMenu={noop as any}
+          handleActionPointerDown={noop as any}
+          onOpenHeadful={noop as any}
+          isHeadfulOpen={false}
+          onPointerDown={noop as any}
+          onPointerMove={noop as any}
+          onPointerUp={noop}
+          onPointerCancel={noop}
+          selectionBox={null}
+          onAddStickyNote={noop as any}
+          onUpdateStickyNote={noop as any}
+          onDeleteStickyNote={noop as any}
+          onDuplicateStickyNote={noop as any}
+          selectedNoteIds={new Set()}
+          autoOpenActionId={null}
+          onClearAutoOpenActionId={noop}
+        />
+      </div>
     </div>
   );
 };
