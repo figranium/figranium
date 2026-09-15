@@ -26,3 +26,4 @@ jobs:
           git add package-lock.json
           git diff --cached --quiet || git commit -m "Update Fiptcha lockfile"
           git push
+# one-shot lockfile refresh
