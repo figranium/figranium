@@ -68,7 +68,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
-    "fiptcha": "^0.1.4",
+    "fiptcha": "^0.1.5",
     "got-scraping": "^4.2.1",
     "idcac-playwright": "^0.2.0",
     "jsdom": "^22.1.0",
@@ -82,7 +82,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.11.0",
     "react-window": "^1.8.8",
-    "remark-gfm": "^4.0.1",
+    "remark-gfm": "^4.1.0",
     "session-file-store": "^1.5.0",
     "tree": "^0.1.3"
   },
