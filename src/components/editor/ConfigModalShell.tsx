@@ -20,7 +20,7 @@ const ConfigModalShell: React.FC<ConfigModalShellProps> = ({ icon, title, childr
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[190] flex items-center justify-center bg-black/65 p-3 backdrop-blur-lg sm:p-6 lg:p-10"
+            className="theme-modal-backdrop fixed inset-0 z-[190] flex items-center justify-center p-3 backdrop-blur-lg sm:p-6 lg:p-10"
             onPointerDown={(event) => event.stopPropagation()}
             onPointerUp={(event) => event.stopPropagation()}
             onMouseDown={(event) => event.stopPropagation()}
@@ -31,7 +31,7 @@ const ConfigModalShell: React.FC<ConfigModalShellProps> = ({ icon, title, childr
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="config-modal-title"
-                className="theme-surface theme-text flex max-h-[calc(100vh-1.5rem)] min-h-[min(540px,calc(100vh-1.5rem))] w-full max-w-[1200px] flex-col gap-6 rounded-[28px] border theme-border-strong p-5 shadow-[0_32px_100px_rgba(0,0,0,0.55)] animate-in fade-in zoom-in-95 duration-200 sm:max-h-[90vh] sm:w-[92vw] sm:p-8 lg:p-10"
+                className="theme-modal-elevation theme-surface theme-text flex max-h-[calc(100vh-1.5rem)] min-h-[min(540px,calc(100vh-1.5rem))] w-full max-w-[1200px] flex-col gap-6 rounded-[28px] border theme-border-strong p-5 animate-in fade-in zoom-in-95 duration-200 sm:max-h-[90vh] sm:w-[92vw] sm:p-8 lg:p-10"
                 onClick={(event) => event.stopPropagation()}
             >
                 <header className="flex shrink-0 items-center justify-between gap-4">

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.3] - 2026-09-16
+
+### Themes and interface
+- Added a persisted **Auto** appearance preference that follows the device light/dark setting, updates when the device preference changes, and is now the default for both new and existing installations. The Appearance settings page presents Auto as a compact image-free option alongside the manual theme cards; the former first-run theme chooser has been removed.
+- Reworked theme-aware surfaces across the editor, dialogs, menus, dashboard, drawers, and controls. Light and Solarized themes now use restrained elevation, semantic borders, readable labels and connectors, blue primary actions in the standard Light theme, and gentle modal backdrops instead of dark-theme shadows and black scrims.
+- Made sticky notes theme-aware, including readable markdown and controls. Default notes use a translucent brand-blue treatment with dark text in light themes, and the visual resize grip has been removed while preserving saved note dimensions.
+
+### CAPTCHA and maintenance
+- Updated Fiptcha to v0.1.6 for the latest CAPTCHA-solving improvements and synchronized the npm lockfile.
+- Refreshed the README to reflect the current product.
+
 ## [0.18.2] - 2026-09-14
 
 ### Browser and editor reliability

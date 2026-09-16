@@ -47,8 +47,8 @@ export default function ReleaseNotesModal() {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-sm px-6">
-            <div className="glass-card w-full max-w-2xl max-h-[80vh] flex flex-col rounded-[32px] border border-white/10 p-8 text-left shadow-2xl overflow-hidden">
+        <div className="theme-modal-backdrop fixed inset-0 z-[300] flex items-center justify-center backdrop-blur-sm px-6">
+            <div className="theme-modal-elevation glass-card w-full max-w-2xl max-h-[80vh] flex flex-col rounded-[32px] border border-white/10 p-8 text-left overflow-hidden">
                 <div className="flex justify-between items-center mb-6 shrink-0">
                     <h2 className="text-lg md:text-2xl font-bold text-white tracking-tight">What's new in v0.8.0</h2>
                     <span className="bg-white/10 text-white/70 px-3 py-1 rounded-full text-xs font-mono ml-4 shrink-0">v{APP_VERSION}</span>

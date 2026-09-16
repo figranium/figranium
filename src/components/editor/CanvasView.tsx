@@ -999,7 +999,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
     return (
         <div
             ref={canvasViewportRef}
-            className="flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing select-none"
+            className="canvas-workflow flex-1 overflow-hidden relative cursor-grab active:cursor-grabbing select-none"
             style={{ touchAction: 'none' }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -1039,7 +1039,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
 
                 <div className="relative z-10 flex flex-col items-center pointer-events-none" style={{ paddingTop: '60px', minWidth: '500px' }}>
                     <div
-                        className="w-[360px] bg-black border border-white/15 p-5 rounded-2xl shadow-2xl shadow-black/50 select-text cursor-auto relative z-10 pointer-events-auto"
+                        className="canvas-execution-card w-[360px] bg-black border border-white/15 p-5 rounded-2xl select-text cursor-auto relative z-10 pointer-events-auto"
                         onDoubleClick={(event) => {
                             event.stopPropagation();
                             setIsExecutionConfigOpen(true);
@@ -1070,7 +1070,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                             <p className="text-xs text-gray-500 mt-2 leading-relaxed">{currentTask.description}</p>
                         )}
                     </div>
-                    {(currentTask.mode === 'agent' || currentTask.mode === 'scrape') && <div className="w-px h-10 bg-white/25" />}
+                    {(currentTask.mode === 'agent' || currentTask.mode === 'scrape') && <div className="canvas-connector w-px h-10 bg-white/25" />}
                     {currentTask.mode === 'scrape' && (
                         <div className="w-[360px] pointer-events-auto">
                             {currentTask.extractionScript !== undefined ? (
@@ -1088,7 +1088,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <button
                                     onClick={() => { const t = { ...currentTask, extractionScript: '' }; setCurrentTask(t); handleAutoSave(t); }}
                                     data-interactive-target="true"
-                                    className="w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    className="canvas-add-action w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                 >
                                     <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                     <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
@@ -1101,21 +1101,21 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                             <div className="space-y-6 w-full flex flex-col items-center relative">
                                 {buildAst(0, currentTask.actions.length)}
                                 <div className="pt-2 flex flex-col items-center">
-                                    <div className="w-px h-6 bg-white/10" />
+                                    <div className="canvas-connector w-px h-6 bg-white/10" />
                                     <button
                                         data-action-drop-scope="root"
                                         onClick={() => openActionPalette()}
-                                        className="w-[360px] bg-[#0a0a0a] border border-dashed border-white/15 rounded-2xl p-6 hover:border-white/30 hover:bg-white/[0.03] transition-all flex flex-col items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                        className="canvas-add-action w-[360px] bg-[#0a0a0a] border border-dashed border-white/15 rounded-2xl p-6 hover:border-white/30 hover:bg-white/[0.03] transition-all flex flex-col items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         aria-label="Add action (Ctrl + K)"
                                         title="Add action (Ctrl + K)"
                                     >
                                         <div className="w-10 h-10 rounded-xl bg-white/5 group-hover:bg-white/10 transition-all flex items-center justify-center">
                                             <TablerIcon name="add" className="text-2xl text-gray-500 group-hover:text-white transition-colors" />
                                         </div>
-                                        <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Action</span>
+                                        <span className="canvas-secondary-text text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Action</span>
                                     </button>
                                 </div>
-                                <div className="w-px h-6 bg-white/25" />
+                                <div className="canvas-connector w-px h-6 bg-white/25" />
                                 <div className="w-[360px]">
                                     {currentTask.extractionScript !== undefined ? (
                                         <ExtractionScriptBlock
@@ -1132,7 +1132,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         <button
                                             onClick={() => { const t = { ...currentTask, extractionScript: '' }; setCurrentTask(t); handleAutoSave(t); }}
                                             data-interactive-target="true"
-                                            className="w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                            className="canvas-add-action w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         >
                                             <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
                                             <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>

@@ -1,4 +1,6 @@
 export type ThemeId = 'dark' | 'light' | 'solarized-light' | 'solarized-dark';
+export type ThemePreference = ThemeId | 'auto';
+export const AUTO_THEME_ID = 'auto';
 
 export interface ThemeDefinition {
     id: ThemeId;
@@ -34,6 +36,8 @@ export const THEMES: ThemeDefinition[] = [
             '--app-scrollbar-hover': 'rgba(255, 255, 255, 0.2)',
             '--app-accent': '#ffffff',
             '--app-accent-text': '#000000',
+            '--app-modal-backdrop': 'rgba(0, 0, 0, 0.65)',
+            '--app-modal-shadow': '0 32px 100px rgba(0, 0, 0, 0.55)',
             '--app-logo': '#ffffff',
             '--app-code-bg': '#050505',
             '--app-code-text': '#93c5fd',
@@ -49,6 +53,18 @@ export const THEMES: ThemeDefinition[] = [
             '--app-code-punct': 'rgba(255, 255, 255, 0.6)',
             '--app-caret': '#ffffff',
             '--app-dot': 'rgba(255, 255, 255, 0.12)',
+            '--app-shadow-raised': '0 12px 28px rgba(0, 0, 0, 0.28)',
+            '--app-shadow-overlay': '0 24px 64px rgba(0, 0, 0, 0.5)',
+            '--app-shadow-sticky': '0 6px 20px rgba(0, 0, 0, 0.35)',
+            '--app-sticky-default-bg': 'rgba(255, 255, 255, 0.07)',
+            '--app-sticky-default-border': 'rgba(255, 255, 255, 0.18)',
+            '--app-sticky-default-header': 'rgba(255, 255, 255, 0.10)',
+            '--app-sticky-text': 'rgba(255, 255, 255, 0.82)',
+            '--app-sticky-text-muted': 'rgba(255, 255, 255, 0.62)',
+            '--app-sticky-text-faint': 'rgba(255, 255, 255, 0.32)',
+            '--app-sticky-control': 'rgba(255, 255, 255, 0.55)',
+            '--app-sticky-control-hover': 'rgba(255, 255, 255, 0.10)',
+            '--app-sticky-code-bg': 'rgba(0, 0, 0, 0.24)',
         },
     },
     {
@@ -73,8 +89,10 @@ export const THEMES: ThemeDefinition[] = [
             '--app-input': 'rgba(0, 0, 0, 0.05)',
             '--app-scrollbar': 'rgba(0, 0, 0, 0.12)',
             '--app-scrollbar-hover': 'rgba(0, 0, 0, 0.2)',
-            '--app-accent': '#111111',
+            '--app-accent': '#2563eb',
             '--app-accent-text': '#ffffff',
+            '--app-modal-backdrop': 'rgba(15, 23, 42, 0.14)',
+            '--app-modal-shadow': '0 14px 36px rgba(15, 23, 42, 0.14)',
             '--app-logo': '#111111',
             '--app-code-bg': '#fafafa',
             '--app-code-text': '#1d4ed8',
@@ -90,6 +108,18 @@ export const THEMES: ThemeDefinition[] = [
             '--app-code-punct': 'rgba(0, 0, 0, 0.6)',
             '--app-caret': '#111111',
             '--app-dot': 'rgba(0, 0, 0, 0.18)',
+            '--app-shadow-raised': 'none',
+            '--app-shadow-overlay': '0 14px 36px rgba(17, 24, 39, 0.16)',
+            '--app-shadow-sticky': '0 4px 14px rgba(17, 24, 39, 0.12)',
+            '--app-sticky-default-bg': 'rgba(96, 165, 250, 0.32)',
+            '--app-sticky-default-border': 'rgba(59, 130, 246, 0.62)',
+            '--app-sticky-default-header': 'rgba(147, 197, 253, 0.46)',
+            '--app-sticky-text': '#111827',
+            '--app-sticky-text-muted': 'rgba(17, 24, 39, 0.78)',
+            '--app-sticky-text-faint': 'rgba(17, 24, 39, 0.56)',
+            '--app-sticky-control': 'rgba(17, 24, 39, 0.68)',
+            '--app-sticky-control-hover': 'rgba(17, 24, 39, 0.10)',
+            '--app-sticky-code-bg': 'rgba(255, 255, 255, 0.34)',
         },
     },
     {
@@ -116,6 +146,8 @@ export const THEMES: ThemeDefinition[] = [
             '--app-scrollbar-hover': 'rgba(88, 110, 117, 0.4)',
             '--app-accent': '#697800',
             '--app-accent-text': '#fdf6e3',
+            '--app-modal-backdrop': 'rgba(0, 43, 54, 0.16)',
+            '--app-modal-shadow': '0 14px 36px rgba(0, 43, 54, 0.14)',
             '--app-logo': '#002b36',
             '--app-code-bg': '#eee8d5',
             '--app-code-text': '#1e6da5',
@@ -131,6 +163,18 @@ export const THEMES: ThemeDefinition[] = [
             '--app-code-punct': '#576a71',
             '--app-caret': '#566c73',
             '--app-dot': 'rgba(88, 110, 117, 0.5)',
+            '--app-shadow-raised': 'none',
+            '--app-shadow-overlay': '0 14px 36px rgba(0, 43, 54, 0.16)',
+            '--app-shadow-sticky': '0 4px 14px rgba(0, 43, 54, 0.12)',
+            '--app-sticky-default-bg': 'rgba(125, 182, 216, 0.32)',
+            '--app-sticky-default-border': 'rgba(75, 150, 196, 0.62)',
+            '--app-sticky-default-header': 'rgba(166, 206, 228, 0.46)',
+            '--app-sticky-text': '#002b36',
+            '--app-sticky-text-muted': 'rgba(0, 43, 54, 0.78)',
+            '--app-sticky-text-faint': 'rgba(0, 43, 54, 0.56)',
+            '--app-sticky-control': 'rgba(0, 43, 54, 0.68)',
+            '--app-sticky-control-hover': 'rgba(0, 43, 54, 0.10)',
+            '--app-sticky-code-bg': 'rgba(255, 255, 255, 0.34)',
         },
     },
     {
@@ -157,6 +201,8 @@ export const THEMES: ThemeDefinition[] = [
             '--app-scrollbar-hover': 'rgba(147, 161, 161, 0.4)',
             '--app-accent': '#859900',
             '--app-accent-text': '#002b36',
+            '--app-modal-backdrop': 'rgba(0, 20, 26, 0.48)',
+            '--app-modal-shadow': '0 20px 52px rgba(0, 20, 26, 0.36)',
             '--app-logo': '#ffffff',
             '--app-code-bg': '#042029',
             '--app-code-text': '#839496',
@@ -172,15 +218,43 @@ export const THEMES: ThemeDefinition[] = [
             '--app-code-punct': '#708891',
             '--app-caret': '#839496',
             '--app-dot': 'rgba(147, 161, 161, 0.25)',
+            '--app-shadow-raised': '0 8px 20px rgba(0, 20, 26, 0.18)',
+            '--app-shadow-overlay': '0 16px 40px rgba(0, 20, 26, 0.28)',
+            '--app-shadow-sticky': '0 4px 14px rgba(0, 20, 26, 0.22)',
+            '--app-sticky-default-bg': 'rgba(147, 161, 161, 0.10)',
+            '--app-sticky-default-border': 'rgba(147, 161, 161, 0.30)',
+            '--app-sticky-default-header': 'rgba(147, 161, 161, 0.14)',
+            '--app-sticky-text': '#d7e0df',
+            '--app-sticky-text-muted': 'rgba(215, 224, 223, 0.74)',
+            '--app-sticky-text-faint': 'rgba(215, 224, 223, 0.45)',
+            '--app-sticky-control': 'rgba(215, 224, 223, 0.68)',
+            '--app-sticky-control-hover': 'rgba(215, 224, 223, 0.10)',
+            '--app-sticky-code-bg': 'rgba(0, 20, 26, 0.24)',
         },
     },
 ];
 
 export const DEFAULT_THEME_ID: ThemeId = 'dark';
+export const DEFAULT_THEME_PREFERENCE: ThemePreference = AUTO_THEME_ID;
 
 export function getThemeById(id: string | null | undefined): ThemeDefinition {
     if (!id) return THEMES[0];
     return THEMES.find(t => t.id === id) || THEMES[0];
+}
+
+export function isThemePreference(id: string | null | undefined): id is ThemePreference {
+    return id === AUTO_THEME_ID || THEMES.some((theme) => theme.id === id);
+}
+
+export function getDeviceThemeId(): ThemeId {
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+}
+
+export function resolveThemePreference(preference: ThemePreference): ThemeDefinition {
+    return getThemeById(preference === AUTO_THEME_ID ? getDeviceThemeId() : preference);
 }
 
 export function applyThemeVars(theme: ThemeDefinition) {

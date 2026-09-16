@@ -1,49 +1,59 @@
 import { useState, useCallback, useEffect } from 'react';
-import { THEMES, ThemeDefinition, ThemeId, DEFAULT_THEME_ID, getThemeById, applyThemeVars } from '../utils/theme';
+import { THEMES, ThemeDefinition, ThemePreference, AUTO_THEME_ID, DEFAULT_THEME_PREFERENCE, isThemePreference, resolveThemePreference, applyThemeVars } from '../utils/theme';
 
 const THEME_STORAGE_KEY = 'figranium.theme';
-const THEME_INTRO_KEY = 'figranium.seenThemeIntro';
-
-function setCookie(id: string) {
+function setCookie(preference: ThemePreference) {
     if (typeof document === 'undefined') return;
     try {
-        document.cookie = `figranium_theme=${id}; path=/; max-age=31536000; SameSite=Lax`;
+        document.cookie = `figranium_theme=${preference}; path=/; max-age=31536000; SameSite=Lax`;
     } catch {
         // ignore
     }
 }
 
-function getInitialTheme(): ThemeDefinition {
-    if (typeof window === 'undefined') return getThemeById(DEFAULT_THEME_ID);
+function getInitialThemePreference(): ThemePreference {
+    if (typeof window === 'undefined') return DEFAULT_THEME_PREFERENCE;
     try {
         const cookies = document.cookie ? document.cookie.split(';') : [];
         for (const raw of cookies) {
             const c = raw.trim();
             if (c.startsWith('figranium_theme=') || c.startsWith('theme=')) {
                 const val = c.substring(c.indexOf('=') + 1).trim();
-                if (val) return getThemeById(val);
+                if (isThemePreference(val)) return val;
             }
         }
         const stored = localStorage.getItem(THEME_STORAGE_KEY);
-        return stored ? getThemeById(stored) : getThemeById(DEFAULT_THEME_ID);
+        return isThemePreference(stored) ? stored : DEFAULT_THEME_PREFERENCE;
     } catch {
-        return getThemeById(DEFAULT_THEME_ID);
+        return DEFAULT_THEME_PREFERENCE;
     }
 }
 
 export function useTheme() {
-    const [theme, setThemeState] = useState<ThemeDefinition>(getInitialTheme);
-    const [introOpen, setIntroOpen] = useState(false);
+    const [themePreference, setThemePreference] = useState<ThemePreference>(getInitialThemePreference);
+    const [theme, setThemeState] = useState<ThemeDefinition>(() => resolveThemePreference(getInitialThemePreference()));
 
     useEffect(() => {
         applyThemeVars(theme);
-        setCookie(theme.id);
+        setCookie(themePreference);
         try {
-            localStorage.setItem(THEME_STORAGE_KEY, theme.id);
+            localStorage.setItem(THEME_STORAGE_KEY, themePreference);
         } catch {
             // ignore
         }
-    }, [theme]);
+    }, [theme, themePreference]);
+
+    useEffect(() => {
+        if (themePreference !== AUTO_THEME_ID || typeof window === 'undefined') return;
+        const query = window.matchMedia('(prefers-color-scheme: dark)');
+        const syncDeviceTheme = () => {
+            const next = resolveThemePreference(AUTO_THEME_ID);
+            setThemeState(next);
+            applyThemeVars(next);
+        };
+        query.addEventListener('change', syncDeviceTheme);
+        return () => query.removeEventListener('change', syncDeviceTheme);
+    }, [themePreference]);
 
     // Fetch persisted theme from backend data on mount and sync
     useEffect(() => {
@@ -51,13 +61,15 @@ export function useTheme() {
         fetch('/api/settings/theme', { credentials: 'include' })
             .then(res => res.ok ? res.json() : null)
             .then(data => {
-                if (mounted && data && typeof data.theme === 'string') {
-                    const serverTheme = getThemeById(data.theme);
+                if (mounted && data && isThemePreference(data.theme)) {
+                    const preference = data.theme as ThemePreference;
+                    const serverTheme = resolveThemePreference(preference);
+                    setThemePreference(preference);
                     setThemeState(serverTheme);
                     applyThemeVars(serverTheme);
-                    setCookie(serverTheme.id);
+                    setCookie(preference);
                     try {
-                        localStorage.setItem(THEME_STORAGE_KEY, serverTheme.id);
+                        localStorage.setItem(THEME_STORAGE_KEY, preference);
                     } catch { }
                 }
             })
@@ -65,26 +77,15 @@ export function useTheme() {
         return () => { mounted = false; };
     }, []);
 
-    // Check whether to show the first-time popup
-    useEffect(() => {
-        try {
-            const seen = localStorage.getItem(THEME_INTRO_KEY);
-            if (!seen) {
-                setIntroOpen(true);
-            }
-        } catch {
-            // ignore
-        }
-    }, []);
-
-    const setTheme = useCallback((id: ThemeId) => {
-        const next = getThemeById(id);
+    const setTheme = useCallback((preference: ThemePreference) => {
+        const next = resolveThemePreference(preference);
+        setThemePreference(preference);
         setThemeState(next);
         // Immediately apply theme and set cookie/localStorage for fast UI feedback
         applyThemeVars(next);
-        setCookie(next.id);
+        setCookie(preference);
         try {
-            localStorage.setItem(THEME_STORAGE_KEY, next.id);
+            localStorage.setItem(THEME_STORAGE_KEY, preference);
         } catch {
             // ignore
         }
@@ -93,26 +94,16 @@ export function useTheme() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ theme: next.id })
+            body: JSON.stringify({ theme: preference })
         }).catch(err => {
             console.error('Failed to persist theme to backend data:', err);
         });
     }, []);
 
-    const dismissIntro = useCallback(() => {
-        setIntroOpen(false);
-        try {
-            localStorage.setItem(THEME_INTRO_KEY, 'true');
-        } catch {
-            // ignore
-        }
-    }, []);
-
     return {
         theme,
+        themePreference,
         setTheme,
         themes: THEMES,
-        introOpen,
-        dismissIntro,
     };
 }

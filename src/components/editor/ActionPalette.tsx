@@ -76,11 +76,11 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
 
     return (
         <div
-            className="fixed inset-0 z-[190] flex items-center justify-center bg-black/70 backdrop-blur-sm px-6"
+            className="theme-modal-backdrop fixed inset-0 z-[190] flex items-center justify-center backdrop-blur-sm px-6"
             onClick={onClose}
         >
             <div
-                className="glass-card w-full max-w-xl rounded-[28px] border border-white/10 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+                className="theme-modal-elevation glass-card w-full max-w-xl rounded-[28px] border border-white/10 p-6 animate-in fade-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-4">

@@ -416,12 +416,12 @@ router.get('/theme', dataRateLimiter, requireAuthForSettings, async (req, res) =
             // Check for existing theme cookies
             const cookies = cookie.parse(req.headers.cookie || '');
             const cookieTheme = cookies['figranium_theme'] || cookies['theme'];
-            const validThemes = ['dark', 'light', 'solarized-light', 'solarized-dark'];
+            const validThemes = ['auto', 'dark', 'light', 'solarized-light', 'solarized-dark'];
             if (cookieTheme && validThemes.includes(cookieTheme.trim())) {
                 theme = cookieTheme.trim();
                 await saveThemeConfig(theme);
             } else {
-                theme = 'dark';
+                theme = 'auto';
             }
         }
         res.json({ theme });
@@ -434,8 +434,8 @@ router.get('/theme', dataRateLimiter, requireAuthForSettings, async (req, res) =
 router.post('/theme', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
     try {
         const bodyTheme = req.body && typeof req.body.theme === 'string' ? req.body.theme.trim() : '';
-        const validThemes = ['dark', 'light', 'solarized-light', 'solarized-dark'];
-        const selectedTheme = validThemes.includes(bodyTheme) ? bodyTheme : 'dark';
+        const validThemes = ['auto', 'dark', 'light', 'solarized-light', 'solarized-dark'];
+        const selectedTheme = validThemes.includes(bodyTheme) ? bodyTheme : 'auto';
 
         const savedTheme = await saveThemeConfig(selectedTheme);
 

@@ -181,7 +181,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
     const [userAgentOptions, setUserAgentOptions] = useState<string[]>([]);
     const [userAgentLoading, setUserAgentLoading] = useState(false);
 
-    const { theme, setTheme } = useTheme();
+    const { themePreference, setTheme } = useTheme();
 
     const loadCredentials = useCallback(async () => {
         setCredentialsLoading(true);
@@ -1190,8 +1190,8 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     )}
                     {section === 'appearance' && (
                         <ThemePanel
-                            currentThemeId={theme.id}
-                            onSelect={(t) => setTheme(t.id)}
+                            currentThemeId={themePreference}
+                            onSelect={setTheme}
                         />
                     )}
                     {section === 'about' && (

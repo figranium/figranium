@@ -7,9 +7,9 @@ interface CenterConfirmProps {
 
 const CenterConfirm: React.FC<CenterConfirmProps> = ({ request, onResolve }) => {
     return (
-        <div className="fixed inset-0 z-[201] flex items-center justify-center bg-black/70 backdrop-blur-sm px-6">
+        <div className="theme-modal-backdrop fixed inset-0 z-[201] flex items-center justify-center backdrop-blur-sm px-6">
             <div
-                className="w-full max-w-md rounded-[32px] border p-8 text-center shadow-2xl backdrop-blur-xl"
+                className="theme-modal-elevation w-full max-w-md rounded-[32px] border p-8 text-center backdrop-blur-xl"
                 style={{ background: 'var(--app-glass-modal)', borderColor: 'var(--app-border)' }}
             >
                 <p className="text-xs font-bold tracking-[0.4em]" style={{ color: 'var(--app-text-faint)' }}>{request.title ?? 'Confirm'}</p>

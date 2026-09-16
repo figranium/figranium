@@ -16,8 +16,8 @@ const VersionPreviewModal: React.FC<VersionPreviewModalProps> = ({
     if (!versionPreview) return null;
 
     return (
-        <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/70 backdrop-blur-sm px-6">
-            <div className="glass-card w-full max-w-6xl rounded-[32px] border border-white/10 p-8 shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="theme-modal-backdrop fixed inset-0 z-[210] flex items-center justify-center backdrop-blur-sm px-6">
+            <div className="theme-modal-elevation glass-card w-full max-w-6xl rounded-[32px] border border-white/10 p-8 flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
                     <div className="space-y-1">
                         <div className="text-xs font-bold text-gray-500 tracking-[0.3em]">Task Snapshot</div>

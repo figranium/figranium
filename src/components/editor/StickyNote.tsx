@@ -15,9 +15,9 @@ interface StickyNoteProps {
 
 const COLOR_STYLES: Record<StickyNoteColor, { bg: string; border: string; header: string }> = {
     default: {
-        bg: 'rgba(255,255,255,0.07)',
-        border: 'rgba(255,255,255,0.18)',
-        header: 'rgba(255,255,255,0.10)',
+        bg: 'var(--app-sticky-default-bg)',
+        border: 'var(--app-sticky-default-border)',
+        header: 'var(--app-sticky-default-header)',
     },
     yellow: {
         bg: 'rgba(250,204,21,0.14)',
@@ -56,10 +56,8 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
     const [draft, setDraft] = useState(note.content);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
     const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
-    const [resizeSize, setResizeSize] = useState<{ width: number; height: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
-    const resizeRef = useRef<{ startX: number; startY: number; origW: number; origH: number } | null>(null);
 
     const colors = COLOR_STYLES[note.color] || COLOR_STYLES.default;
 
@@ -77,16 +75,6 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
         return {
             x: Math.round(dragRef.current.origX + dx),
             y: Math.round(dragRef.current.origY + dy),
-        };
-    }, [canvasScale]);
-
-    const getResizeSize = useCallback((clientX: number, clientY: number) => {
-        if (!resizeRef.current) return null;
-        const dx = (clientX - resizeRef.current.startX) / canvasScale;
-        const dy = (clientY - resizeRef.current.startY) / canvasScale;
-        return {
-            width: Math.round(Math.max(160, resizeRef.current.origW + dx)),
-            height: Math.round(Math.max(100, resizeRef.current.origH + dy)),
         };
     }, [canvasScale]);
 
@@ -122,37 +110,6 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
         }
     }, [dragPosition, getDragPosition, note.id, note.x, note.y, onUpdate]);
 
-    // Resize handle (bottom-right corner). As with dragging, keep the transient
-    // size local and write it back once to avoid autosave storms.
-    const handleResizePointerDown = useCallback((e: React.PointerEvent) => {
-        e.stopPropagation();
-        e.preventDefault();
-        resizeRef.current = {
-            startX: e.clientX,
-            startY: e.clientY,
-            origW: note.width,
-            origH: note.height,
-        };
-        setResizeSize({ width: note.width, height: note.height });
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    }, [note.width, note.height]);
-
-    const handleResizePointerMove = useCallback((e: React.PointerEvent) => {
-        e.stopPropagation();
-        const next = getResizeSize(e.clientX, e.clientY);
-        if (next) setResizeSize(next);
-    }, [getResizeSize]);
-
-    const handleResizePointerUp = useCallback((e: React.PointerEvent) => {
-        e.stopPropagation();
-        const next = getResizeSize(e.clientX, e.clientY) || resizeSize;
-        resizeRef.current = null;
-        setResizeSize(null);
-        if (next && (next.width !== note.width || next.height !== note.height)) {
-            onUpdate(note.id, next);
-        }
-    }, [getResizeSize, note.height, note.id, note.width, onUpdate, resizeSize]);
-
     const commitEdit = useCallback(() => {
         onUpdate(note.id, { content: draft });
         setIsEditing(false);
@@ -160,8 +117,8 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
 
     const displayX = dragPosition?.x ?? note.x;
     const displayY = dragPosition?.y ?? note.y;
-    const displayWidth = resizeSize?.width ?? note.width;
-    const displayHeight = resizeSize?.height ?? note.height;
+    const displayWidth = note.width;
+    const displayHeight = note.height;
 
     return (
         <>
@@ -190,7 +147,8 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                 style={{
                     background: colors.bg,
                     border: `1px solid ${isSelected ? 'rgba(96,165,250,0.8)' : colors.border}`,
-                    boxShadow: isSelected ? '0 0 0 2px rgba(59,130,246,0.4), 0 4px 24px rgba(0,0,0,0.4)' : '0 4px 24px rgba(0,0,0,0.4)',
+                    boxShadow: isSelected ? '0 0 0 2px rgba(59,130,246,0.4), var(--app-shadow-sticky)' : 'var(--app-shadow-sticky)',
+                    color: 'var(--app-sticky-text)',
                 }}
             >
                 {/* Header / drag handle */}
@@ -226,7 +184,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                     {/* Edit / copy / delete buttons */}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
                         <button
-                            className="w-6 h-6 rounded flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                            className="sticky-note-control w-6 h-6 rounded flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                             onPointerDown={(e) => e.stopPropagation()}
                             onClick={(e) => { e.stopPropagation(); setIsEditing(true); setDraft(note.content); }}
                             title="Edit note"
@@ -237,11 +195,11 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                         <CopyButton
                             text={note.content}
                             title="Copy note"
-                            className="w-6 h-6 rounded flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                            className="sticky-note-control w-6 h-6 rounded flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                             iconClassName="text-[14px]"
                         />
                         <button
-                            className="w-6 h-6 rounded flex items-center justify-center text-white/50 hover:text-red-400 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                            className="sticky-note-control w-6 h-6 rounded flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                             onPointerDown={(e) => e.stopPropagation()}
                             onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}
                             title="Delete note"
@@ -268,30 +226,19 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') commitEdit();
                                 e.stopPropagation();
                             }}
-                            className="w-full min-h-[120px] resize-none bg-transparent px-3 py-2 text-xs text-white/80 placeholder-white/20 focus:outline-none font-mono leading-relaxed"
+                            className="sticky-note-textarea w-full min-h-[120px] resize-none bg-transparent px-3 py-2 text-xs focus:outline-none font-mono leading-relaxed"
+                            style={{ color: 'var(--app-sticky-text)' }}
                             placeholder="Write markdown here..."
                             onClick={(e) => e.stopPropagation()}
                         />
                     ) : (
                         <div
-                            className="px-3 py-2 text-xs text-white/75 leading-relaxed cursor-text custom-scrollbar font-mono whitespace-pre-wrap"
+                            className="px-3 py-2 text-xs leading-relaxed cursor-text custom-scrollbar font-mono whitespace-pre-wrap"
+                            style={{ color: 'var(--app-sticky-text-muted)' }}
                         >
-                            {note.content || <span className="text-white/20 italic">Double-click to edit...</span>}
+                            {note.content || <span style={{ color: 'var(--app-sticky-text-faint)' }} className="italic">Double-click to edit...</span>}
                         </div>
                     )}
-                </div>
-
-                {/* Resize handle */}
-                <div
-                    className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize flex items-end justify-end pb-1 pr-1 touch-none"
-                    onPointerDown={handleResizePointerDown}
-                    onPointerMove={handleResizePointerMove}
-                    onPointerUp={handleResizePointerUp}
-                    onPointerCancel={handleResizePointerUp}
-                >
-                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                        <path d="M7 1L1 7M7 4L4 7" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
                 </div>
             </div>
         </div>

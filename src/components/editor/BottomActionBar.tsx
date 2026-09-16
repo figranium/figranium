@@ -21,7 +21,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
     onStopHeadful,
 }) => {
     return (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#111] border border-white/10 p-2 rounded-3xl shadow-2xl backdrop-blur-xl">
+        <div className="editor-action-bar fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-[#111] border border-white/10 p-2 rounded-3xl backdrop-blur-xl">
             <button
                 onClick={onRun}
                 disabled={isExecuting || isHeadfulOpen}

@@ -1,10 +1,10 @@
 import React from 'react';
-import { ThemeDefinition, THEMES } from '../../utils/theme';
+import { ThemePreference, THEMES, AUTO_THEME_ID } from '../../utils/theme';
 import TablerIcon from '../TablerIcon';
 
 interface ThemePanelProps {
-    currentThemeId: string;
-    onSelect: (theme: ThemeDefinition) => void;
+    currentThemeId: ThemePreference;
+    onSelect: (preference: ThemePreference) => void;
 }
 
 const ThemePanel: React.FC<ThemePanelProps> = ({ currentThemeId, onSelect }) => {
@@ -18,13 +18,35 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ currentThemeId, onSelect }) => 
                 <p className="text-xs theme-text-faint mt-1">Choose how Figranium looks</p>
             </div>
 
+            <button
+                onClick={() => onSelect(AUTO_THEME_ID)}
+                className={`mb-4 flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--app-accent)] ${
+                    currentThemeId === AUTO_THEME_ID
+                        ? 'border-[var(--app-accent)] bg-[var(--app-glass-card-hover)]'
+                        : 'theme-border theme-surface-3 hover:border-[var(--app-border-strong)]'
+                }`}
+                aria-pressed={currentThemeId === AUTO_THEME_ID}
+                title="Use your device theme"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl theme-surface-2 theme-border border">
+                        <TablerIcon name="adjustments_horizontal" className="text-lg theme-text" />
+                    </div>
+                    <div>
+                        <div className="text-sm font-bold theme-text">Auto</div>
+                        <div className="mt-0.5 text-xs theme-text-faint">Use your device’s Light or Dark appearance.</div>
+                    </div>
+                </div>
+                {currentThemeId === AUTO_THEME_ID && <TablerIcon name="check" className="text-lg theme-accent" />}
+            </button>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {THEMES.map((theme) => {
                     const isActive = theme.id === currentThemeId;
                     return (
                         <button
                             key={theme.id}
-                            onClick={() => onSelect(theme)}
+                            onClick={() => onSelect(theme.id)}
                             className={`group relative rounded-2xl overflow-hidden border transition-all duration-300 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
                                 isActive
                                     ? 'border-white bg-white/10 ring-2 ring-white/20'
