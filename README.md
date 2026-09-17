@@ -4,7 +4,7 @@
 
 # Figranium
 
-Figranium is an open-source, deterministic browser automation platform that lets you build visual browser tasks that can be called as API endpoints. Create scraping and automation workflows visually, pass dynamic inputs at runtime, and get structured results—without usage credits or third-party data hosting.
+Figranium is an open-source, deterministic browser automation platform that lets you build visual browser tasks that can be called as APIs. Create scraping and automation workflows visually, pass dynamic inputs at runtime, and get structured results—without usage credits or third-party data hosting.
 
 <div align="center">
   <img src="screenshot.png" alt="Figranium Demo" width="100%">
