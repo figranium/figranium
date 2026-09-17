@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const { REQUEST_LIMIT_WINDOW_MS, AUTH_RATE_LIMIT_MAX, DATA_RATE_LIMIT_MAX } = require('./constants');
 const { loadAllowedIps, loadApiKey } = require('./storage');
 const { normalizeIp } = require('./utils');
+const { recordActivity } = require('./telemetry');
 
 const authRateLimiter = rateLimit({
     windowMs: REQUEST_LIMIT_WINDOW_MS,
@@ -81,6 +82,7 @@ const requireIpAllowlist = async (req, res, next) => {
 
 const requireAuth = (req, res, next) => {
     if (req.session.user) {
+        res.locals.figraniumActivity = 'ui';
         next();
     } else {
         if (req.xhr || req.path.startsWith('/api/')) {
@@ -150,6 +152,7 @@ const requireApiKey = async (req, res, next) => {
     if (!crypto.timingSafeEqual(providedHmac, storedHmac)) {
         return res.status(401).json({ error: 'INVALID_API_KEY' });
     }
+    res.locals.figraniumActivity = 'api';
     next();
 };
 

@@ -84,6 +84,7 @@ const { pushOutput } = require('./src/server/outputProviders');
 const { migrateStorageState } = require('./src/server/migrate-storage');
 const { concurrencyGate } = require('./src/server/execution-queue');
 const { validateUrl } = require('./url-utils');
+const { recordActivity } = require('./src/server/telemetry');
 
 const app = express();
 app.disable('x-powered-by');
@@ -197,6 +198,17 @@ app.use(session({
         maxAge: SESSION_TTL_SECONDS * 1000
     }
 }));
+
+// Record only whether an authenticated UI session or API credential was used today.
+// Request data is intentionally not inspected or forwarded.
+app.use((req, res, next) => {
+    res.on('finish', () => {
+        if (res.statusCode < 400 && res.locals.figraniumActivity) {
+            recordActivity(res.locals.figraniumActivity);
+        }
+    });
+    next();
+});
 
 app.use(csrfProtection);
 

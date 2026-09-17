@@ -24,6 +24,7 @@ const DATABASE_CONFIG_FILE = path.join(DATA_DIR, 'database_config.json');
 const STORAGE_STATE_PATH = path.join(__dirname, '../../storage_state.json');
 const EXECUTIONS_FILE = path.join(DATA_DIR, 'executions.json');
 const CREDENTIALS_FILE = path.join(DATA_DIR, 'credentials.json');
+const TELEMETRY_STATE_FILE = path.join(DATA_DIR, 'telemetry.json');
 const MAX_TASK_VERSIONS = 30;
 const MAX_EXECUTIONS = 500;
 const REQUEST_LIMIT_WINDOW_MS = 15 * 60 * 1000;
@@ -61,6 +62,7 @@ module.exports = {
     STORAGE_STATE_PATH,
     EXECUTIONS_FILE,
     CREDENTIALS_FILE,
+    TELEMETRY_STATE_FILE,
     MAX_TASK_VERSIONS,
     MAX_EXECUTIONS,
     REQUEST_LIMIT_WINDOW_MS,
