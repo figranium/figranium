@@ -42,6 +42,8 @@
     --app-code-attr: #fcd34d;
     --app-code-punct: rgba(255, 255, 255, 0.6);
     --app-caret: #ffffff;
+    --app-selection-bg: rgba(96, 165, 250, 0.42);
+    --app-selection-text: #ffffff;
     --app-shadow-raised: 0 12px 28px rgba(0, 0, 0, 0.28);
     --app-shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.5);
     --app-shadow-sticky: 0 6px 20px rgba(0, 0, 0, 0.35);
@@ -84,6 +86,16 @@ body {
 #root {
     width: 100%;
 }
+
+/* Native text selection must follow the active theme rather than the browser/default white highlight. */
+::selection { background: var(--app-selection-bg); color: var(--app-selection-text); }
+::-moz-selection { background: var(--app-selection-bg); color: var(--app-selection-text); }
+
+/* Theme-aware fallback for legacy utility colors throughout the app. These only override
+   white/black/gray utilities when a non-classic theme is active, preserving dark exactly. */
+[data-theme='light'] .theme-contrast-scope,
+[data-theme='solarized-light'] .theme-contrast-scope,
+[data-theme='solarized-dark'] .theme-contrast-scope { color: var(--app-text); }
 
 /* ── Theme-aware utility classes ──────────────────────────────────────────── */
 
@@ -164,6 +176,35 @@ body {
 [data-theme='solarized-light'] .canvas-workflow [class*="hover:text-white"]:hover,
 [data-theme='light'] .canvas-workflow .group:hover [class*="group-hover:text-white"],
 [data-theme='solarized-light'] .canvas-workflow .group:hover [class*="group-hover:text-white"] { color: var(--app-text) !important; }
+
+
+/* Legacy Tailwind contrast normalization for non-classic themes. */
+[data-theme='light'] [class*="text-white"],
+[data-theme='solarized-light'] [class*="text-white"] { color: var(--app-text); }
+[data-theme='light'] [class*="text-gray-"],
+[data-theme='solarized-light'] [class*="text-gray-"] { color: var(--app-text-muted); }
+[data-theme='light'] [class*="border-white/"],
+[data-theme='solarized-light'] [class*="border-white/"] { border-color: var(--app-border); }
+[data-theme='light'] [class*="bg-white/"],
+[data-theme='solarized-light'] [class*="bg-white/"] { background-color: var(--app-glass-card); }
+[data-theme='light'] [class*="bg-black/"],
+[data-theme='solarized-light'] [class*="bg-black/"] { background-color: var(--app-input); }
+[data-theme='light'] [class*="hover:bg-white/"]:hover,
+[data-theme='solarized-light'] [class*="hover:bg-white/"]:hover { background-color: var(--app-glass-card-hover) !important; }
+[data-theme='light'] [class*="hover:text-white"]:hover,
+[data-theme='solarized-light'] [class*="hover:text-white"]:hover,
+[data-theme='light'] .group:hover [class*="group-hover:text-white"],
+[data-theme='solarized-light'] .group:hover [class*="group-hover:text-white"] { color: var(--app-text) !important; }
+[data-theme='light'] [class*="hover:border-white/"]:hover,
+[data-theme='solarized-light'] [class*="hover:border-white/"]:hover { border-color: var(--app-border-strong) !important; }
+
+/* Solarized Dark is dark, but pure white utilities are still off-palette. */
+[data-theme='solarized-dark'] [class*="text-white"] { color: var(--app-text); }
+[data-theme='solarized-dark'] [class*="hover:text-white"]:hover,
+[data-theme='solarized-dark'] .group:hover [class*="group-hover:text-white"] { color: var(--app-text) !important; }
+[data-theme='solarized-dark'] [class*="border-white/"] { border-color: var(--app-border); }
+[data-theme='solarized-dark'] [class*="hover:border-white/"]:hover { border-color: var(--app-border-strong) !important; }
+[data-theme='solarized-dark'] [class*="hover:bg-white/"]:hover { background-color: var(--app-glass-card-hover) !important; }
 
 /* ── Non-editor application pages ────────────────────────────────────────── */
 
