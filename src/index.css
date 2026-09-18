@@ -206,6 +206,10 @@ body {
 [data-theme='solarized-dark'] [class*="hover:border-white/"]:hover { border-color: var(--app-border-strong) !important; }
 [data-theme='solarized-dark'] [class*="hover:bg-white/"]:hover { background-color: var(--app-glass-card-hover) !important; }
 
+.editor-floating-panel, .editor-context-menu { background: var(--app-surface-2); border: 1px solid var(--app-border-strong); color: var(--app-text); box-shadow: var(--app-shadow-overlay); }
+.editor-floating-button { color: var(--app-text-muted); --tw-ring-color: color-mix(in srgb, var(--app-text) 28%, transparent); }
+.editor-floating-button:hover { color: var(--app-text); background: var(--app-glass-card-hover); }
+
 /* ── Non-editor application pages ────────────────────────────────────────── */
 
 .app-page {
