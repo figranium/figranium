@@ -147,6 +147,24 @@ body {
 .canvas-insert-icon { color: var(--app-text-faint); }
 .canvas-insert-button:hover .canvas-insert-icon { color: var(--app-text); }
 
+
+.editor-action-bar { background: var(--app-glass); border: 1px solid var(--app-border-strong); box-shadow: var(--app-shadow-overlay); }
+.editor-action-primary { background: var(--app-accent); color: var(--app-accent-text); border: 1px solid var(--app-accent); --tw-ring-color: color-mix(in srgb, var(--app-accent) 45%, transparent); }
+.editor-action-primary:hover:not(:disabled) { filter: brightness(0.94); transform: translateY(-1px); }
+.editor-action-spinner { border-color: color-mix(in srgb, var(--app-accent-text) 20%, transparent); border-top-color: var(--app-accent-text); }
+.editor-action-secondary { border-color: var(--app-border); color: var(--app-text-muted); background: transparent; }
+.editor-action-secondary:hover:not(:disabled) { color: var(--app-text); background: var(--app-glass-card-hover); border-color: var(--app-border-strong); }
+
+/* Normalize legacy white-based editor hovers so light and Solarized themes do not flash white. */
+[data-theme='light'] .canvas-workflow [class*="hover:bg-white"]:hover,
+[data-theme='solarized-light'] .canvas-workflow [class*="hover:bg-white"]:hover,
+[data-theme='light'] .editor-action-bar [class*="hover:bg-white"]:hover,
+[data-theme='solarized-light'] .editor-action-bar [class*="hover:bg-white"]:hover { background-color: var(--app-glass-card-hover) !important; }
+[data-theme='light'] .canvas-workflow [class*="hover:text-white"]:hover,
+[data-theme='solarized-light'] .canvas-workflow [class*="hover:text-white"]:hover,
+[data-theme='light'] .canvas-workflow .group:hover [class*="group-hover:text-white"],
+[data-theme='solarized-light'] .canvas-workflow .group:hover [class*="group-hover:text-white"] { color: var(--app-text) !important; }
+
 /* ── Non-editor application pages ────────────────────────────────────────── */
 
 .app-page {
