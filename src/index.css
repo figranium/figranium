@@ -118,6 +118,35 @@ body {
     color: var(--app-text);
 }
 
+/* ── Editor theme-aware interactive surfaces ─────────────────────────────── */
+
+.action-palette-modal {
+    background: var(--app-glass-modal, var(--app-surface));
+    border-color: var(--app-border-strong);
+    color: var(--app-text);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+.action-palette-icon-button { color: var(--app-text-muted); --tw-ring-color: color-mix(in srgb, var(--app-text) 35%, transparent); }
+.action-palette-icon-button:hover { color: var(--app-text); background: var(--app-glass-card-hover); }
+.action-palette-input { background: var(--app-input); border-color: var(--app-border-strong); color: var(--app-text); --tw-ring-color: color-mix(in srgb, var(--app-text) 18%, transparent); }
+.action-palette-input::placeholder { color: var(--app-text-faint); }
+.action-palette-input:focus { border-color: color-mix(in srgb, var(--app-text) 38%, transparent); }
+.action-palette-clear { color: var(--app-text-faint); }
+.action-palette-clear:hover { color: var(--app-text); }
+.action-palette-item { background: var(--app-glass-card); border-color: var(--app-border); --tw-ring-color: color-mix(in srgb, var(--app-accent) 45%, transparent); }
+.action-palette-item:hover { background: var(--app-glass-card-hover); border-color: var(--app-border-strong); }
+.action-palette-item-active { background: var(--app-input); border-color: var(--app-border-strong); --tw-ring-color: var(--app-border-strong); }
+.action-palette-item-icon { color: var(--app-text-muted); }
+.action-palette-item:hover .action-palette-item-icon { color: var(--app-text); }
+.action-palette-item-title { color: var(--app-text); }
+.action-palette-item-description { color: var(--app-text-muted); }
+
+.canvas-insert-button { background: var(--app-bg); border-color: var(--app-border-strong); --tw-ring-color: color-mix(in srgb, var(--app-text) 35%, transparent); }
+.canvas-insert-button:hover { background: var(--app-glass-card-hover); border-color: color-mix(in srgb, var(--app-text) 34%, transparent); }
+.canvas-insert-icon { color: var(--app-text-faint); }
+.canvas-insert-button:hover .canvas-insert-icon { color: var(--app-text); }
+
 /* ── Non-editor application pages ────────────────────────────────────────── */
 
 .app-page {
