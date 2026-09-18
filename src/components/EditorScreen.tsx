@@ -457,27 +457,27 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
 
             {/* Zoom Controls */}
             <div
-                className="absolute bottom-24 left-6 z-30 flex flex-col gap-1 bg-[#111] border border-white/10 rounded-xl p-1 shadow-xl"
+                className="editor-floating-panel absolute bottom-24 left-6 z-30 flex flex-col gap-1 rounded-xl p-1"
                 role="group"
                 aria-label="Zoom controls"
             >
                 <button
                     onClick={() => canvas.setCanvasScale(Math.min(2, canvas.canvasScale * 1.2))}
-                    className="w-8 h-8 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="editor-floating-button w-8 h-8 rounded-lg transition-all flex items-center justify-center text-sm font-bold focus:outline-none focus-visible:ring-2"
                     aria-label="Zoom in"
                     title="Zoom in"
                 >
                     +
                 </button>
                 <div
-                    className="text-xs text-center text-gray-500 font-bold select-none"
+                    className="theme-text-muted text-xs text-center font-bold select-none"
                     aria-live="polite"
                 >
                     {Math.round(canvas.canvasScale * 100)}%
                 </div>
                 <button
                     onClick={() => canvas.setCanvasScale(Math.max(0.25, canvas.canvasScale * 0.8))}
-                    className="w-8 h-8 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="editor-floating-button w-8 h-8 rounded-lg transition-all flex items-center justify-center text-sm font-bold focus:outline-none focus-visible:ring-2"
                     aria-label="Zoom out"
                     title="Zoom out"
                 >
@@ -489,7 +489,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                         const vp = canvas.canvasViewportRef.current;
                         canvas.setCanvasOffset({ x: ((vp ? vp.clientWidth : 1000) - 400) / 2, y: 20 });
                     }}
-                    className="w-8 h-8 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                    className="editor-floating-button w-8 h-8 rounded-lg transition-all flex items-center justify-center focus:outline-none focus-visible:ring-2"
                     aria-label="Reset zoom and center"
                     title="Reset zoom and center"
                 >
@@ -509,7 +509,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 return (
                     <>
                     <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
-                    <div className="action-context-menu fixed z-50 w-[200px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold tracking-widest text-white/80" style={{ left: contextMenu.x, top: contextMenu.y }}>
+                    <div className="action-context-menu editor-context-menu fixed z-50 w-[200px] rounded-xl p-2 text-xs font-bold tracking-widest" style={{ left: contextMenu.x, top: contextMenu.y }}>
                         <button onClick={() => {
                             const nextState = !target.disabled;
                             const nextActions = currentTask.actions.map(a => affectedIds.includes(a.id) ? { ...a, disabled: nextState } : a);
