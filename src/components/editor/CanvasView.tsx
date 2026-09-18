@@ -1070,7 +1070,22 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                             <p className="text-xs text-gray-500 mt-2 leading-relaxed">{currentTask.description}</p>
                         )}
                     </div>
-                    {(currentTask.mode === 'agent' || currentTask.mode === 'scrape') && <div className="canvas-connector w-px h-10 bg-white/25" />}
+                    {currentTask.mode === 'scrape' && <div className="canvas-connector w-px h-10 bg-white/25" />}
+                    {currentTask.mode === 'agent' && (
+                        <div className="flex flex-col items-center pointer-events-auto">
+                            <div className="canvas-connector w-px h-2 bg-white/25" />
+                            <button
+                                data-action-drop-scope="root"
+                                onClick={() => openActionPalette(undefined, 0)}
+                                className="relative z-20 w-8 h-8 border border-dashed border-white/10 rounded-lg bg-[var(--app-bg)] hover:border-white/30 hover:bg-[var(--app-surface)] transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                aria-label="Add action before first block (Ctrl + K)"
+                                title="Add action before first block (Ctrl + K)"
+                            >
+                                <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                            </button>
+                            <div className="canvas-connector w-px h-2 bg-white/25" />
+                        </div>
+                    )}
                     {currentTask.mode === 'scrape' && (
                         <div className="w-[360px] pointer-events-auto">
                             {currentTask.extractionScript !== undefined ? (
