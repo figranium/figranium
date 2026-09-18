@@ -805,7 +805,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         aria-label="Add action (Ctrl + K)"
                                         title="Add action (Ctrl + K)"
                                     >
-                                        <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                        <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
                                     </button>
                                 </div>
                             </div>
@@ -835,7 +835,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                             aria-label="Add action (Ctrl + K)"
                                             title="Add action (Ctrl + K)"
                                         >
-                                            <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                            <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
                                         </button>
                                     </div>
                             </div>
@@ -848,7 +848,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 aria-label="Add action (Ctrl + K)"
                                 title="Add action (Ctrl + K)"
                             >
-                                <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                                <TablerIcon name="add" className="canvas-insert-icon text-sm transition-colors" />
                             </button>
                             <div className="w-px h-2 bg-white/25" />
                         </div>
@@ -900,11 +900,11 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <button
                                     data-action-drop-scope={loopBodyScopeId}
                                     onClick={() => openActionPalette(undefined, bodyEnd)}
-                                    className="absolute left-[576px] top-[123px] z-20 w-12 h-12 border border-dashed border-white/15 rounded-xl bg-[var(--app-bg)] hover:border-white/30 hover:bg-[var(--app-surface)] transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    className="absolute left-[576px] top-[123px] z-20 w-12 h-12 canvas-insert-button border border-dashed rounded-xl transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2"
                                     aria-label="Add action inside loop (Ctrl + K)"
                                     title="Add action inside loop (Ctrl + K)"
                                 >
-                                    <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                    <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
                                 </button>
                             ) : (
                             <div className="relative z-10 ml-[420px] w-[360px] flex flex-col items-center">
@@ -916,11 +916,11 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     <button
                                         data-action-drop-scope={loopBodyScopeId}
                                         onClick={() => openActionPalette(undefined, bodyEnd)}
-                                        className="relative z-20 w-12 h-12 border border-dashed border-white/15 rounded-xl bg-[var(--app-bg)] hover:border-white/30 hover:bg-[var(--app-surface)] transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                        className="relative z-20 w-12 h-12 canvas-insert-button border border-dashed rounded-xl transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2"
                                         aria-label="Add action inside loop (Ctrl + K)"
                                         title="Add action inside loop (Ctrl + K)"
                                     >
-                                        <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                        <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
                                     </button>
                                 </div>
                             </div>
@@ -930,11 +930,11 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                         <div className="relative z-10 flex flex-col items-center">
                             <button
                                 onClick={() => openActionPalette(undefined, blockEnd + 1)}
-                                className="relative z-20 w-8 h-8 border border-dashed border-white/10 rounded-lg bg-[var(--app-bg)] hover:border-white/30 hover:bg-[var(--app-surface)] transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                className="relative z-20 w-8 h-8 canvas-insert-button border border-dashed rounded-lg transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2"
                                 aria-label="Add action after loop (Ctrl + K)"
                                 title="Add action after loop (Ctrl + K)"
                             >
-                                <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                                <TablerIcon name="add" className="canvas-insert-icon text-sm transition-colors" />
                             </button>
                             <div className="h-2 border-l border-white/25" />
                         </div>
@@ -979,11 +979,11 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <div className="w-px h-2 bg-white/25" />
                                 <button
                                     onClick={() => openActionPalette(undefined, currentIndex + 1)}
-                                    className="relative z-20 w-8 h-8 border border-dashed border-white/10 rounded-lg bg-[var(--app-bg)] hover:border-white/30 hover:bg-[var(--app-surface)] transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    className="relative z-20 w-8 h-8 canvas-insert-button border border-dashed rounded-lg transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2"
                                     aria-label="Add action (Ctrl + K)"
                                     title="Add action (Ctrl + K)"
                                 >
-                                    <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                                    <TablerIcon name="add" className="canvas-insert-icon text-sm transition-colors" />
                                 </button>
                                 <div className="w-px h-2 bg-white/25" />
                             </div>
@@ -1077,11 +1077,11 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                             <button
                                 data-action-drop-scope="root"
                                 onClick={() => openActionPalette(undefined, 0)}
-                                className="relative z-20 w-8 h-8 border border-dashed border-white/10 rounded-lg bg-[var(--app-bg)] hover:border-white/30 hover:bg-[var(--app-surface)] transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                className="relative z-20 w-8 h-8 canvas-insert-button border border-dashed rounded-lg transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2"
                                 aria-label="Add action before first block (Ctrl + K)"
                                 title="Add action before first block (Ctrl + K)"
                             >
-                                <TablerIcon name="add" className="text-sm text-gray-600 group-hover:text-white transition-colors" />
+                                <TablerIcon name="add" className="canvas-insert-icon text-sm transition-colors" />
                             </button>
                             <div className="canvas-connector w-px h-2 bg-white/25" />
                         </div>
@@ -1105,7 +1105,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     data-interactive-target="true"
                                     className="canvas-add-action w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                 >
-                                    <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                    <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
                                     <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
                                 </button>
                             )}
@@ -1149,7 +1149,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                             data-interactive-target="true"
                                             className="canvas-add-action w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         >
-                                            <TablerIcon name="add" className="text-lg text-gray-500 group-hover:text-white transition-colors" />
+                                            <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
                                             <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
                                         </button>
                                     )}
