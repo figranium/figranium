@@ -42,6 +42,8 @@
     --app-code-attr: #fcd34d;
     --app-code-punct: rgba(255, 255, 255, 0.6);
     --app-caret: #ffffff;
+    --app-selection-bg: rgba(96, 165, 250, 0.42);
+    --app-selection-text: #ffffff;
     --app-shadow-raised: 0 12px 28px rgba(0, 0, 0, 0.28);
     --app-shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.5);
     --app-shadow-sticky: 0 6px 20px rgba(0, 0, 0, 0.35);
@@ -85,6 +87,16 @@ body {
     width: 100%;
 }
 
+/* Native text selection must follow the active theme rather than the browser/default white highlight. */
+::selection { background: var(--app-selection-bg); color: var(--app-selection-text); }
+::-moz-selection { background: var(--app-selection-bg); color: var(--app-selection-text); }
+
+/* Theme-aware fallback for legacy utility colors throughout the app. These only override
+   white/black/gray utilities when a non-classic theme is active, preserving dark exactly. */
+[data-theme='light'] .theme-contrast-scope,
+[data-theme='solarized-light'] .theme-contrast-scope,
+[data-theme='solarized-dark'] .theme-contrast-scope { color: var(--app-text); }
+
 /* ── Theme-aware utility classes ──────────────────────────────────────────── */
 
 .theme-bg { background-color: var(--app-bg); }
@@ -117,6 +129,86 @@ body {
     background-color: var(--app-glass-card-hover);
     color: var(--app-text);
 }
+
+/* ── Editor theme-aware interactive surfaces ─────────────────────────────── */
+
+.action-palette-modal {
+    background: var(--app-glass-modal, var(--app-surface));
+    border-color: var(--app-border-strong);
+    color: var(--app-text);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+.action-palette-icon-button { color: var(--app-text-muted); --tw-ring-color: color-mix(in srgb, var(--app-text) 35%, transparent); }
+.action-palette-icon-button:hover { color: var(--app-text); background: var(--app-glass-card-hover); }
+.action-palette-input { background: var(--app-input); border-color: var(--app-border-strong); color: var(--app-text); --tw-ring-color: color-mix(in srgb, var(--app-text) 18%, transparent); }
+.action-palette-input::placeholder { color: var(--app-text-faint); }
+.action-palette-input:focus { border-color: color-mix(in srgb, var(--app-text) 38%, transparent); }
+.action-palette-clear { color: var(--app-text-faint); }
+.action-palette-clear:hover { color: var(--app-text); }
+.action-palette-item { background: var(--app-glass-card); border-color: var(--app-border); --tw-ring-color: color-mix(in srgb, var(--app-accent) 45%, transparent); }
+.action-palette-item:hover { background: var(--app-glass-card-hover); border-color: var(--app-border-strong); }
+.action-palette-item-active { background: var(--app-input); border-color: var(--app-border-strong); --tw-ring-color: var(--app-border-strong); }
+.action-palette-item-icon { color: var(--app-text-muted); }
+.action-palette-item:hover .action-palette-item-icon { color: var(--app-text); }
+.action-palette-item-title { color: var(--app-text); }
+.action-palette-item-description { color: var(--app-text-muted); }
+
+.canvas-insert-button { background: var(--app-bg); border-color: var(--app-border-strong); --tw-ring-color: color-mix(in srgb, var(--app-text) 35%, transparent); }
+.canvas-insert-button:hover { background: var(--app-glass-card-hover); border-color: color-mix(in srgb, var(--app-text) 34%, transparent); }
+.canvas-insert-icon { color: var(--app-text-faint); }
+.canvas-insert-button:hover .canvas-insert-icon { color: var(--app-text); }
+
+
+.editor-action-bar { background: var(--app-glass); border: 1px solid var(--app-border-strong); box-shadow: var(--app-shadow-overlay); }
+.editor-action-primary { background: var(--app-accent); color: var(--app-accent-text); border: 1px solid var(--app-accent); --tw-ring-color: color-mix(in srgb, var(--app-accent) 45%, transparent); }
+.editor-action-primary:hover:not(:disabled) { filter: brightness(0.94); transform: translateY(-1px); }
+.editor-action-spinner { border-color: color-mix(in srgb, var(--app-accent-text) 20%, transparent); border-top-color: var(--app-accent-text); }
+.editor-action-secondary { border-color: var(--app-border); color: var(--app-text-muted); background: transparent; }
+.editor-action-secondary:hover:not(:disabled) { color: var(--app-text); background: var(--app-glass-card-hover); border-color: var(--app-border-strong); }
+
+/* Normalize legacy white-based editor hovers so light and Solarized themes do not flash white. */
+[data-theme='light'] .canvas-workflow [class*="hover:bg-white"]:hover,
+[data-theme='solarized-light'] .canvas-workflow [class*="hover:bg-white"]:hover,
+[data-theme='light'] .editor-action-bar [class*="hover:bg-white"]:hover,
+[data-theme='solarized-light'] .editor-action-bar [class*="hover:bg-white"]:hover { background-color: var(--app-glass-card-hover) !important; }
+[data-theme='light'] .canvas-workflow [class*="hover:text-white"]:hover,
+[data-theme='solarized-light'] .canvas-workflow [class*="hover:text-white"]:hover,
+[data-theme='light'] .canvas-workflow .group:hover [class*="group-hover:text-white"],
+[data-theme='solarized-light'] .canvas-workflow .group:hover [class*="group-hover:text-white"] { color: var(--app-text) !important; }
+
+
+/* Legacy Tailwind contrast normalization for non-classic themes. */
+[data-theme='light'] [class*="text-white"],
+[data-theme='solarized-light'] [class*="text-white"] { color: var(--app-text); }
+[data-theme='light'] [class*="text-gray-"],
+[data-theme='solarized-light'] [class*="text-gray-"] { color: var(--app-text-muted); }
+[data-theme='light'] [class*="border-white/"],
+[data-theme='solarized-light'] [class*="border-white/"] { border-color: var(--app-border); }
+[data-theme='light'] [class*="bg-white/"],
+[data-theme='solarized-light'] [class*="bg-white/"] { background-color: var(--app-glass-card); }
+[data-theme='light'] [class*="bg-black/"],
+[data-theme='solarized-light'] [class*="bg-black/"] { background-color: var(--app-input); }
+[data-theme='light'] [class*="hover:bg-white/"]:hover,
+[data-theme='solarized-light'] [class*="hover:bg-white/"]:hover { background-color: var(--app-glass-card-hover) !important; }
+[data-theme='light'] [class*="hover:text-white"]:hover,
+[data-theme='solarized-light'] [class*="hover:text-white"]:hover,
+[data-theme='light'] .group:hover [class*="group-hover:text-white"],
+[data-theme='solarized-light'] .group:hover [class*="group-hover:text-white"] { color: var(--app-text) !important; }
+[data-theme='light'] [class*="hover:border-white/"]:hover,
+[data-theme='solarized-light'] [class*="hover:border-white/"]:hover { border-color: var(--app-border-strong) !important; }
+
+/* Solarized Dark is dark, but pure white utilities are still off-palette. */
+[data-theme='solarized-dark'] [class*="text-white"] { color: var(--app-text); }
+[data-theme='solarized-dark'] [class*="hover:text-white"]:hover,
+[data-theme='solarized-dark'] .group:hover [class*="group-hover:text-white"] { color: var(--app-text) !important; }
+[data-theme='solarized-dark'] [class*="border-white/"] { border-color: var(--app-border); }
+[data-theme='solarized-dark'] [class*="hover:border-white/"]:hover { border-color: var(--app-border-strong) !important; }
+[data-theme='solarized-dark'] [class*="hover:bg-white/"]:hover { background-color: var(--app-glass-card-hover) !important; }
+
+.editor-floating-panel, .editor-context-menu { background: var(--app-surface-2); border: 1px solid var(--app-border-strong); color: var(--app-text); box-shadow: var(--app-shadow-overlay); }
+.editor-floating-button { color: var(--app-text-muted); --tw-ring-color: color-mix(in srgb, var(--app-text) 28%, transparent); }
+.editor-floating-button:hover { color: var(--app-text); background: var(--app-glass-card-hover); }
 
 /* ── Non-editor application pages ────────────────────────────────────────── */
 

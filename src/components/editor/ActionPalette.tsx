@@ -80,17 +80,17 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
             onClick={onClose}
         >
             <div
-                className="theme-modal-elevation glass-card w-full max-w-xl rounded-[28px] border border-white/10 p-6 animate-in fade-in zoom-in-95 duration-200"
+                className="theme-modal-elevation action-palette-modal w-full max-w-xl rounded-[28px] border p-6 animate-in fade-in zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-4">
                     <div>
-                        <p className="text-base font-semibold normal-case tracking-normal text-white">Add Block</p>
-                        <p className="text-xs text-gray-400 mt-1">Search actions and control flow blocks.</p>
+                        <p className="text-base font-semibold normal-case tracking-normal theme-text">Add Block</p>
+                        <p className="text-xs theme-text-muted mt-1">Search actions and control flow blocks.</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                        className="action-palette-icon-button p-2 rounded-xl transition-all focus:outline-none focus-visible:ring-2"
                         aria-label="Close"
                         title="Close palette"
                     >
@@ -106,12 +106,12 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                         placeholder="Type to filter (e.g., if, click, while)"
                         aria-label="Search actions"
                         aria-activedescendant={filtered[activeIndex] ? `action-item-${filtered[activeIndex].type}` : undefined}
-                        className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 pr-10 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-white/30 transition-all focus-visible:ring-2 focus-visible:ring-white/20"
+                        className="action-palette-input w-full rounded-xl border px-4 py-3 pr-10 text-sm focus:outline-none transition-all focus-visible:ring-2"
                     />
                     {query && (
                         <button
                             onClick={() => { onQueryChange(''); inputRef.current?.focus(); }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                            className="action-palette-clear absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
                             aria-label="Clear search"
                             title="Clear search"
                         >
@@ -129,12 +129,12 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                                 role="option"
                                 aria-selected={idx === activeIndex}
                                 onClick={() => onSelect(item.type)}
-                                className={`flex flex-col items-start gap-2 text-left p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 ${idx === activeIndex ? 'bg-white/10 border-white/30 ring-1 ring-white/20' : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.08] hover:border-white/20'}`}
+                                className={`action-palette-item flex flex-col items-start gap-2 text-left p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 group focus:outline-none focus-visible:ring-2 ${idx === activeIndex ? 'action-palette-item-active ring-1' : ''}`}
                             >
-                                <TablerIcon name={item.icon || 'extension'} className="text-2xl text-white/80 group-hover:text-white transition-colors shrink-0 mb-1" />
+                                <TablerIcon name={item.icon || 'extension'} className="action-palette-item-icon text-2xl transition-colors shrink-0 mb-1" />
                                 <div>
-                                    <div className="text-xs font-bold tracking-widest text-white/90 group-hover:text-white mb-1">{item.label}</div>
-                                    <div className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{item.description}</div>
+                                    <div className="action-palette-item-title text-xs font-bold tracking-widest mb-1">{item.label}</div>
+                                    <div className="action-palette-item-description text-xs line-clamp-2 leading-relaxed">{item.description}</div>
                                 </div>
                             </button>
                         ))}
