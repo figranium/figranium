@@ -103,6 +103,16 @@ export function useTasks(
             body: JSON.stringify(taskToSave)
         });
         const saved = await res.json();
+        if (!res.ok) {
+            if (res.status === 404 && saved?.error === 'TASK_NOT_FOUND') {
+                currentTaskRef.current = null;
+                setCurrentTask(null);
+                setTasks((previous) => previous.filter((task) => task.id !== taskToSave.id));
+                navigate('/dashboard', { replace: true });
+                return;
+            }
+            throw new Error(saved?.error || 'Failed to save task');
+        }
 
         // Autosaves can overlap. Never let an older response replace newer editor state.
         if (requestId !== latestSaveRequestRef.current) return;
