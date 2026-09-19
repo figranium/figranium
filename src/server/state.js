@@ -16,6 +16,16 @@ const sendTaskUpdate = (task) => {
     });
 };
 
+const sendTaskDeletion = (taskId) => {
+    if (!taskId) return;
+    const clients = taskStreams.get(String(taskId));
+    if (!clients || clients.size === 0) return;
+    const data = `data: ${JSON.stringify({ type: 'deleted', taskId: String(taskId) })}\n\n`;
+    clients.forEach((res) => {
+        try { res.write(data); } catch { /* ignore */ }
+    });
+};
+
 const sendExecutionListUpdate = (payload = {}) => {
     if (executionListStreams.size === 0) return;
     const data = `data: ${JSON.stringify(payload)}\n\n`;
@@ -45,6 +55,7 @@ module.exports = {
     executionListStreams,
     stopRequests,
     sendTaskUpdate,
+    sendTaskDeletion,
     sendExecutionListUpdate,
     sendExecutionUpdate
 };
