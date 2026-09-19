@@ -270,7 +270,12 @@ const registerExecution = (req, res, baseMeta = {}) => {
                 ? normalizeTaskOutcome(res.locals.executionResult.outcome)
                 : undefined
         };
-        appendExecution(entry).catch(err => console.error('Failed to append execution:', err));
+        appendExecution(entry)
+            .then(() => {
+                const { sendExecutionListUpdate } = require('./src/server/state');
+                sendExecutionListUpdate({ type: 'upsert', execution: entry });
+            })
+            .catch(err => console.error('Failed to append execution:', err));
 
         const outputConfig = body.output || (body.taskSnapshot && body.taskSnapshot.output);
         if (outputConfig && entry.result && entry.result.data !== undefined) {
