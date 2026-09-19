@@ -71,12 +71,11 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
     try {
         const tasks = await loadTasks();
         const newTask = req.body;
-        const isExplicitCreate = req.query.create === 'true';
-        const suppliedId = newTask.id;
+        const isExplicitUpdate = req.query.update === 'true';
         if (!newTask.id) newTask.id = 'task_' + Date.now();
 
         const index = getTaskIndexById(newTask.id);
-        if (suppliedId && index === -1 && !isExplicitCreate) {
+        if (isExplicitUpdate && index === -1) {
             return res.status(404).json({ error: 'TASK_NOT_FOUND' });
         }
         if (index > -1) {
