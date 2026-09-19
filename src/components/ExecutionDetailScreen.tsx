@@ -52,6 +52,22 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
     }, [id]);
 
     useEffect(() => {
+        if (!id) return;
+        const source = new EventSource('/api/executions/live', { withCredentials: true });
+        source.onmessage = async () => {
+            try {
+                const res = await fetch(`/api/executions/${id}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                setExecution(data.execution || null);
+            } catch {
+                // Keep the last known execution visible if a live refresh fails.
+            }
+        };
+        return () => source.close();
+    }, [id]);
+
+    useEffect(() => {
         const name = execution?.taskName?.trim();
         document.title = `${name ? `${name} Execution` : 'Execution Detail'} | Figranium`;
     }, [execution?.taskName]);

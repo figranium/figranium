@@ -103,6 +103,16 @@ export function useTasks(
             body: JSON.stringify(taskToSave)
         });
         const saved = await res.json();
+        if (!res.ok) {
+            if (res.status === 404 && saved?.error === 'TASK_NOT_FOUND') {
+                currentTaskRef.current = null;
+                setCurrentTask(null);
+                setTasks((previous) => previous.filter((task) => task.id !== taskToSave.id));
+                navigate('/dashboard', { replace: true });
+                return;
+            }
+            throw new Error(saved?.error || 'Failed to save task');
+        }
 
         // Autosaves can overlap. Never let an older response replace newer editor state.
         if (requestId !== latestSaveRequestRef.current) return;
@@ -177,7 +187,7 @@ export function useTasks(
             }
 
             await Promise.all(prepared.map((task) => (
-                fetch('/api/tasks', {
+                fetch('/api/tasks?create=true', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(task)
@@ -193,6 +203,35 @@ export function useTasks(
     useEffect(() => {
         loadTasks();
     }, [loadTasks]);
+
+    useEffect(() => {
+        const taskId = currentTask?.id;
+        if (!taskId || taskId.startsWith('new_')) return;
+        const source = new EventSource(`/api/tasks/${encodeURIComponent(taskId)}/stream`, { withCredentials: true });
+        source.onmessage = (event) => {
+            if (!event.data) return;
+            try {
+                const payload = JSON.parse(event.data);
+                if (payload?.type === 'deleted' && payload.taskId === taskId) {
+                    source.close();
+                    currentTaskRef.current = null;
+                    setCurrentTask(null);
+                    setTasks((previous) => previous.filter((task) => task.id !== taskId));
+                    navigate('/dashboard', { replace: true });
+                    return;
+                }
+                const remoteTask = payload?.task;
+                if (!remoteTask || remoteTask.id !== taskId) return;
+                const normalized = ensureActionIds(remoteTask);
+                currentTaskRef.current = normalized;
+                setCurrentTask(normalized);
+                setTasks((previous) => previous.map((task) => task.id === taskId ? normalized : task));
+            } catch (error) {
+                console.error('Failed to apply live task update', error);
+            }
+        };
+        return () => source.close();
+    }, [currentTask?.id, navigate]);
 
     return {
         tasks,

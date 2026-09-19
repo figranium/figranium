@@ -182,6 +182,8 @@ async function tick(taskId) {
         } catch { }
 
         await appendExecution(entry);
+        const { sendExecutionListUpdate } = require('./state');
+        sendExecutionListUpdate({ type: 'upsert', execution: entry });
     } catch (err) {
         console.error(`[SCHEDULER] Failed to log execution for task "${taskId}":`, err.message);
     }

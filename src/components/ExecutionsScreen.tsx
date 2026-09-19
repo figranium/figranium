@@ -116,6 +116,12 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
 
     useEffect(() => { loadExecutions(); }, [loadExecutions]);
 
+    useEffect(() => {
+        const source = new EventSource('/api/executions/live', { withCredentials: true });
+        source.onmessage = () => { loadExecutions(); };
+        return () => source.close();
+    }, [loadExecutions]);
+
     const filtered = useMemo(() => executions.filter((execution) => filter === 'all' || execution.source === filter), [executions, filter]);
     const metrics = useMemo(() => {
         let successful = 0;

@@ -1,7 +1,7 @@
 const express = require('express');
 const { requireAuth, requireApiKey } = require('../middleware');
 const { loadExecutions, saveExecutions, getExecutionById } = require('../storage');
-const { executionStreams, stopRequests, sendExecutionUpdate } = require('../state');
+const { executionStreams, executionListStreams, stopRequests, sendExecutionUpdate, sendExecutionListUpdate } = require('../state');
 const { normalizeTaskOutcome } = require('../../agent/outcomes');
 const { requestStop } = require('../../agent/execution-control');
 
@@ -37,6 +37,22 @@ const summarizeExecution = (exec) => ({
 router.get('/', requireAuth, async (req, res) => {
     const executions = (await loadExecutions()).filter(isExecutionListEntry);
     res.json({ executions: executions.map(summarizeExecution) });
+});
+
+router.get('/live', requireAuth, (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+    res.write('event: ready\ndata: {}\n\n');
+    executionListStreams.add(res);
+    const keepAlive = setInterval(() => {
+        try { res.write(':keep-alive\n\n'); } catch { /* ignore */ }
+    }, 20000);
+    req.on('close', () => {
+        clearInterval(keepAlive);
+        executionListStreams.delete(res);
+    });
 });
 
 router.get('/list', requireApiKey, async (req, res) => {
@@ -84,6 +100,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 
 router.post('/clear', requireAuth, async (req, res) => {
     await saveExecutions([]);
+    sendExecutionListUpdate({ type: 'clear' });
     res.json({ success: true });
 });
 
@@ -105,6 +122,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
     const id = req.params.id;
     const executions = (await loadExecutions()).filter(e => e.id !== id);
     await saveExecutions(executions);
+    sendExecutionListUpdate({ type: 'delete', id });
     res.json({ success: true });
 });
 
