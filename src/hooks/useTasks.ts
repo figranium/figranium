@@ -96,8 +96,10 @@ export function useTasks(
         if (!taskToUpdate) return;
         const requestId = ++latestSaveRequestRef.current;
         const taskToSave = { ...taskToUpdate, last_opened: Date.now() };
-        const query = createVersion ? '?version=true' : '';
-        const res = await fetch(`/api/tasks${query}`, {
+        const params = new URLSearchParams();
+        params.set(currentPath.includes('new') ? 'create' : 'update', 'true');
+        if (createVersion) params.set('version', 'true');
+        const res = await fetch(`/api/tasks?${params.toString()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(taskToSave)
