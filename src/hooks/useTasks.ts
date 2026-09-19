@@ -177,7 +177,7 @@ export function useTasks(
             }
 
             await Promise.all(prepared.map((task) => (
-                fetch('/api/tasks', {
+                fetch('/api/tasks?create=true', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(task)
@@ -202,6 +202,14 @@ export function useTasks(
             if (!event.data) return;
             try {
                 const payload = JSON.parse(event.data);
+                if (payload?.type === 'deleted' && payload.taskId === taskId) {
+                    source.close();
+                    currentTaskRef.current = null;
+                    setCurrentTask(null);
+                    setTasks((previous) => previous.filter((task) => task.id !== taskId));
+                    navigate('/dashboard', { replace: true });
+                    return;
+                }
                 const remoteTask = payload?.task;
                 if (!remoteTask || remoteTask.id !== taskId) return;
                 const normalized = ensureActionIds(remoteTask);
@@ -213,7 +221,7 @@ export function useTasks(
             }
         };
         return () => source.close();
-    }, [currentTask?.id]);
+    }, [currentTask?.id, navigate]);
 
     return {
         tasks,
