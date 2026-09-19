@@ -37,7 +37,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                 <div className="ml-auto flex items-center gap-1">
                     <button
                         onClick={onOpenApi}
-                        className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors focus:outline-none"
+                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
                         title="API"
                         aria-label="API"
                     >
@@ -45,7 +45,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     </button>
                     <button
                         onClick={onOpenSchedule}
-                        className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors focus:outline-none"
+                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
                         title="Schedule"
                         aria-label="Schedule"
                     >
@@ -53,7 +53,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     </button>
                     <button
                         onClick={onOpenVariables}
-                        className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors focus:outline-none"
+                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
                         title="Variables"
                         aria-label="Variables"
                     >
@@ -61,7 +61,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     </button>
                     <button
                         onClick={onOpenHistory}
-                        className="w-8 h-8 flex items-center justify-center text-white/30 hover:text-white transition-colors focus:outline-none"
+                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
                         title="Version History"
                         aria-label="Version History"
                     >
