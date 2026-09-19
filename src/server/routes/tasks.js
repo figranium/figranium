@@ -5,7 +5,7 @@ const {
     loadGeminiApiKey, loadOpenAiApiKey, loadClaudeApiKey, loadOllamaApiKey,
     loadAiModels
 } = require('../storage');
-const { taskMutex } = require('../state');
+const { taskMutex, taskStreams, sendTaskUpdate } = require('../state');
 const { concurrencyGate } = require('../execution-queue');
 const { appendTaskVersion, cloneTaskForVersion, removeTaskVersion } = require('../utils');
 const { handleAgent, runFigranite } = require('../../agent/figranite/index');
@@ -29,6 +29,31 @@ router.get('/', requireAuthOrApiKey, async (req, res) => {
     // ⚡ Bolt: Strip large versions history from the list view to reduce payload size by ~95%
     const summary = tasks.map(({ versions, ...rest }) => rest);
     res.json(summary);
+});
+
+router.get('/:id/stream', requireAuth, (req, res) => {
+    const taskId = String(req.params.id || '').trim();
+    if (!taskId) return res.status(400).json({ error: 'MISSING_TASK_ID' });
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+    res.write('event: ready\ndata: {}\n\n');
+
+    let clients = taskStreams.get(taskId);
+    if (!clients) {
+        clients = new Set();
+        taskStreams.set(taskId, clients);
+    }
+    clients.add(res);
+    const keepAlive = setInterval(() => {
+        try { res.write(':keep-alive\n\n'); } catch { /* ignore */ }
+    }, 20000);
+    req.on('close', () => {
+        clearInterval(keepAlive);
+        clients.delete(res);
+        if (clients.size === 0) taskStreams.delete(taskId);
+    });
 });
 
 router.get('/list', requireApiKey, async (req, res) => {
@@ -63,6 +88,7 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
         }
 
         await saveTasks(tasks);
+        sendTaskUpdate(newTask);
         res.json(newTask);
     } finally {
         taskMutex.unlock();
@@ -117,6 +143,7 @@ router.patch('/:id', requireAuthOrApiKey, async (req, res) => {
 
         tasks[index] = updated;
         await saveTasks(tasks);
+        sendTaskUpdate(updated);
 
         res.json({ id: updated.id, updatedAt: updated.updatedAt, status: 'success', task: updated });
     } finally {
@@ -225,6 +252,7 @@ router.post('/:id/rollback', requireAuth, async (req, res) => {
         tasks[index] = restored;
 
         await saveTasks(tasks);
+        sendTaskUpdate(restored);
         res.json(restored);
     } finally {
         taskMutex.unlock();
