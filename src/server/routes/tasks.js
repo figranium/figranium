@@ -5,7 +5,7 @@ const {
     loadGeminiApiKey, loadOpenAiApiKey, loadClaudeApiKey, loadOllamaApiKey,
     loadAiModels
 } = require('../storage');
-const { taskMutex, taskStreams, sendTaskUpdate } = require('../state');
+const { taskMutex, taskStreams, sendTaskUpdate, sendTaskDeletion } = require('../state');
 const { concurrencyGate } = require('../execution-queue');
 const { appendTaskVersion, cloneTaskForVersion, removeTaskVersion } = require('../utils');
 const { handleAgent, runFigranite } = require('../../agent/figranite/index');
@@ -71,9 +71,14 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
     try {
         const tasks = await loadTasks();
         const newTask = req.body;
+        const isExplicitCreate = req.query.create === 'true';
+        const suppliedId = newTask.id;
         if (!newTask.id) newTask.id = 'task_' + Date.now();
 
         const index = getTaskIndexById(newTask.id);
+        if (suppliedId && index === -1 && !isExplicitCreate) {
+            return res.status(404).json({ error: 'TASK_NOT_FOUND' });
+        }
         if (index > -1) {
             const existingTask = tasks[index];
             if (req.query.version === 'true') {
@@ -162,6 +167,7 @@ router.delete('/:id', requireAuthOrApiKey, async (req, res) => {
             return res.status(404).json({ error: 'TASK_NOT_FOUND' });
         }
         await saveTasks(tasks);
+        sendTaskDeletion(taskId);
 
         // Clean up any in-process schedule registered for this task
         try {
