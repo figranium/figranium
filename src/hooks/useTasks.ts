@@ -194,6 +194,27 @@ export function useTasks(
         loadTasks();
     }, [loadTasks]);
 
+    useEffect(() => {
+        const taskId = currentTask?.id;
+        if (!taskId || taskId.startsWith('new_')) return;
+        const source = new EventSource(`/api/tasks/${encodeURIComponent(taskId)}/stream`, { withCredentials: true });
+        source.onmessage = (event) => {
+            if (!event.data) return;
+            try {
+                const payload = JSON.parse(event.data);
+                const remoteTask = payload?.task;
+                if (!remoteTask || remoteTask.id !== taskId) return;
+                const normalized = ensureActionIds(remoteTask);
+                currentTaskRef.current = normalized;
+                setCurrentTask(normalized);
+                setTasks((previous) => previous.map((task) => task.id === taskId ? normalized : task));
+            } catch (error) {
+                console.error('Failed to apply live task update', error);
+            }
+        };
+        return () => source.close();
+    }, [currentTask?.id]);
+
     return {
         tasks,
         setTasks,
