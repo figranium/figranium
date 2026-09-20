@@ -96,7 +96,7 @@ async function synchronize() {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
             try {
-                const response = await fetch(process.env.FIGRANIUM_TELEMETRY_ENDPOINT || DEFAULT_ENDPOINT, {
+                const response = await fetch(DEFAULT_ENDPOINT, {
                     method: 'POST',
                     headers: { 'content-type': 'application/json' },
                     body: JSON.stringify({
