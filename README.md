@@ -105,6 +105,20 @@ Run the following command to start the application in detached mode:
 docker compose up -d
 ```
 
+## Reverse Proxy Deployments
+
+Proxy only the main application port (`11345`). The embedded browser viewer connects through the application’s authenticated `/websockify` endpoint, so it does not need a separate public VNC/noVNC port.
+
+For Caddy running on the same VM, a standard reverse proxy is sufficient:
+
+```caddyfile
+figranium.example.com {
+    reverse_proxy 127.0.0.1:11345
+}
+```
+
+Caddy forwards WebSocket upgrades automatically. The viewer receives a short-lived, single-use ticket bound to the signed-in session, so it continues to connect safely if the proxy changes the upstream `Host` header. `TRUST_PROXY` is not required for the embedded browser viewer; enable it only when the application needs to rely on forwarded client address or protocol headers for other deployment behavior.
+
 ## Session Secret
 
 Set `SESSION_SECRET` before any run. A quick generator:
@@ -119,7 +133,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 |----------|---------|---------|
 | `SESSION_SECRET` | Signs session cookies. Required. | — |
 | `ALLOWED_IPS` | Comma list for basic IP allowlisting. | none (open) |
-| `TRUST_PROXY` | Honor `X-Forwarded-*` when behind a reverse proxy. | `0` |
+| `TRUST_PROXY` | Honor `X-Forwarded-*` for application-level proxy behavior. Not required for the embedded browser viewer. | `0` |
 | `ALLOW_PRIVATE_NETWORKS` | Allow scraping local/private IPs (SSRF risk). | `false` |
 | `VITE_DEV_PORT` | Port for front-end dev server. | `5173` |
 | `VITE_BACKEND_PORT` | Backend port for proxying + scripts. | `11345` |
