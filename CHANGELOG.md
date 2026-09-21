@@ -5,6 +5,7 @@
 ### Browser viewer reliability
 - Fixed embedded headful browser sessions behind reverse proxies. The noVNC viewer now authenticates its WebSocket connection with a short-lived, single-use ticket bound to the signed-in session, so selector inspection continues to work even when a proxy rewrites the internal `Host` header.
 - Bounded noVNC credential and connection attempts so an unavailable browser viewer no longer leaves the application indefinitely on “Connecting…”.
+
 ### Themes and interface
 - Made the browser-session modal, overlay, and noVNC loading screen follow the selected Light or Solarized Light appearance rather than forcing dark surfaces.
 
