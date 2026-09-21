@@ -9,14 +9,32 @@
     <title>Headful Browser</title>
     <style>
       :root {
+        --viewer-bg: #050505;
+        --viewer-status-bg: rgba(0, 0, 0, 0.6);
+        --viewer-border: rgba(255, 255, 255, 0.1);
+        --viewer-text: #d1d5db;
         color-scheme: dark;
+      }
+      :root[data-theme='light'] {
+        --viewer-bg: #fafafa;
+        --viewer-status-bg: rgba(255, 255, 255, 0.92);
+        --viewer-border: rgba(0, 0, 0, 0.12);
+        --viewer-text: #111111;
+        color-scheme: light;
+      }
+      :root[data-theme='solarized-light'] {
+        --viewer-bg: #f5eeda;
+        --viewer-status-bg: rgba(238, 232, 213, 0.92);
+        --viewer-border: rgba(88, 110, 117, 0.25);
+        --viewer-text: #566c73;
+        color-scheme: light;
       }
       html,
       body {
         width: 100%;
         height: 100%;
         margin: 0;
-        background: #050505;
+        background: var(--viewer-bg);
         overflow: hidden;
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
       }
@@ -28,14 +46,14 @@
         position: absolute;
         top: 12px;
         left: 12px;
-        background: rgba(0, 0, 0, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: var(--viewer-status-bg);
+        border: 1px solid var(--viewer-border);
         padding: 6px 10px;
         border-radius: 10px;
         font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #d1d5db;
+        color: var(--viewer-text);
         pointer-events: none;
       }
       #status.hidden {
@@ -50,6 +68,8 @@
       import RFB from '/novnc/core/rfb.js';
 
       const params = new URLSearchParams(window.location.search);
+      const theme = params.get('theme');
+      if (theme) document.documentElement.dataset.theme = theme;
       const host = params.get('host') || window.location.hostname;
       const port = params.get('port') || window.location.port;
       const rawPath = params.get('path') || 'websockify';
@@ -61,29 +81,80 @@
       const statusEl = document.getElementById('status');
       const screen = document.getElementById('screen');
 
-      const MAX_RETRIES = 8;
+      const MAX_RETRIES = 3;
+      const PASSWORD_TIMEOUT_MS = 10_000;
+      const CONNECT_TIMEOUT_MS = 12_000;
       let retryCount = 0;
       let connectedAt = null;
+      let activeRfb = null;
+      let connectTimer = null;
+      let retryTimer = null;
+      let terminalFailure = false;
 
-      async function fetchPassword() {
+      const clearConnectTimer = () => {
+        if (connectTimer !== null) {
+          clearTimeout(connectTimer);
+          connectTimer = null;
+        }
+      };
+
+      const stopWithFailure = (message) => {
+        terminalFailure = true;
+        clearConnectTimer();
+        if (retryTimer !== null) clearTimeout(retryTimer);
+        statusEl.textContent = message;
+        window.parent?.postMessage({ type: 'figranium-headful-viewer-failed' }, window.location.origin);
+      };
+
+      const retryConnection = (message) => {
+        clearConnectTimer();
+        if (terminalFailure) return;
+        if (retryCount >= MAX_RETRIES) {
+          stopWithFailure('Browser viewer unavailable');
+          return;
+        }
+        retryCount += 1;
+        statusEl.textContent = `${message} Retrying (${retryCount}/${MAX_RETRIES})...`;
+        retryTimer = setTimeout(initVNC, Math.min(1000 * retryCount, 3000));
+      };
+
+      async function fetchViewerCredentials() {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), PASSWORD_TIMEOUT_MS);
         try {
-          const resp = await fetch('/api/headful/vnc-password');
+          const resp = await fetch('/api/headful/vnc-password', { signal: controller.signal });
           if (resp.ok) {
             const data = await resp.json();
-            return data.password;
+            if (data.password && data.viewerTicket) return data;
           }
+          throw new Error('VNC password unavailable');
         } catch (err) {
-          console.warn('Failed to fetch VNC password, attempting without it');
+          throw new Error('Could not retrieve VNC credentials');
+        } finally {
+          clearTimeout(timeout);
         }
-        return null;
       }
 
       async function initVNC() {
-        const password = await fetchPassword();
+        if (terminalFailure) return;
+        let credentials;
+        try {
+          credentials = await fetchViewerCredentials();
+        } catch (err) {
+          retryConnection('Unable to reach browser session.');
+          return;
+        }
 
-        const rfb = new RFB(screen, wsUrl, {
-          credentials: { password }
-        });
+        let rfb;
+        try {
+          const viewerUrl = new URL(wsUrl);
+          viewerUrl.searchParams.set('viewerTicket', credentials.viewerTicket);
+          rfb = new RFB(screen, viewerUrl.toString(), { credentials: { password: credentials.password } });
+        } catch (err) {
+          retryConnection('Unable to start browser viewer.');
+          return;
+        }
+        activeRfb = rfb;
         rfb.scaleViewport = true;
         rfb.resizeSession = true;
         rfb.showDotCursor = false;
@@ -120,27 +191,27 @@
         });
 
         rfb.addEventListener('connect', () => {
+          if (rfb !== activeRfb) return;
+          clearConnectTimer();
           connectedAt = Date.now();
           retryCount = 0;
           statusEl.classList.add('hidden');
         });
         rfb.addEventListener('disconnect', () => {
+          if (rfb !== activeRfb) return;
+          activeRfb = null;
           const droppedQuickly = connectedAt !== null && (Date.now() - connectedAt) < 4000;
           connectedAt = null;
           statusEl.classList.remove('hidden');
-
-          if (retryCount >= MAX_RETRIES) {
-            statusEl.textContent = 'Disconnected';
-            return;
-          }
-
-          retryCount += 1;
-          statusEl.textContent = droppedQuickly
-            ? 'Browser session crashed, retrying...'
-            : 'Reconnecting...';
-          const delay = Math.min(1000 * retryCount, 5000);
-          setTimeout(initVNC, delay);
+          retryConnection(droppedQuickly ? 'Browser session crashed.' : 'Browser session disconnected.');
         });
+
+        connectTimer = setTimeout(() => {
+          if (rfb !== activeRfb) return;
+          activeRfb = null;
+          try { rfb.disconnect(); } catch (err) { /* ignore */ }
+          retryConnection('Browser viewer timed out.');
+        }, CONNECT_TIMEOUT_MS);
       }
 
       initVNC();

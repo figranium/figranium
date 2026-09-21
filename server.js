@@ -88,6 +88,28 @@ const { recordActivity } = require('./src/server/telemetry');
 
 const app = express();
 app.disable('x-powered-by');
+
+// A short-lived, one-time ticket proves the upgrade originated from the signed-in
+// application session, without relying on a proxy to preserve the public Host.
+const VNC_TICKET_TTL_MS = 60_000;
+const vncViewerTickets = new Map();
+
+const createVncViewerTicket = (sessionId) => {
+    const now = Date.now();
+    for (const [token, ticket] of vncViewerTickets) {
+        if (ticket.expiresAt <= now) vncViewerTickets.delete(token);
+    }
+    const token = crypto.randomBytes(32).toString('base64url');
+    vncViewerTickets.set(token, { sessionId, expiresAt: now + VNC_TICKET_TTL_MS });
+    return token;
+};
+
+const consumeVncViewerTicket = (token, sessionId) => {
+    if (!token || !sessionId) return false;
+    const ticket = vncViewerTickets.get(token);
+    vncViewerTickets.delete(token);
+    return !!ticket && ticket.expiresAt > Date.now() && ticket.sessionId === sessionId;
+};
 const port = Number(process.env.PORT) || DEFAULT_PORT;
 
 // Session Secret Setup
@@ -581,7 +603,7 @@ app.get('/api/headful/vnc-password', requireAuth, (req, res) => {
     try {
         if (fs.existsSync(VNC_PASSWORD_FILE)) {
             const password = fs.readFileSync(VNC_PASSWORD_FILE, 'utf8').trim();
-            res.json({ password });
+            res.json({ password, viewerTicket: createVncViewerTicket(req.sessionID) });
         } else {
             res.status(404).json({ error: 'VNC_PASSWORD_NOT_FOUND' });
         }
@@ -634,17 +656,11 @@ findAvailablePort(port, 20)
                 return;
             }
 
-            // Cross-Site WebSocket Hijacking (CSWSH) protection: verify Origin header matches Host
-            if (!isValidWebSocketOrigin(req.headers.origin, req.headers.host)) {
-                console.warn(`[SECURITY] CSWSH attempt blocked: Origin ${req.headers.origin} mismatch with Host ${req.headers.host}`);
-                try { socket.destroy(); } catch { }
-                return;
-            }
-
             // Authentication check for WebSocket upgrade
             const cookies = cookie.parse(req.headers.cookie || '');
             const signedSid = cookies['connect.sid'];
             let isAuthenticated = false;
+            let authenticatedSessionId = null;
 
             if (signedSid && signedSid.startsWith('s:')) {
                 const sid = signature.unsign(signedSid.slice(2), SESSION_SECRET);
@@ -654,6 +670,7 @@ findAvailablePort(port, 20)
                     });
                     if (session && session.user) {
                         isAuthenticated = true;
+                        authenticatedSessionId = sid;
                     }
                 }
             }
@@ -672,6 +689,19 @@ findAvailablePort(port, 20)
 
             if (!isAuthenticated) {
                 console.warn(`[SECURITY] Unauthenticated WebSocket upgrade attempt blocked from ${req.socket?.remoteAddress}`);
+                try { socket.destroy(); } catch { }
+                return;
+            }
+
+            const upgradeUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+            const viewerTicket = upgradeUrl.searchParams.get('viewerTicket');
+            const hasValidViewerTicket = consumeVncViewerTicket(viewerTicket, authenticatedSessionId);
+            const forwardedHost = TRUST_PROXY && typeof req.headers['x-forwarded-host'] === 'string'
+                ? req.headers['x-forwarded-host'].split(',')[0].trim()
+                : null;
+            const websocketHost = forwardedHost || req.headers.host;
+            if (!hasValidViewerTicket && !isValidWebSocketOrigin(req.headers.origin, websocketHost)) {
+                console.warn(`[SECURITY] CSWSH attempt blocked: Origin ${req.headers.origin} mismatch with Host ${websocketHost}`);
                 try { socket.destroy(); } catch { }
                 return;
             }

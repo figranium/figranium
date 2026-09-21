@@ -448,7 +448,8 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
     if (isHeadful && resultView === 'latest') {
         const { origin, hostname } = window.location;
-        const headfulUrl = `${origin}/novnc.html?host=${hostname}&path=websockify`;
+        const theme = document.documentElement.dataset.theme || 'dark';
+        const headfulUrl = `${origin}/novnc.html?host=${hostname}&path=websockify&theme=${encodeURIComponent(theme)}`;
         const requestFullscreen = () => {
             const target = headfulFrameRef.current;
             if (!target) return;

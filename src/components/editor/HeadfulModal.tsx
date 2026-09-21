@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import TablerIcon from '../TablerIcon';
 
 interface HeadfulModalProps {
@@ -22,10 +22,20 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
 }) => {
     const headfulFrameRef = useRef<HTMLDivElement | null>(null);
 
+    useEffect(() => {
+        const handleViewerFailure = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin) return;
+            if (event.data?.type === 'figranium-headful-viewer-failed') onStopHeadful();
+        };
+        window.addEventListener('message', handleViewerFailure);
+        return () => window.removeEventListener('message', handleViewerFailure);
+    }, [onStopHeadful]);
+
     if (!isHeadfulOpen) return null;
 
     const { origin, hostname } = window.location;
-    const headfulUrl = `${origin}/novnc.html?host=${hostname}&path=websockify`;
+    const theme = document.documentElement.dataset.theme || 'dark';
+    const headfulUrl = `${origin}/novnc.html?host=${hostname}&path=websockify&theme=${encodeURIComponent(theme)}`;
 
     const requestFullscreen = () => {
         const target = headfulFrameRef.current;
@@ -38,12 +48,12 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-md flex items-center justify-center p-8 pointer-events-auto">
-            <div className="w-full max-w-6xl bg-black/60 backdrop-blur-3xl border border-white/20 rounded-[32px] shadow-2xl overflow-hidden flex flex-col">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-white/10 bg-black/20 gap-4">
+        <div className="theme-modal-backdrop fixed inset-0 z-[100] backdrop-blur-md flex items-center justify-center p-8 pointer-events-auto">
+            <div className="w-full max-w-6xl theme-surface backdrop-blur-3xl border theme-border-strong theme-modal-elevation rounded-[32px] overflow-hidden flex flex-col">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b theme-border bg-[var(--app-glass-card)] gap-4">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold tracking-widest text-white">Active Browser Session</span>
+                            <span className="text-xs font-bold tracking-widest theme-text">Active Browser Session</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -54,7 +64,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             aria-busy={isInspectLoading}
                             className={`px-3 py-1.5 rounded-xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${isInspectMode
                                 ? 'border-green-500/30 bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                                : 'border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
+                                : 'theme-border theme-text-muted hover:theme-text theme-hover'}`}
                             title={isInspectMode ? 'Stop inspecting elements' : 'Highlight elements on hover'}
                             aria-label={isInspectMode ? 'Stop inspecting elements' : 'Highlight elements on hover'}
                         >
@@ -68,7 +78,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                         <button
                             type="button"
                             onClick={requestFullscreen}
-                            className="p-2 text-white/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg"
+                            className="p-2 theme-text-muted hover:theme-text theme-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg"
                             title="Toggle fullscreen"
                             aria-label="Toggle fullscreen"
                         >
@@ -77,7 +87,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                         <button
                             type="button"
                             onClick={onStopHeadful}
-                            className="p-2 text-white/60 hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg"
+                            className="p-2 theme-text-muted hover:theme-text theme-hover transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg"
                             title="Close Browser"
                             aria-label="Close Browser"
                         >
@@ -85,17 +95,17 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                         </button>
                     </div>
                 </div>
-                <div ref={headfulFrameRef} className="w-full aspect-video relative bg-black flex items-center justify-center">
+                <div ref={headfulFrameRef} className="w-full aspect-video relative theme-surface-3 flex items-center justify-center">
                     {useNovnc === null ? (
                         <div className="text-center p-8 flex flex-col items-center justify-center gap-3">
-                            <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                            <p className="text-white/60 text-xs tracking-wider ">Checking browser status...</p>
+                            <div className="w-8 h-8 border-2 theme-border border-t-[var(--app-text)] rounded-full animate-spin" />
+                            <p className="theme-text-muted text-xs tracking-wider ">Checking browser status...</p>
                         </div>
                     ) : useNovnc === false ? (
                         <div className="text-center p-8 animate-in fade-in duration-300">
-                            <TablerIcon name="open_in_new" className="text-6xl text-white/20 mb-4 block" />
-                            <h3 className="text-white text-lg font-bold mb-2">Browser Opened Natively</h3>
-                            <p className="text-white/60 text-sm max-w-md mx-auto leading-relaxed mb-6">
+                            <TablerIcon name="open_in_new" className="text-6xl theme-text-faint mb-4 block" />
+                            <h3 className="theme-text text-lg font-bold mb-2">Browser Opened Natively</h3>
+                            <p className="theme-text-muted text-sm max-w-md mx-auto leading-relaxed mb-6">
                                 The headful browser has been launched in a separate window on your desktop.
                                 Use that window to pick selectors. It will automatically sync back here.
                             </p>
