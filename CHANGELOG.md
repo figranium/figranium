@@ -6,8 +6,18 @@
 - Fixed embedded headful browser sessions behind reverse proxies. The noVNC viewer now authenticates its WebSocket connection with a short-lived, single-use ticket bound to the signed-in session, so selector inspection continues to work even when a proxy rewrites the internal `Host` header.
 - Bounded noVNC credential and connection attempts so an unavailable browser viewer no longer leaves the application indefinitely on “Connecting…”.
 
+### Live updates and task reliability
+- Added live synchronization for Task edits and deletions across open editors, including stale-save rejection so an older autosave cannot overwrite a newer remote change.
+- Added live execution updates across the run-history and execution-detail views, including completed manual and scheduled executions.
+- Corrected Task create/update behavior after live synchronization and preserved imported Task data when a remotely deleted Task is handled locally.
+
 ### Themes and interface
 - Made the browser-session modal, overlay, and noVNC loading screen follow the selected Light or Solarized Light appearance rather than forcing dark surfaces.
+- Completed theme-aware styling across editor controls, action palettes, floating/context menus, insert controls, text selection, and hover states, improving contrast in Light and Solarized themes.
+- Added an insertion control before the first workflow block and refined the editor toolbar controls and project visuals.
+
+### Release maintenance
+- Refreshed project screenshots and banner artwork, and prevented the Fiptcha lockfile workflow from running on release tags.
 
 ## [0.18.3] - 2026-09-16
 
