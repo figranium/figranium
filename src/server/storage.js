@@ -235,6 +235,7 @@ function migrateTaskScripts(tasks) {
     const migrated = tasks.map(task => {
         let nextTask = recoverStickyNotesFromVersions(task);
         if (nextTask !== task) changed = true;
+
         const newScript = migrateExtractionScript(task.extractionScript);
         if (newScript !== task.extractionScript) {
             changed = true;
@@ -1263,6 +1264,19 @@ async function saveAiModels(models) {
 
 // Theme Config Storage
 let themeCache = null;
+const THEME_PREFERENCE_VERSION = 2;
+
+function migrateThemePreference(payload) {
+    const theme = payload && typeof payload.theme === 'string' ? payload.theme : null;
+    if (!theme || payload.preferenceVersion === THEME_PREFERENCE_VERSION) {
+        return { theme, payload, migrated: false };
+    }
+    return {
+        theme: 'auto',
+        payload: { ...payload, theme: 'auto', preferenceVersion: THEME_PREFERENCE_VERSION },
+        migrated: true,
+    };
+}
 
 async function loadThemeConfig() {
     if (themeCache !== null) return themeCache;
@@ -1273,7 +1287,11 @@ async function loadThemeConfig() {
             if (!pool) throw new Error('Database pool not available');
             const res = await pool.query('SELECT data FROM theme_config WHERE id = 1');
             if (res.rows.length > 0 && res.rows[0].data && res.rows[0].data.theme) {
-                themeCache = res.rows[0].data.theme;
+                const migration = migrateThemePreference(res.rows[0].data);
+                themeCache = migration.theme;
+                if (migration.migrated) {
+                    await pool.query('UPDATE theme_config SET data = $1 WHERE id = 1', [migration.payload]);
+                }
             } else {
                 themeCache = null;
             }
@@ -1286,7 +1304,11 @@ async function loadThemeConfig() {
     try {
         const raw = await fs.promises.readFile(THEME_FILE, 'utf8');
         const parsed = JSON.parse(raw);
-        themeCache = parsed && typeof parsed.theme === 'string' ? parsed.theme : null;
+        const migration = migrateThemePreference(parsed);
+        themeCache = migration.theme;
+        if (migration.migrated) {
+            await fs.promises.writeFile(THEME_FILE, JSON.stringify(migration.payload, null, 2));
+        }
     } catch {
         themeCache = null;
     }
@@ -1296,7 +1318,7 @@ async function loadThemeConfig() {
 async function saveThemeConfig(themeId) {
     const validTheme = typeof themeId === 'string' && themeId.trim() ? themeId.trim() : DEFAULT_THEME_ID;
     themeCache = validTheme;
-    const payload = { theme: validTheme };
+    const payload = { theme: validTheme, preferenceVersion: THEME_PREFERENCE_VERSION };
     const useDB = await ensureDB();
     if (useDB) {
         const pool = getPool();
