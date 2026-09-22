@@ -5,7 +5,7 @@ const {
     loadGeminiApiKey, loadOpenAiApiKey, loadClaudeApiKey, loadOllamaApiKey,
     loadAiModels
 } = require('../storage');
-const { taskMutex, taskStreams, sendTaskUpdate, sendTaskDeletion } = require('../state');
+const { taskMutex } = require('../state');
 const { concurrencyGate } = require('../execution-queue');
 const { appendTaskVersion, cloneTaskForVersion, removeTaskVersion } = require('../utils');
 const { handleAgent, runFigranite } = require('../../agent/figranite/index');
@@ -31,31 +31,6 @@ router.get('/', requireAuthOrApiKey, async (req, res) => {
     res.json(summary);
 });
 
-router.get('/:id/stream', requireAuth, (req, res) => {
-    const taskId = String(req.params.id || '').trim();
-    if (!taskId) return res.status(400).json({ error: 'MISSING_TASK_ID' });
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    if (typeof res.flushHeaders === 'function') res.flushHeaders();
-    res.write('event: ready\ndata: {}\n\n');
-
-    let clients = taskStreams.get(taskId);
-    if (!clients) {
-        clients = new Set();
-        taskStreams.set(taskId, clients);
-    }
-    clients.add(res);
-    const keepAlive = setInterval(() => {
-        try { res.write(':keep-alive\n\n'); } catch { /* ignore */ }
-    }, 20000);
-    req.on('close', () => {
-        clearInterval(keepAlive);
-        clients.delete(res);
-        if (clients.size === 0) taskStreams.delete(taskId);
-    });
-});
-
 router.get('/list', requireApiKey, async (req, res) => {
     const tasks = await loadTasks();
     const summary = tasks.map((task) => ({
@@ -71,13 +46,9 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
     try {
         const tasks = await loadTasks();
         const newTask = req.body;
-        const isExplicitUpdate = req.query.update === 'true';
         if (!newTask.id) newTask.id = 'task_' + Date.now();
 
         const index = getTaskIndexById(newTask.id);
-        if (isExplicitUpdate && index === -1) {
-            return res.status(404).json({ error: 'TASK_NOT_FOUND' });
-        }
         if (index > -1) {
             const existingTask = tasks[index];
             if (req.query.version === 'true') {
@@ -85,6 +56,12 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
             }
             // Preserve versions if not creating a new one, as the client might not send them back full
             newTask.versions = existingTask.versions || [];
+            // Sticky notes are canvas metadata. Older clients and integrations
+            // do not include it in their full-task save payloads, which used to
+            // erase notes whenever another task setting was edited.
+            if (!Object.prototype.hasOwnProperty.call(newTask, 'stickyNotes')) {
+                newTask.stickyNotes = existingTask.stickyNotes;
+            }
             tasks[index] = newTask;
         } else {
             newTask.versions = [];
@@ -92,7 +69,6 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
         }
 
         await saveTasks(tasks);
-        sendTaskUpdate(newTask);
         res.json(newTask);
     } finally {
         taskMutex.unlock();
@@ -147,7 +123,6 @@ router.patch('/:id', requireAuthOrApiKey, async (req, res) => {
 
         tasks[index] = updated;
         await saveTasks(tasks);
-        sendTaskUpdate(updated);
 
         res.json({ id: updated.id, updatedAt: updated.updatedAt, status: 'success', task: updated });
     } finally {
@@ -166,7 +141,6 @@ router.delete('/:id', requireAuthOrApiKey, async (req, res) => {
             return res.status(404).json({ error: 'TASK_NOT_FOUND' });
         }
         await saveTasks(tasks);
-        sendTaskDeletion(taskId);
 
         // Clean up any in-process schedule registered for this task
         try {
@@ -252,12 +226,16 @@ router.post('/:id/rollback', requireAuth, async (req, res) => {
 
         appendTaskVersion(task);
         const restored = { ...cloneTaskForVersion(version.snapshot), id: task.id, versions: task.versions };
+        // A version created before sticky notes existed must not erase notes
+        // added afterwards when it is restored.
+        if (!Object.prototype.hasOwnProperty.call(restored, 'stickyNotes')) {
+            restored.stickyNotes = task.stickyNotes;
+        }
         restored.last_opened = Date.now();
 
         tasks[index] = restored;
 
         await saveTasks(tasks);
-        sendTaskUpdate(restored);
         res.json(restored);
     } finally {
         taskMutex.unlock();
