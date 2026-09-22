@@ -85,6 +85,12 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
             }
             // Preserve versions if not creating a new one, as the client might not send them back full
             newTask.versions = existingTask.versions || [];
+            // Sticky notes are canvas metadata. Older clients and integrations
+            // do not include it in their full-task save payloads, which used to
+            // erase notes whenever another task setting was edited.
+            if (!Object.prototype.hasOwnProperty.call(newTask, 'stickyNotes')) {
+                newTask.stickyNotes = existingTask.stickyNotes;
+            }
             tasks[index] = newTask;
         } else {
             newTask.versions = [];
@@ -252,6 +258,11 @@ router.post('/:id/rollback', requireAuth, async (req, res) => {
 
         appendTaskVersion(task);
         const restored = { ...cloneTaskForVersion(version.snapshot), id: task.id, versions: task.versions };
+        // A version created before sticky notes existed must not erase notes
+        // added afterwards when it is restored.
+        if (!Object.prototype.hasOwnProperty.call(restored, 'stickyNotes')) {
+            restored.stickyNotes = task.stickyNotes;
+        }
         restored.last_opened = Date.now();
 
         tasks[index] = restored;

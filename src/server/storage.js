@@ -204,15 +204,56 @@ function migrateExtractionScript(script) {
     return s.replace(/\$\$data/g, 'data');
 }
 
+function normalizeStickyNoteContent(content) {
+    if (typeof content !== 'string') return content;
+
+    let normalized = content.replace(/\r\n?/g, '\n');
+    if (normalized.includes('\\n')) normalized = normalized.replace(/\\n/g, '\n');
+    if (!normalized.includes('\n') && /(?:^|:\s*)1\.\s+[\s\S]*\s2\.\s+/.test(normalized)) {
+        normalized = normalized.replace(/:\s+(?=1\.\s)/, ':\n');
+        normalized = normalized.replace(/\s+(?=(?:[2-9]\d*)\.\s)/g, '\n');
+    }
+    return normalized;
+}
+
+function recoverStickyNotesFromVersions(task) {
+    // Older clients and integrations can save a full task payload without the
+    // stickyNotes field. The previous state is already kept in version history,
+    // so restore notes only when the field is absent (never when it is an
+    // intentional empty array).
+    if (!task || Object.prototype.hasOwnProperty.call(task, 'stickyNotes')) return task;
+
+    const snapshot = (task.versions || [])
+        .map(version => version?.snapshot)
+        .find(candidate => Array.isArray(candidate?.stickyNotes) && candidate.stickyNotes.length > 0);
+
+    return snapshot ? { ...task, stickyNotes: snapshot.stickyNotes } : task;
+}
+
 function migrateTaskScripts(tasks) {
     let changed = false;
     const migrated = tasks.map(task => {
+        let nextTask = recoverStickyNotesFromVersions(task);
+        if (nextTask !== task) changed = true;
+
         const newScript = migrateExtractionScript(task.extractionScript);
         if (newScript !== task.extractionScript) {
             changed = true;
-            return { ...task, extractionScript: newScript };
+            nextTask = { ...nextTask, extractionScript: newScript };
         }
-        return task;
+
+        const notes = nextTask.stickyNotes;
+        if (Array.isArray(notes)) {
+            const normalizedNotes = notes.map(note => {
+                const content = normalizeStickyNoteContent(note.content);
+                return content === note.content ? note : { ...note, content };
+            });
+            if (normalizedNotes.some((note, index) => note !== notes[index])) {
+                changed = true;
+                nextTask = { ...nextTask, stickyNotes: normalizedNotes };
+            }
+        }
+        return nextTask;
     });
     return { tasks: migrated, changed };
 }

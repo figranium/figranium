@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { StickyNote as StickyNoteType, StickyNoteColor } from '../../types';
 import TablerIcon from '../TablerIcon';
 import CopyButton from '../CopyButton';
+import { normalizeStickyNoteContent } from '../../utils/stickyNotes';
 
 interface StickyNoteProps {
     note: StickyNoteType;
@@ -52,8 +53,9 @@ const COLOR_DOT: Record<StickyNoteColor, string> = {
 const ALL_COLORS: StickyNoteColor[] = ['default', 'yellow', 'pink', 'green', 'purple'];
 
 const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, onUpdate, onDelete, onDuplicate }) => {
-    const [isEditing, setIsEditing] = useState(note.content === '');
-    const [draft, setDraft] = useState(note.content);
+    const normalizedContent = normalizeStickyNoteContent(note.content);
+    const [isEditing, setIsEditing] = useState(normalizedContent === '');
+    const [draft, setDraft] = useState(normalizedContent);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
     const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -111,7 +113,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
     }, [dragPosition, getDragPosition, note.id, note.x, note.y, onUpdate]);
 
     const commitEdit = useCallback(() => {
-        onUpdate(note.id, { content: draft });
+        onUpdate(note.id, { content: normalizeStickyNoteContent(draft) });
         setIsEditing(false);
     }, [note.id, draft, onUpdate]);
 
@@ -186,14 +188,14 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                         <button
                             className="sticky-note-control w-6 h-6 rounded flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                             onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => { e.stopPropagation(); setIsEditing(true); setDraft(note.content); }}
+                            onClick={(e) => { e.stopPropagation(); setIsEditing(true); setDraft(normalizedContent); }}
                             title="Edit note"
                             aria-label="Edit note"
                         >
                             <TablerIcon name="edit" className="text-[14px]" />
                         </button>
                         <CopyButton
-                            text={note.content}
+                            text={normalizedContent}
                             title="Copy note"
                             className="sticky-note-control w-6 h-6 rounded flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                             iconClassName="text-[14px]"
@@ -213,7 +215,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                 {/* Content area */}
                 <div
                     className="flex-1 min-h-0 custom-scrollbar"
-                    onDoubleClick={() => { if (!isEditing) { setIsEditing(true); setDraft(note.content); } }}
+                    onDoubleClick={() => { if (!isEditing) { setIsEditing(true); setDraft(normalizedContent); } }}
                 >
                     {isEditing ? (
                         <textarea
@@ -236,7 +238,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                             className="px-3 py-2 text-xs leading-relaxed cursor-text custom-scrollbar font-mono whitespace-pre-wrap"
                             style={{ color: 'var(--app-sticky-text-muted)' }}
                         >
-                            {note.content || <span style={{ color: 'var(--app-sticky-text-faint)' }} className="italic">Double-click to edit...</span>}
+                            {normalizedContent || <span style={{ color: 'var(--app-sticky-text-faint)' }} className="italic">Double-click to edit...</span>}
                         </div>
                     )}
                 </div>
@@ -264,7 +266,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                     <button
                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5"
                         onClick={() => {
-                            navigator.clipboard.writeText(note.content).catch(() => {});
+                            navigator.clipboard.writeText(normalizedContent).catch(() => {});
                             setContextMenu(null);
                         }}
                     >
@@ -274,7 +276,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                     <button
                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-2.5"
                         onClick={() => {
-                            navigator.clipboard.writeText(note.content).catch(() => {});
+                            navigator.clipboard.writeText(normalizedContent).catch(() => {});
                             onDelete(note.id);
                             setContextMenu(null);
                         }}
