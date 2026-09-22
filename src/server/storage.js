@@ -204,15 +204,55 @@ function migrateExtractionScript(script) {
     return s.replace(/\$\$data/g, 'data');
 }
 
+function normalizeStickyNoteContent(content) {
+    if (typeof content !== 'string') return content;
+
+    let normalized = content.replace(/\r\n?/g, '\n');
+    if (normalized.includes('\\n')) normalized = normalized.replace(/\\n/g, '\n');
+    if (!normalized.includes('\n') && /(?:^|:\s*)1\.\s+[\s\S]*\s2\.\s+/.test(normalized)) {
+        normalized = normalized.replace(/:\s+(?=1\.\s)/, ':\n');
+        normalized = normalized.replace(/\s+(?=(?:[2-9]\d*)\.\s)/g, '\n');
+    }
+    return normalized;
+}
+
+function recoverStickyNotesFromVersions(task) {
+    // Older clients and integrations can save a full task payload without the
+    // stickyNotes field. The previous state is already kept in version history,
+    // so restore notes only when the field is absent (never when it is an
+    // intentional empty array).
+    if (!task || Object.prototype.hasOwnProperty.call(task, 'stickyNotes')) return task;
+
+    const snapshot = (task.versions || [])
+        .map(version => version?.snapshot)
+        .find(candidate => Array.isArray(candidate?.stickyNotes) && candidate.stickyNotes.length > 0);
+
+    return snapshot ? { ...task, stickyNotes: snapshot.stickyNotes } : task;
+}
+
 function migrateTaskScripts(tasks) {
     let changed = false;
     const migrated = tasks.map(task => {
+        let nextTask = recoverStickyNotesFromVersions(task);
+        if (nextTask !== task) changed = true;
         const newScript = migrateExtractionScript(task.extractionScript);
         if (newScript !== task.extractionScript) {
             changed = true;
-            return { ...task, extractionScript: newScript };
+            nextTask = { ...nextTask, extractionScript: newScript };
         }
-        return task;
+
+        const notes = nextTask.stickyNotes;
+        if (Array.isArray(notes)) {
+            const normalizedNotes = notes.map(note => {
+                const content = normalizeStickyNoteContent(note.content);
+                return content === note.content ? note : { ...note, content };
+            });
+            if (normalizedNotes.some((note, index) => note !== notes[index])) {
+                changed = true;
+                nextTask = { ...nextTask, stickyNotes: normalizedNotes };
+            }
+        }
+        return nextTask;
     });
     return { tasks: migrated, changed };
 }
@@ -1223,19 +1263,6 @@ async function saveAiModels(models) {
 
 // Theme Config Storage
 let themeCache = null;
-const THEME_PREFERENCE_VERSION = 2;
-
-function migrateThemePreference(payload) {
-    const theme = payload && typeof payload.theme === 'string' ? payload.theme : null;
-    if (!theme || payload.preferenceVersion === THEME_PREFERENCE_VERSION) {
-        return { theme, payload, migrated: false };
-    }
-    return {
-        theme: 'auto',
-        payload: { ...payload, theme: 'auto', preferenceVersion: THEME_PREFERENCE_VERSION },
-        migrated: true,
-    };
-}
 
 async function loadThemeConfig() {
     if (themeCache !== null) return themeCache;
@@ -1246,11 +1273,7 @@ async function loadThemeConfig() {
             if (!pool) throw new Error('Database pool not available');
             const res = await pool.query('SELECT data FROM theme_config WHERE id = 1');
             if (res.rows.length > 0 && res.rows[0].data && res.rows[0].data.theme) {
-                const migration = migrateThemePreference(res.rows[0].data);
-                themeCache = migration.theme;
-                if (migration.migrated) {
-                    await pool.query('UPDATE theme_config SET data = $1 WHERE id = 1', [migration.payload]);
-                }
+                themeCache = res.rows[0].data.theme;
             } else {
                 themeCache = null;
             }
@@ -1263,11 +1286,7 @@ async function loadThemeConfig() {
     try {
         const raw = await fs.promises.readFile(THEME_FILE, 'utf8');
         const parsed = JSON.parse(raw);
-        const migration = migrateThemePreference(parsed);
-        themeCache = migration.theme;
-        if (migration.migrated) {
-            await fs.promises.writeFile(THEME_FILE, JSON.stringify(migration.payload, null, 2));
-        }
+        themeCache = parsed && typeof parsed.theme === 'string' ? parsed.theme : null;
     } catch {
         themeCache = null;
     }
@@ -1277,7 +1296,7 @@ async function loadThemeConfig() {
 async function saveThemeConfig(themeId) {
     const validTheme = typeof themeId === 'string' && themeId.trim() ? themeId.trim() : DEFAULT_THEME_ID;
     themeCache = validTheme;
-    const payload = { theme: validTheme, preferenceVersion: THEME_PREFERENCE_VERSION };
+    const payload = { theme: validTheme };
     const useDB = await ensureDB();
     if (useDB) {
         const pool = getPool();
