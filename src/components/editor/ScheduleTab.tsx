@@ -37,6 +37,7 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
     const [saving, setSaving] = React.useState(false);
     const [saveError, setSaveError] = React.useState<string | null>(null);
     const [saveSuccess, setSaveSuccess] = React.useState(false);
+    const [removing, setRemoving] = React.useState(false);
 
     const updateSchedule = (updates: Partial<TaskSchedule>) => {
         const next = { ...schedule, ...updates };
@@ -104,6 +105,31 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
             setSaveError(err.message);
         }).finally(() => {
             setSaving(false);
+        });
+    };
+
+    const removeSchedule = () => {
+        if (!window.confirm('Remove this schedule? The task will remain available.')) return;
+
+        setRemoving(true);
+        setSaveError(null);
+        setSaveSuccess(false);
+
+        fetch(`/api/schedules/${currentTask.id}`, {
+            method: 'DELETE',
+            credentials: 'include',
+        }).then(async r => {
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.message || data.error || 'Failed to remove schedule');
+            return data;
+        }).then(() => {
+            onUpdateTask({ schedule: undefined });
+            setDescription(null);
+            setNextRunPreview(null);
+        }).catch((err) => {
+            setSaveError(err.message);
+        }).finally(() => {
+            setRemoving(false);
         });
     };
 
@@ -394,6 +420,17 @@ const ScheduleTab: React.FC<ScheduleTabProps> = ({ currentTask, onUpdateTask }) 
                 ) : null}
                 {saveSuccess ? 'Schedule Saved' : saving ? 'Saving...' : 'Save Schedule'}
             </button>
+
+            {currentTask.schedule && (
+                <button
+                    type="button"
+                    onClick={removeSchedule}
+                    disabled={saving || removing}
+                    className="w-full py-2 text-xs font-bold tracking-wider text-red-500 hover:text-red-600 disabled:opacity-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 rounded-xl"
+                >
+                    {removing ? 'Removing...' : 'Remove Schedule'}
+                </button>
+            )}
         </div>
     );
 };
