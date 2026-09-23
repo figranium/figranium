@@ -102,14 +102,11 @@ router.delete('/:taskId', requireAuth, async (req, res) => {
         const task = getTaskById(req.params.taskId);
         if (!task) return res.status(404).json({ error: 'TASK_NOT_FOUND' });
 
-        if (task.schedule) {
-            task.schedule.enabled = false;
-        }
-
+        delete task.schedule;
         await saveTasks(tasks);
         removeSchedule(task.id);
 
-        res.json({ success: true });
+        res.json({ success: true, schedule: null });
     } finally {
         taskMutex.unlock();
     }
