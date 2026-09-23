@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.18.5] - 2026-09-23
+
+### Canvas and editor
+- Added a responsive canvas-dot magnification effect for the editor and read-only embeds: nearby dots expand with a compact 48px cursor field, smoothly settle back to normal, respect reduced-motion preferences, and fill an active marquee-selection rectangle. Its interaction is inspired by the dot-magnification effect in iOS 27 [Photographic Styles](https://support.apple.com/guide/iphone/use-photographic-styles-iph629d2cd37/ios).
+- Improved sticky notes with rendered Markdown, an auto-growing editor, an edit-only toolbar, theme-aware default-note colors, and clearer copy/delete controls.
+
+### Sticky-note reliability
+- Preserved sticky notes when older clients or integrations save a Task without the `stickyNotes` field, recover affected notes from the newest version snapshot that contains them, and retain notes when restoring pre-note versions.
+- Normalized legacy escaped-newline and run-on numbered-list note content during recovery and editing.
+
+### Tests
+- Added focused canvas-grid coverage for dot alignment, distance falloff, selection magnification, and animation-strength behavior.
+
 ## [0.18.4] - 2026-09-21
 
 ### Browser viewer reliability

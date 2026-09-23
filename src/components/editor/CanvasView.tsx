@@ -5,6 +5,7 @@ import RichInput from '../RichInput';
 import CodeEditor from '../CodeEditor';
 import ActionItem from './ActionItem';
 import StickyNote from './StickyNote';
+import CanvasDotGrid from './CanvasDotGrid';
 import { Task, Action, BlockTestResult, ExtractionField, ExtractionGroup, StickyNote as StickyNoteType } from '../../types';
 import { generateExtractionScript } from '../../utils/extractionScriptGen';
 import { taskFieldInspectId, taskGroupContainerInspectId, taskGroupFieldInspectId } from '../../utils/extractionFieldIds';
@@ -1016,6 +1017,12 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                     backgroundSize: `${22 * canvasScale}px ${22 * canvasScale}px`,
                     backgroundPosition: `${canvasOffset.x}px ${canvasOffset.y}px`,
                 }}
+            />
+            <CanvasDotGrid
+                canvasOffset={canvasOffset}
+                canvasScale={canvasScale}
+                viewportRef={canvasViewportRef}
+                selectionBox={selectionBox}
             />
 
             <div

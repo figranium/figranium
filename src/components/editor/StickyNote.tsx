@@ -1,5 +1,7 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { StickyNote as StickyNoteType, StickyNoteColor } from '../../types';
 import TablerIcon from '../TablerIcon';
 import CopyButton from '../CopyButton';
@@ -43,7 +45,7 @@ const COLOR_STYLES: Record<StickyNoteColor, { bg: string; border: string; header
 };
 
 const COLOR_DOT: Record<StickyNoteColor, string> = {
-    default: '#ffffff',
+    default: 'var(--app-sticky-default-dot)',
     yellow: '#facc15',
     pink: '#ec4899',
     green: '#22c55e',
@@ -69,6 +71,13 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
             textareaRef.current.select();
         }
     }, [isEditing]);
+
+    useLayoutEffect(() => {
+        if (!isEditing || !textareaRef.current) return;
+        const textarea = textareaRef.current;
+        textarea.style.height = 'auto';
+        textarea.style.height = `${Math.max(120, textarea.scrollHeight)}px`;
+    }, [draft, isEditing]);
 
     const getDragPosition = useCallback((clientX: number, clientY: number) => {
         if (!dragRef.current) return null;
@@ -153,17 +162,19 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                     color: 'var(--app-sticky-text)',
                 }}
             >
-                {/* Header / drag handle */}
+                {/* Edit toolbar / drag handle */}
                 <div
-                    className="flex items-center justify-between px-2.5 py-1.5 cursor-grab active:cursor-grabbing shrink-0 touch-none"
-                    style={{ background: colors.header }}
+                    className={`sticky-note-toolbar flex items-center justify-between px-2.5 cursor-grab active:cursor-grabbing shrink-0 touch-none ${isEditing ? 'sticky-note-toolbar--visible' : ''}`}
+                    style={{ background: colors.header, pointerEvents: isEditing ? 'auto' : 'none' }}
+                    aria-hidden={!isEditing}
+                    onMouseDown={(e) => e.preventDefault()}
                     onPointerDown={handleDragPointerDown}
                     onPointerMove={handleDragPointerMove}
                     onPointerUp={handleDragPointerUp}
                     onPointerCancel={handleDragPointerUp}
                 >
                     {/* Color swatches */}
-                    <div className="flex items-center gap-1" style={{ opacity: isEditing ? 1 : 0, pointerEvents: isEditing ? 'auto' : 'none', transition: 'opacity 0.15s' }}>
+                    <div className="flex items-center gap-1">
                         {ALL_COLORS.map((c) => (
                             <button
                                 key={c}
@@ -183,17 +194,8 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                         ))}
                     </div>
 
-                    {/* Edit / copy / delete buttons */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
-                        <button
-                            className="sticky-note-control w-6 h-6 rounded flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                            onPointerDown={(e) => e.stopPropagation()}
-                            onClick={(e) => { e.stopPropagation(); setIsEditing(true); setDraft(normalizedContent); }}
-                            title="Edit note"
-                            aria-label="Edit note"
-                        >
-                            <TablerIcon name="edit" className="text-[14px]" />
-                        </button>
+                    {/* Copy / delete buttons */}
+                    <div className="flex items-center gap-1">
                         <CopyButton
                             text={normalizedContent}
                             title="Copy note"
@@ -207,7 +209,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                             title="Delete note"
                             aria-label="Delete note"
                         >
-                            <TablerIcon name="close" className="text-[14px]" />
+                            <TablerIcon name="delete" className="text-[14px]" />
                         </button>
                     </div>
                 </div>
@@ -228,17 +230,21 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') commitEdit();
                                 e.stopPropagation();
                             }}
-                            className="sticky-note-textarea w-full min-h-[120px] resize-none bg-transparent px-3 py-2 text-xs focus:outline-none font-mono leading-relaxed"
+                            className="sticky-note-textarea w-full min-h-[120px] resize-none overflow-hidden bg-transparent px-3 py-2 text-xs focus:outline-none font-mono leading-relaxed"
                             style={{ color: 'var(--app-sticky-text)' }}
                             placeholder="Write markdown here..."
                             onClick={(e) => e.stopPropagation()}
                         />
                     ) : (
                         <div
-                            className="px-3 py-2 text-xs leading-relaxed cursor-text custom-scrollbar font-mono whitespace-pre-wrap"
+                            className="sticky-note-markdown px-3 py-2 text-xs leading-relaxed cursor-text custom-scrollbar font-sans"
                             style={{ color: 'var(--app-sticky-text-muted)' }}
                         >
-                            {normalizedContent || <span style={{ color: 'var(--app-sticky-text-faint)' }} className="italic">Double-click to edit...</span>}
+                            {normalizedContent ? (
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalizedContent}</ReactMarkdown>
+                            ) : (
+                                <span style={{ color: 'var(--app-sticky-text-faint)' }} className="italic">Double-click to edit...</span>
+                            )}
                         </div>
                     )}
                 </div>

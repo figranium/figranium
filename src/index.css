@@ -50,6 +50,7 @@
     --app-sticky-default-bg: rgba(255, 255, 255, 0.07);
     --app-sticky-default-border: rgba(255, 255, 255, 0.18);
     --app-sticky-default-header: rgba(255, 255, 255, 0.10);
+    --app-sticky-default-dot: #ffffff;
     --app-sticky-text: rgba(255, 255, 255, 0.82);
     --app-sticky-text-muted: rgba(255, 255, 255, 0.62);
     --app-sticky-text-faint: rgba(255, 255, 255, 0.32);
@@ -673,7 +674,42 @@ body {
     transform: rotate(180deg);
 }
 
+.sticky-note-toolbar {
+    max-height: 0;
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-4px);
+    transition:
+        max-height 200ms ease,
+        min-height 200ms ease,
+        padding 200ms ease,
+        opacity 150ms ease,
+        transform 200ms ease;
+}
+.sticky-note-toolbar--visible {
+    max-height: 36px;
+    min-height: 36px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    opacity: 1;
+    transform: translateY(0);
+}
+.sticky-note-markdown {
+    font-family: 'Questrial', sans-serif;
+    overflow-wrap: anywhere;
+}
+.sticky-note-markdown:has(> :first-child:is(h1, h2, h3, h4, h5, h6)) {
+    padding-top: 0.85rem;
+}
+.sticky-note-markdown > * { margin: 0; }
 .sticky-note-markdown > * + * { margin-top: 0.4em; }
+.sticky-note-markdown h1 + *, .sticky-note-markdown h2 + *, .sticky-note-markdown h3 + *,
+.sticky-note-markdown h4 + *, .sticky-note-markdown h5 + *, .sticky-note-markdown h6 + * {
+    margin-top: 0.7em;
+}
 .sticky-note-control {
     color: var(--app-sticky-control);
 }
@@ -682,7 +718,8 @@ body {
     background: var(--app-sticky-control-hover);
 }
 .sticky-note-textarea::placeholder { color: var(--app-sticky-text-faint); }
-.sticky-note-markdown h1, .sticky-note-markdown h2, .sticky-note-markdown h3 {
+.sticky-note-markdown h1, .sticky-note-markdown h2, .sticky-note-markdown h3,
+.sticky-note-markdown h4, .sticky-note-markdown h5, .sticky-note-markdown h6 {
     font-weight: 700 !important;
     color: var(--app-sticky-text);
     line-height: 1.3;
