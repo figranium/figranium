@@ -279,9 +279,15 @@ const tests = [
                 });
                 assert.strictEqual(invalid.status, 400, 'Invalid cron must be rejected');
 
-                const disable = await fetch(`${base}/api/schedules/${taskId}`, { method: 'DELETE', headers: h });
-                assert.strictEqual(disable.status, 200);
-                assert.strictEqual((await disable.json()).success, true);
+                const remove = await fetch(`${base}/api/schedules/${taskId}`, { method: 'DELETE', headers: h });
+                assert.strictEqual(remove.status, 200);
+                const removed = await remove.json();
+                assert.strictEqual(removed.success, true);
+                assert.strictEqual(removed.schedule, null);
+
+                const afterRemoval = await fetch(`${base}/api/schedules`, { headers: h });
+                assert.strictEqual(afterRemoval.status, 200);
+                assert.ok(!(await afterRemoval.json()).schedules.some(s => s.taskId === taskId));
             } finally {
                 if (taskId) await fetch(`${base}/api/tasks/${taskId}`, { method: 'DELETE', headers: h });
             }
