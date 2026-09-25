@@ -588,7 +588,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                         key={mode}
                                                         onClick={() => switchMode(mode)}
                                                         className={`px-3 py-1 rounded-md text-xs font-bold tracking-tight transition-all ${extractionMode === mode
-                                                            ? 'bg-[var(--app-text)] text-[var(--app-bg)] shadow-sm'
+                                                            ? 'bg-[var(--app-accent)] text-[var(--app-accent-text)] shadow-sm'
                                                             : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)]'
                                                             }`}
                                                     >
