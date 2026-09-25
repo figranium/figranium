@@ -145,7 +145,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                         key={mode}
                                         onClick={() => switchExtractionMode(mode)}
                                         className={`px-2.5 py-0.5 rounded-md text-xs font-bold tracking-tight transition-all ${extractionMode === mode
-                                            ? 'bg-white text-black'
+                                            ? 'bg-[var(--app-accent)] text-[var(--app-accent-text)]'
                                             : 'text-white/50 hover:text-white'
                                             }`}
                                     >
