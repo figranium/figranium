@@ -1,10 +1,20 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/figranium/figranium/main/banner.png" alt="Figranium Banner">
+
+  <br><br>
+
+  <a href="https://github.com/figranium/figranium/blob/main/LICENSE"><img src="https://img.shields.io/github/license/figranium/figranium?style=for-the-badge&label=License" alt="License"></a>
+  <a href="https://github.com/figranium/figranium/pkgs/container/figranium"><img src="https://img.shields.io/badge/GHCR%20Pulls-11K%2B-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="GHCR Pulls"></a>
+  <a href="https://opensource.org/license/gpl-3-0"><img src="https://img.shields.io/badge/OSI-Approved-3DA639?style=for-the-badge" alt="OSI Approved"></a>
+
+  <p><strong>Stack blocks visually to build complex browser workflows and execute them via API.</strong></p>
+
+  <p>
+    <a href="https://figranium.dev/docs"><strong>Documentation</strong></a>
+    &nbsp;&nbsp;·&nbsp;&nbsp;
+    <a href="https://discord.gg/kPmfbgu9Xn"><strong>Discord</strong></a>
+  </p>
 </div>
-
-# Figranium
-
-Figranium is an open-source, deterministic browser automation platform that lets you build visual browser tasks that can be called as APIs. Create scraping and automation workflows visually, pass dynamic inputs at runtime, and get structured results—without usage credits or third-party data hosting.
 
 <div align="center">
   <img src="screenshot.png" alt="Figranium Demo" width="100%">
