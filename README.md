@@ -41,7 +41,7 @@ Figranium is proudly supported by:
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/thordata_white.svg">
       <source media="(prefers-color-scheme: light)" srcset="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png">
-      <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="220" alt="Thordata">
+      <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" alt="Thordata">
     </picture>
   </a>
 </div>
@@ -53,7 +53,7 @@ Figranium is proudly supported by:
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/simplynode_white.png">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/simplynode.png">
-      <img src="partner-assets/simplynode.png" width="220" alt="SimplyNode">
+      <img src="partner-assets/simplynode.png" width="180" alt="SimplyNode">
     </picture>
   </a>
 </div>
@@ -62,26 +62,26 @@ Figranium is proudly supported by:
 
 <div align="center">
   <a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="201" alt="DigitalOcean">
+    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="125" alt="DigitalOcean">
   </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &nbsp;&nbsp;
   <a href="https://www.mintlify.com">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/mintlify_white.svg">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/mintlify.svg">
-      <img src="partner-assets/mintlify.svg" width="165" alt="Mintlify">
+      <img src="partner-assets/mintlify.svg" width="110" alt="Mintlify">
     </picture>
   </a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;
   <a href="https://www.algolia.com">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="165" alt="Algolia">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="110" alt="Algolia">
   </a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;
   <a href="https://neon.com">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/neon_white.png">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/neon.png">
-      <img src="partner-assets/neon.png" width="165" alt="Mintlify">
+      <img src="partner-assets/neon.png" width="110" alt="Mintlify">
     </picture>
   </a>
 </div>
