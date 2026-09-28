@@ -73,7 +73,7 @@ Figranium is proudly supported by:
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/neon_white.png">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/neon.png">
-      <img src="partner-assets/neon.png" width="106" alt="Neon" style="vertical-align: middle;">
+      <img src="partner-assets/neon.png" width="106" alt="Neon" style="vertical-align: -4px;">
     </picture>
   </a>
   &nbsp;&nbsp;
