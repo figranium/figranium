@@ -82,7 +82,7 @@ Figranium is proudly supported by:
   </a>
   &nbsp;&nbsp;
   <a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium" target="_blank">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="125" alt="DigitalOcean">
+    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="150" alt="DigitalOcean">
   </a>
 </div>
 
