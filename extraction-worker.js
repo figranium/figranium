@@ -119,6 +119,8 @@ const runExtraction = async (data) => {
         const logBuffer = [];
         const consoleProxy = {
             log: (...args) => logBuffer.push(args.join(' ')),
+            info: (...args) => logBuffer.push(args.join(' ')),
+            debug: (...args) => logBuffer.push(args.join(' ')),
             warn: (...args) => logBuffer.push(args.join(' ')),
             error: (...args) => logBuffer.push(args.join(' '))
         };
