@@ -14,6 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Remember displayed pull count
+        id: before
+        shell: bash
+        run: |
+          value=$(jq -r '.downloads_compact // ""' ghcr-stats.json)
+          echo "value=$value" >> "$GITHUB_OUTPUT"
+
       - uses: actionstore/ghcr-stats@v1
         with:
           owner: figranium
@@ -21,7 +28,20 @@ jobs:
           name: figranium
           path: ghcr-stats.json
 
+      - name: Check whether badge value changed
+        id: changed
+        shell: bash
+        run: |
+          value=$(jq -r '.downloads_compact // ""' ghcr-stats.json)
+          if [ "$value" != "${{ steps.before.outputs.value }}" ]; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+          else
+            git checkout -- ghcr-stats.json
+            echo "value=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: EndBug/add-and-commit@v9
+        if: steps.changed.outputs.value == 'true'
         with:
           add: ghcr-stats.json
-          message: "chore: update GHCR stats [skip ci]"
+          message: "chore: update Docker pulls badge [skip ci]"
