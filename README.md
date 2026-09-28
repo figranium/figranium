@@ -61,10 +61,6 @@ Figranium is proudly supported by:
 ## Infrastructure Backers
 
 <div align="center">
-  <a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="125" alt="DigitalOcean">
-  </a>
-  &nbsp;&nbsp;
   <a href="https://www.mintlify.com">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/mintlify_white.svg">
@@ -72,17 +68,21 @@ Figranium is proudly supported by:
       <img src="partner-assets/mintlify.svg" width="110" alt="Mintlify">
     </picture>
   </a>
-    &nbsp;&nbsp;
-  <a href="https://www.algolia.com">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="110" alt="Algolia">
-  </a>
-    &nbsp;&nbsp;
+  &nbsp;&nbsp;
   <a href="https://neon.com">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/neon_white.png">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/neon.png">
-      <img src="partner-assets/neon.png" width="110" alt="Mintlify">
+      <img src="partner-assets/neon.png" width="110" alt="Neon">
     </picture>
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://www.algolia.com">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="110" alt="Algolia">
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium">
+    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="125" alt="DigitalOcean">
   </a>
 </div>
 
