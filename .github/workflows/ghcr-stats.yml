@@ -1,0 +1,27 @@
+name: Update GHCR stats
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  ghcr-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actionstore/ghcr-stats@v1
+        with:
+          owner: figranium
+          repo: figranium
+          name: figranium
+          path: ghcr-stats.json
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          add: ghcr-stats.json
+          message: "chore: update GHCR stats [skip ci]"
