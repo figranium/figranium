@@ -3,15 +3,15 @@
 
   <br>
 
-  <a href="https://github.com/figranium/figranium/blob/main/LICENSE"><img src="https://img.shields.io/github/license/figranium/figranium?style=for-the-badge&label=License&color=3DA639&logo=opensourceinitiative&logoColor=white" alt="License"></a>
-  <a href="https://github.com/figranium/figranium/pkgs/container/figranium"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffigranium%2Ffigranium%2Fmain%2Fghcr-stats.json&query=downloads_compact&label=Pulls&color=2496ED&style=for-the-badge&logo=docker&logoColor=white" alt="Docker Pulls"></a>
+  <a href="https://github.com/figranium/figranium/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/github/license/figranium/figranium?style=for-the-badge&label=License&color=3DA639&logo=opensourceinitiative&logoColor=white" alt="License"></a>
+  <a href="https://github.com/figranium/figranium/pkgs/container/figranium" target="_blank"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffigranium%2Ffigranium%2Fmain%2Fghcr-stats.json&query=downloads_compact&label=Pulls&color=2496ED&style=for-the-badge&logo=docker&logoColor=white" alt="Docker Pulls"></a>
 
   <p><strong>Stack blocks visually to build complex browser workflows and execute them via API.</strong></p>
 
   <p>
-    <a href="https://figranium.dev/docs"><strong>Documentation</strong></a>
+    <a href="https://figranium.dev/docs" target="_blank"><strong>Documentation</strong></a>
     &nbsp;&nbsp;·&nbsp;&nbsp;
-    <a href="https://discord.gg/kPmfbgu9Xn"><strong>Discord</strong></a>
+    <a href="https://discord.gg/kPmfbgu9Xn" target="_blank"><strong>Discord</strong></a>
   </p>
 </div>
 
@@ -61,7 +61,7 @@ Figranium is proudly supported by:
 ## Infrastructure Backers
 
 <div align="center">
-  <a href="https://www.mintlify.com">
+  <a href="https://www.mintlify.com" target="_blank">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/mintlify_white.svg">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/mintlify.svg">
@@ -69,7 +69,7 @@ Figranium is proudly supported by:
     </picture>
   </a>
   &nbsp;&nbsp;
-  <a href="https://neon.com">
+  <a href="https://neon.com" target="_blank">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/neon_white.png">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/neon.png">
@@ -77,11 +77,11 @@ Figranium is proudly supported by:
     </picture>
   </a>
   &nbsp;&nbsp;
-  <a href="https://www.algolia.com">
+  <a href="https://www.algolia.com" target="_blank">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="110" alt="Algolia">
   </a>
   &nbsp;&nbsp;
-  <a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium">
+  <a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium" target="_blank">
     <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="125" alt="DigitalOcean">
   </a>
 </div>
@@ -157,7 +157,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ## CAPTCHA solving
 
-Figranium uses [Fiptcha](https://github.com/figranium/fiptcha) for CAPTCHA solving. Fiptcha owns the CAPTCHA solver implementation and its configuration, supported providers, local/remote solving behavior, model setup, and platform-specific companion tooling. See the Fiptcha repository for the current CAPTCHA documentation instead of relying on duplicated configuration here.
+Figranium uses <a href="https://github.com/figranium/fiptcha" target="_blank">Fiptcha</a> for CAPTCHA solving. Fiptcha owns the CAPTCHA solver implementation and its configuration, supported providers, local/remote solving behavior, model setup, and platform-specific companion tooling. See the Fiptcha repository for the current CAPTCHA documentation instead of relying on duplicated configuration here.
 
 Proxy rotation also respects `data/proxies.json` (see below), and `data/allowed_ips.json` works as an alternate allowlist format.
 
@@ -283,7 +283,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 
 # Maintenance
 
-- The project is governed by the **[GNU General Public License v3.0](https://github.com/figranium/figranium/blob/main/LICENSE)**, which grants rights for distribution and modification as per the GPLv3 terms.
+- The project is governed by the **<a href="https://github.com/figranium/figranium/blob/main/LICENSE" target="_blank">GNU General Public License v3.0</a>**, which grants rights for distribution and modification as per the GPLv3 terms.
 - Keep `data/` backed up if you rely on persistent settings or browser state.
 - Release updates: Docker installations should run `docker compose pull` followed by `docker compose up -d`; source installations should pull `figranium/figranium` and follow the project setup commands.
 - Contributions: follow `.github/` templates, respect `CONTRIBUTING.md`, and run available lint/test scripts if you touch critical areas.
@@ -294,38 +294,38 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [x] **Storage cleanup** — the standalone Captures page lets you review captured media.
 - [x] **IP rotation tooling** — import proxies and automatically rotate them.
 - [x] **API key workflow** — manage API access without extra setup.
-- [ ] **[Scoped API keys](https://github.com/figranium/figranium/issues/405)** — support multiple individually revocable API keys with explicit permissions.
-- [ ] **[Password manager & credential injector](https://github.com/figranium/figranium/issues/406)** — securely store credentials and inject them into browser Tasks at runtime.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/405" target="_blank">Scoped API keys</a>** — support multiple individually revocable API keys with explicit permissions.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/406" target="_blank">Password manager & credential injector</a>** — securely store credentials and inject them into browser Tasks at runtime.
 - [x] **Task proxy rotation toggle** — enable rotation per Task execution.
 - [x] **Spatial editor transition** — spatial block-based Task editor.
-- [ ] **[Action key combos](https://github.com/figranium/figranium/issues/366)** — add modifier shortcuts for browser interactions.
-- [ ] **[Click-and-drag block](https://github.com/figranium/figranium/issues/367)** — add drag gesture automation.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/366" target="_blank">Action key combos</a>** — add modifier shortcuts for browser interactions.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/367" target="_blank">Click-and-drag block</a>** — add drag gesture automation.
 - [x] **Recording controls** — disable automated recording per Task.
 - [x] **File downloads** — download files from target pages and surface them through Cabinets.
 - [x] **Cabinet-backed file workspace** — route downloads into shared Cabinets and consume them from Upload blocks.
 - [x] **Stateless mode** — start Task runs without persisted cookies or local storage.
-- [ ] **[Adblocking filters](https://github.com/figranium/figranium/issues/368)** — optional ad/malware filtering for execution contexts.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/368" target="_blank">Adblocking filters</a>** — optional ad/malware filtering for execution contexts.
 - [x] **Extraction response mode** — choose between HTML+data and data-only API responses.
-- [ ] **[Folder organization](https://github.com/figranium/figranium/issues/369)** — organize Tasks and assets into named folders.
-- [ ] **[Stable capture retention](https://github.com/figranium/figranium/issues/370)** — filtering, pinning, and archiving for captures.
-- [ ] **[Workspace templates](https://github.com/figranium/figranium/issues/371)** — reusable workspace presets.
-- [ ] **[Geo-targeted exits](https://github.com/figranium/figranium/issues/372)** — choose proxy regions for Tasks.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/369" target="_blank">Folder organization</a>** — organize Tasks and assets into named folders.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/370" target="_blank">Stable capture retention</a>** — filtering, pinning, and archiving for captures.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/371" target="_blank">Workspace templates</a>** — reusable workspace presets.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/372" target="_blank">Geo-targeted exits</a>** — choose proxy regions for Tasks.
 - [x] **Complete anti-detection coverage** — anti-detection controls across browser executions.
-- [ ] **[Session recording redaction](https://github.com/figranium/figranium/issues/373)** — redact sensitive fields from recordings and logs.
-- [ ] **[Two-factor authentication](https://github.com/figranium/figranium/issues/374)** — optional TOTP/second-factor support.
-- [ ] **[Automatic self-healing selectors](https://github.com/figranium/figranium/issues/375)** — recover broken locators after page changes.
-- [x] **[Multilingual task pages with translate.js](https://github.com/figranium/figranium/issues/365)** — optionally translate browser-rendered pages before actions and extraction.
-- [ ] **[AI-assisted fixing](https://github.com/figranium/figranium/issues/376)** — suggest fixes after failed runs for user approval.
-- [ ] **[Companion app](https://github.com/figranium/figranium/issues/377)** — lightweight notifications for important execution events.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/373" target="_blank">Session recording redaction</a>** — redact sensitive fields from recordings and logs.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/374" target="_blank">Two-factor authentication</a>** — optional TOTP/second-factor support.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/375" target="_blank">Automatic self-healing selectors</a>** — recover broken locators after page changes.
+- [x] **<a href="https://github.com/figranium/figranium/issues/365" target="_blank">Multilingual task pages with translate.js</a>** — optionally translate browser-rendered pages before actions and extraction.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/376" target="_blank">AI-assisted fixing</a>** — suggest fixes after failed runs for user approval.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/377" target="_blank">Companion app</a>** — lightweight notifications for important execution events.
 - [x] **Community presets hub** — publish and discover reusable automation presets.
-- [ ] **[Database Tab / Local CRM](https://github.com/figranium/figranium/issues/378)** — built-in interface for extracted data.
-- [ ] **[iframe interaction support](https://github.com/figranium/figranium/issues/379)** — target and interact with elements inside iframes.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/378" target="_blank">Database Tab / Local CRM</a>** — built-in interface for extracted data.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/379" target="_blank">iframe interaction support</a>** — target and interact with elements inside iframes.
 - [x] **Autosave** — automatically persist Task changes and editor state.
 - [x] **Highlight tool** — highlight elements while building workflows.
 - [x] **Cron triggers** — schedule Tasks with cron expressions.
 - [x] **Canvas notes** — add annotations alongside workflows.
-- [ ] **[Page triggers](https://github.com/figranium/figranium/issues/380)** — trigger a Task when a page changes in a specified way.
-- [ ] **[Task-dedicated browser state & cookie buckets](https://github.com/figranium/figranium/issues/382)** — isolate or intentionally share persistent browser state between Tasks.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/380" target="_blank">Page triggers</a>** — trigger a Task when a page changes in a specified way.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/382" target="_blank">Task-dedicated browser state & cookie buckets</a>** — isolate or intentionally share persistent browser state between Tasks.
 
 # Security Considerations
 
@@ -339,7 +339,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - Report issues or request features via the GitHub repo issue tracker.
 - Follow the authors on `https://github.com/figranium` for releases.
 - Share automation recipes with other self-hosted users in your org, but respect the license for sharing infrastructure.
-- Join the community on [Discord](https://discord.gg/kPmfbgu9Xn).
+- Join the community on <a href="https://discord.gg/kPmfbgu9Xn" target="_blank">Discord</a>.
 
 # Support the Project
 
