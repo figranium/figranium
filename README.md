@@ -40,7 +40,7 @@ Figranium is proudly supported by:
   <a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/thordata_white.svg">
-      <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" height="51" style="object-fit: cover; object-position: center;" alt="Thordata">
+      <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" alt="Thordata">
     </picture>
   </a>
   <p style="max-width: 680px; margin-left: auto; margin-right: auto;"><a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank"><strong>Thordata</strong></a> — Premium residential proxy infrastructure for reliable web scraping and browser automation.</p>
