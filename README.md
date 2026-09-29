@@ -44,14 +44,14 @@ Figranium is proudly supported by:
       <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" alt="Thordata">
     </picture>
   </a>
-  <p><strong>Thordata</strong> — Premium residential proxy infrastructure for reliable web scraping and browser automation.</p>
+  <p><a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank"><strong>Thordata</strong></a> — Premium residential proxy infrastructure for reliable web scraping and browser automation.</p>
 </div>
 
 <div align="center">
   <a href="https://www.rapidproxy.io/?ref=figranium" target="_blank">
     <img src="partner-assets/rapidproxy.webp" width="180" alt="RapidProxy">
   </a>
-  <p><strong>RapidProxy</strong> — 90M+ residential IPs built for browser automation and web scraping, with smart rotation and stable sessions. From $0.55/GB with non-expiring traffic. Use <strong>RAPID10</strong> for 10% off.</p>
+  <p><a href="https://www.rapidproxy.io/?ref=figranium" target="_blank"><strong>RapidProxy</strong></a> — 90M+ residential IPs built for browser automation and web scraping, with smart rotation and stable sessions. From $0.55/GB with non-expiring traffic. Use <strong>RAPID10</strong> for 10% off.</p>
 </div>
 
 ## Integration Partner
@@ -64,35 +64,20 @@ Figranium is proudly supported by:
       <img src="partner-assets/simplynode.png" width="180" alt="SimplyNode">
     </picture>
   </a>
-  <p><strong>SimplyNode</strong> — Residential proxies for web scraping and browser automation, with flexible targeting and reliable rotation.</p>
+  <p><a href="https://simplynode.io/?utm_source=figranium" target="_blank"><strong>SimplyNode</strong></a> — Residential proxies for web scraping and browser automation, with flexible targeting and reliable rotation.</p>
 </div>
 
 ## Infrastructure Backers
 
 <div align="center">
-  <a href="https://www.mintlify.com" target="_blank">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="partner-assets/mintlify_white.svg">
-      <source media="(prefers-color-scheme: light)" srcset="partner-assets/mintlify.svg">
-      <img src="partner-assets/mintlify.svg" width="110" alt="Mintlify">
-    </picture>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://neon.com" target="_blank">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="partner-assets/neon_white.png">
-      <source media="(prefers-color-scheme: light)" srcset="partner-assets/neon.png">
-      <img src="partner-assets/neon.png" width="106" alt="Neon" style="vertical-align: -4px;">
-    </picture>
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://www.algolia.com" target="_blank">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="110" alt="Algolia">
-  </a>
-  &nbsp;&nbsp;
-  <a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium" target="_blank">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="150" alt="DigitalOcean">
-  </a>
+  <table>
+    <tr>
+      <td align="center" valign="middle" width="150"><a href="https://www.mintlify.com" target="_blank"><img src="partner-assets/mintlify.svg" width="110" alt="Mintlify"></a></td>
+      <td align="center" valign="middle" width="150"><a href="https://neon.com" target="_blank"><img src="partner-assets/neon.png" width="106" alt="Neon"></a></td>
+      <td align="center" valign="middle" width="150"><a href="https://www.algolia.com" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="110" alt="Algolia"></a></td>
+      <td align="center" valign="middle" width="170"><a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium" target="_blank"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="150" alt="DigitalOcean"></a></td>
+    </tr>
+  </table>
 </div>
 
 # Getting Started
