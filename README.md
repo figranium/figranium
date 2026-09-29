@@ -34,7 +34,7 @@
 
 Figranium is proudly supported by:
 
-## Featured Partner
+## Featured Partners
 
 <div align="center">
   <a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank">
@@ -43,6 +43,12 @@ Figranium is proudly supported by:
       <source media="(prefers-color-scheme: light)" srcset="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png">
       <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" alt="Thordata">
     </picture>
+  </a>
+</div>
+
+<div align="center">
+  <a href="https://www.rapidproxy.io/?ref=figranium" target="_blank">
+    <img src="partner-assets/rapidproxy.webp" width="180" alt="RapidProxy">
   </a>
 </div>
 
