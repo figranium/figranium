@@ -40,7 +40,7 @@ Figranium is proudly supported by:
   <a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/thordata_white.svg">
-      <source media="(prefers-color-scheme: light)" srcset="partner-assets/thordata_white.svg">
+      <source media="(prefers-color-scheme: light)" srcset="partner-assets/thordata_light.svg">
       <img src="partner-assets/thordata_white.svg" width="180" alt="Thordata">
     </picture>
   </a>
