@@ -44,12 +44,14 @@ Figranium is proudly supported by:
       <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" alt="Thordata">
     </picture>
   </a>
+  <p><strong>Thordata</strong> — Premium residential proxy infrastructure for reliable web scraping and browser automation.</p>
 </div>
 
 <div align="center">
   <a href="https://www.rapidproxy.io/?ref=figranium" target="_blank">
     <img src="partner-assets/rapidproxy.webp" width="180" alt="RapidProxy">
   </a>
+  <p><strong>RapidProxy</strong> — 90M+ residential IPs built for browser automation and web scraping, with smart rotation and stable sessions. From $0.55/GB with non-expiring traffic. Use <strong>RAPID10</strong> for 10% off.</p>
 </div>
 
 ## Integration Partner
