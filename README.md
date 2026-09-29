@@ -43,14 +43,14 @@ Figranium is proudly supported by:
       <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" height="51" style="object-fit: cover; object-position: center;" alt="Thordata">
     </picture>
   </a>
-  <p><a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank"><strong>Thordata</strong></a> — Premium residential proxy infrastructure for reliable web scraping and browser automation.</p>
+  <p style="max-width: 680px; margin-left: auto; margin-right: auto;"><a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank"><strong>Thordata</strong></a> — Premium residential proxy infrastructure for reliable web scraping and browser automation.</p>
 </div>
 
 <div align="center">
   <a href="https://www.rapidproxy.io/?ref=figranium" target="_blank">
     <img src="partner-assets/rapidproxy.webp" width="180" alt="RapidProxy">
   </a>
-  <p><a href="https://www.rapidproxy.io/?ref=figranium" target="_blank"><strong>RapidProxy</strong></a> — 90M+ residential IPs built for browser automation and web scraping, with smart rotation and stable sessions. From $0.55/GB with non-expiring traffic. Use <strong>RAPID10</strong> for 10% off.</p>
+  <p style="max-width: 680px; margin-left: auto; margin-right: auto;"><a href="https://www.rapidproxy.io/?ref=figranium" target="_blank"><strong>RapidProxy</strong></a> — 90M+ residential IPs built for browser automation and web scraping, with smart rotation and stable sessions. From $0.55/GB with non-expiring traffic. Use <strong>RAPID10</strong> for 10% off.</p>
 </div>
 
 ## Integration Partner
@@ -60,10 +60,10 @@ Figranium is proudly supported by:
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/simplynode_white.png">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/simplynode.png">
-      <img src="partner-assets/simplynode.png" width="180" alt="SimplyNode">
+      <img src="partner-assets/simplynode.png" width="140" alt="SimplyNode">
     </picture>
   </a>
-  <p><a href="https://simplynode.io/?utm_source=figranium" target="_blank"><strong>SimplyNode</strong></a> — Residential proxies for web scraping and browser automation, with flexible targeting and reliable rotation.</p>
+  <p style="max-width: 680px; margin-left: auto; margin-right: auto;"><a href="https://simplynode.io/?utm_source=figranium" target="_blank"><strong>SimplyNode</strong></a> — Residential proxies for web scraping and browser automation, with flexible targeting and reliable rotation.</p>
 </div>
 
 ## Infrastructure Backers
