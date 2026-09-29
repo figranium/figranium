@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { requireAuth, dataRateLimiter } = require('../middleware');
+const { requireAuth, requireAuthOrApiKey, dataRateLimiter } = require('../middleware');
 const { getStorageStateFile } = require('../storage');
 const { DATA_DIR } = require('../constants');
 
@@ -49,7 +49,7 @@ const readCapturesDir = async (dir, runId) => {
     return entries.filter(Boolean);
 };
 
-router.get('/captures', requireAuth, dataRateLimiter, async (_req, res) => {
+router.get('/captures', requireAuthOrApiKey, dataRateLimiter, async (_req, res) => {
     const runId = String(_req.query?.runId || '').trim();
     const seen = new Set();
     const entries = [];
