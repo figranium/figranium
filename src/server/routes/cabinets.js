@@ -7,7 +7,7 @@ const cabinets = require('../cabinets');
 const router = express.Router();
 const fail = (res, error) => res.status(/not found/i.test(error.message) ? 404 : 400).json({ error: error.message });
 
-router.get('/', requireAuth, async (_req,res)=>{ try { res.json(await cabinets.listCabinets()); } catch(e){ fail(res,e); } });
+router.get('/', requireAuthOrApiKey, async (_req,res)=>{ try { res.json(await cabinets.listCabinets()); } catch(e){ fail(res,e); } });
 router.post('/', requireAuth, dataRateLimiter, async (req,res)=>{ try { res.status(201).json(await cabinets.createCabinet(req.body?.name)); } catch(e){ fail(res,e); } });
 router.patch('/:cabinetId', requireAuth, dataRateLimiter, async (req,res)=>{ try { res.json(await cabinets.renameCabinet(req.params.cabinetId,req.body?.name)); } catch(e){ fail(res,e); } });
 router.get('/:cabinetId/items', requireAuth, async (req,res)=>{ try { res.json({items:await cabinets.listItems(req.params.cabinetId)}); } catch(e){ fail(res,e); } });
