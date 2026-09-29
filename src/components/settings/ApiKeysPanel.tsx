@@ -234,7 +234,7 @@ const ApiKeyRow: React.FC<{
                         <button
                             onClick={handleRegenerate}
                             disabled={config.loading || config.saving}
-                            className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white text-black hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-blue-500 text-white hover:bg-blue-400 hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             <TablerIcon name="autorenew" className="text-base" />
                             {config.saving ? 'Generating...' : 'Regenerate'}
