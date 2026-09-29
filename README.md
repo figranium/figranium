@@ -64,6 +64,7 @@ Figranium is proudly supported by:
       <img src="partner-assets/simplynode.png" width="180" alt="SimplyNode">
     </picture>
   </a>
+  <p><strong>SimplyNode</strong> — Residential proxies for web scraping and browser automation, with flexible targeting and reliable rotation.</p>
 </div>
 
 ## Infrastructure Backers
