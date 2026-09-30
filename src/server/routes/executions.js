@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, requireApiKey } = require('../middleware');
+const { requireAuth, requireAuthOrApiKey, requireApiKey } = require('../middleware');
 const { loadExecutions, saveExecutions, getExecutionById } = require('../storage');
 const { executionStreams, executionListStreams, stopRequests, sendExecutionUpdate, sendExecutionListUpdate } = require('../state');
 const { normalizeTaskOutcome } = require('../../agent/outcomes');
@@ -91,7 +91,7 @@ router.get('/stream', requireAuth, (req, res) => {
     });
 });
 
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuthOrApiKey, async (req, res) => {
     await loadExecutions();
     const exec = getExecutionById(req.params.id);
     if (!exec) return res.status(404).json({ error: 'EXECUTION_NOT_FOUND' });
