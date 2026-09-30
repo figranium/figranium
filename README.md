@@ -312,6 +312,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [ ] **<a href="https://github.com/figranium/figranium/issues/376" target="_blank">AI-assisted fixing</a>** — suggest fixes after failed runs for user approval.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/377" target="_blank">Companion app</a>** — lightweight notifications for important execution events.
 - [x] **Community presets hub** — publish and discover reusable automation presets.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/428" target="_blank">Embedded Templates for instant usage</a>** — browse and use ready-made Templates directly in the Figranium UI.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/378" target="_blank">Database Tab / Local CRM</a>** — built-in interface for extracted data.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/379" target="_blank">iframe interaction support</a>** — target and interact with elements inside iframes.
 - [x] **Autosave** — automatically persist Task changes and editor state.
