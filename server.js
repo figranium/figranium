@@ -79,10 +79,14 @@ const scheduleRoutes = require('./src/server/routes/schedules');
 const credentialRoutes = require('./src/server/routes/credentials');
 const healthRoutes = require('./src/server/routes/health');
 const browserRoutes = require('./src/server/routes/browser');
+const capabilitiesRoutes = require('./src/server/routes/capabilities');
 const cabinetRoutes = require('./src/server/routes/cabinets');
 const { pushOutput } = require('./src/server/outputProviders');
 const { migrateStorageState } = require('./src/server/migrate-storage');
-const { concurrencyGate } = require('./src/server/execution-queue');
+const { concurrencyGate, closeQueue } = require('./src/server/execution-queue');
+const { resourceMonitor } = require('./src/server/resource-monitor');
+const { startRetentionCleanup, stopRetentionCleanup } = require('./src/server/retention');
+const { startCaptchaResourceMonitoring, stopCaptchaResourceMonitoring } = require('./src/server/captcha-resources');
 const { validateUrl } = require('./url-utils');
 const { recordActivity } = require('./src/server/telemetry');
 
@@ -245,6 +249,7 @@ app.use('/api/schedules', scheduleRoutes);
 app.use('/api/credentials', credentialRoutes);
 app.use('/api/cabinets', cabinetRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/capabilities', capabilitiesRoutes);
 app.use('/api', browserRoutes);
 
 // View Routes & Static
@@ -266,6 +271,17 @@ const registerExecution = (req, res, baseMeta = {}) => {
     const start = Date.now();
     const requestId = 'exec_' + start + '_' + Math.floor(Math.random() * 1000);
     res.locals.executionId = requestId;
+    if (req.body && typeof req.body === 'object' && !req.body.runId) req.body.runId = requestId;
+    const executionTimeoutMs = Number(process.env.EXECUTION_TIMEOUT_MS || 15 * 60 * 1000);
+    const timeout = baseMeta.mode === 'headful' || req.body?.mode === 'headful' ? null : setTimeout(() => {
+        try { require('./src/agent/execution-control').requestStop(requestId); } catch { }
+        if (!res.headersSent) res.status(504).json({ error: 'EXECUTION_TIMEOUT', outcome: 'crashed' });
+    }, executionTimeoutMs);
+    if (timeout) {
+        timeout.unref?.();
+        res.once('finish', () => clearTimeout(timeout));
+        res.once('close', () => clearTimeout(timeout));
+    }
     const originalJson = res.json.bind(res);
     res.json = (body) => {
         res.locals.executionResult = body;
@@ -647,8 +663,9 @@ findAvailablePort(port, 20)
 
             // Reconcile the optional downloaded CAPTCHA model independently of browser
             // startup. The skip flag returns before resource probing or downloads.
-            const { captchaModelManager } = require('fiptcha');
-            captchaModelManager.start().catch(err => console.warn('[CAPTCHA_MODEL] Startup skipped:', err.message));
+            resourceMonitor.start();
+            startRetentionCleanup();
+            startCaptchaResourceMonitoring().catch(err => console.warn('[CAPTCHA_MODEL] Startup skipped:', err.message));
         });
         server.on('upgrade', async (req, socket, head) => {
             if (!await isIpAllowed(req.socket?.remoteAddress)) {
@@ -733,6 +750,9 @@ findAvailablePort(port, 20)
                 const { stopScheduler } = require('./src/server/scheduler');
                 stopScheduler();
             } catch { }
+            try { closeQueue(); } catch { }
+            try { stopRetentionCleanup(); } catch { }
+            try { stopCaptchaResourceMonitoring(); resourceMonitor.stop(); } catch { }
 
             try {
                 const { captchaModelManager } = require('fiptcha');

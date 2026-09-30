@@ -161,7 +161,7 @@ const ApiKeyRow: React.FC<{
                             )}
                         </div>
                         {!config.readOnly && (
-                            <button onClick={handleEditStart} disabled={config.loading || config.saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white/10 text-white hover:bg-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0">
+                            <button onClick={handleEditStart} disabled={config.loading || config.saving} className="app-button-secondary px-6 text-xs font-bold tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0">
                                 <TablerIcon name="edit" className="text-base" />
                                 Edit
                             </button>
@@ -224,7 +224,7 @@ const ApiKeyRow: React.FC<{
                         <button
                             onClick={handleEditStart}
                             disabled={config.loading || config.saving}
-                            className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white/10 text-white hover:bg-white/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="app-button-secondary px-6 text-xs font-bold tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             <TablerIcon name="edit" className="text-base" />
                             Edit
@@ -234,7 +234,7 @@ const ApiKeyRow: React.FC<{
                         <button
                             onClick={handleRegenerate}
                             disabled={config.loading || config.saving}
-                            className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest !bg-blue-500 !text-white hover:!bg-blue-400 hover:scale-105 transition-all disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="app-button-primary px-6 text-xs font-bold tracking-widest disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             <TablerIcon name="autorenew" className="text-base" />
                             {config.saving ? 'Generating...' : 'Regenerate'}

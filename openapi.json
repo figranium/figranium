@@ -178,6 +178,32 @@
   },
   "security": [{ "sessionAuth": [] }, { "apiKeyAuth": [] }],
   "paths": {
+    "/api/capabilities": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Describe runtime-supported Figranium features and action schemas",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Runtime capabilities",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          }
+        }
+      }
+    },
+    "/api/settings/system": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Read retention and automatic resource protection status",
+        "responses": { "200": { "description": "System settings and runtime status" }, "401": { "$ref": "#/components/responses/Unauthorized" } }
+      },
+      "post": {
+        "tags": ["Settings"],
+        "summary": "Save shared capture and execution retention",
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "retentionDays": { "type": ["integer", "null"], "minimum": 1, "maximum": 365 } } } } } },
+        "responses": { "200": { "description": "Saved" }, "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" } }
+      }
+    },
     "/api/auth/check-setup": {
       "get": {
         "tags": ["Auth"],

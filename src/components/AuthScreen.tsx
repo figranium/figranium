@@ -35,8 +35,6 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
 
     return (
         <div className="fixed inset-0 z-[100] theme-bg flex items-center justify-center">
-            <div className="absolute inset-0 pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(var(--app-dot) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             <div className="w-[400px] glass-card p-10 rounded-[48px] space-y-8 relative">
                 <div className="text-center space-y-3">
                     <img src="/figranium_logo.svg" alt="Figranium" className="h-24 mx-auto object-contain theme-logo" style={{ color: 'var(--app-logo)' }} />

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.19.0] - 2026-09-30
+
+### Resource protection and retention
+- Added host-aware execution admission with cgroup-aware memory detection, conservative automatic concurrency, pressure-aware FIFO queueing, bounded wait times, execution timeouts, and safe shutdown cleanup. Operators can override the safeguards through documented environment variables.
+- Added configurable capture and execution-history retention, defaulting to seven days. Cleanup runs at startup and hourly, supports JSON and PostgreSQL storage, and keeps live execution updates consistent after pruning.
+- Added an **Advanced** Settings page for retention, account email/password changes, safe workspace clearing that preserves the signed-in account, and a boot-time CAPTCHA capacity status. CAPTCHA capacity is detected once after boot rather than repeatedly polling for host resizes.
+- Added bounded extraction worker output/heap handling and execution-detail truncation safeguards so oversized payloads are isolated to their run instead of destabilizing the server.
+
+### Cabinets and interface
+- Added Cabinet sidebar context menus with Rename, Clear, and Delete actions. The default Cabinet is protected from deletion at both the UI and API layers; deleted Cabinet references return to the default Cabinet.
+- Updated the empty-Cabinet state with a crossed-out folder icon.
+- Added theme-aware primary actions for API-key regeneration and proxy creation, and fixed AI Model configuration controls so their active and disabled states remain readable in Light and Solarized Light themes.
+- Removed the authentication dot grid, switched retention to the native Figranium dropdown, and completed the Advanced Settings navigation and icon updates.
+
+### API, scheduling, and maintenance
+- Added system-settings and runtime-capability API documentation, non-sensitive health/admission state, and API-key authorization for Cabinets, Captures, and execution-detail reads.
+- Added the ability to remove saved schedules cleanly.
+- Restored light-theme text-selection contrast, refreshed product/partner assets and documentation, added embedded templates to the roadmap, and updated extraction workers to preserve `console.info` and `console.debug` output.
+
 ## [0.18.5] - 2026-09-23
 
 ### Canvas and editor

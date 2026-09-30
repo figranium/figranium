@@ -13,7 +13,7 @@ const CenterConfirm: React.FC<CenterConfirmProps> = ({ request, onResolve }) => 
                 style={{ background: 'var(--app-glass-modal)', borderColor: 'var(--app-border)' }}
             >
                 <p className="text-xs font-bold tracking-[0.4em]" style={{ color: 'var(--app-text-faint)' }}>{request.title ?? 'Confirm'}</p>
-                <p className="mt-4 font-mono text-sm" style={{ color: 'var(--app-text)' }}>{request.message}</p>
+                <p className="mt-4 text-sm" style={{ color: 'var(--app-text)', fontFamily: "'Questrial', sans-serif" }}>{request.message}</p>
                 <div className="mt-6 flex gap-4">
                     <button
                         onClick={() => onResolve(false)}

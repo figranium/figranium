@@ -1,5 +1,8 @@
 const express = require('express');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 const { requireAuthForSettings, csrfProtection, dataRateLimiter } = require('../middleware');
 const { validateUrl } = require('../../../url-utils');
 const {
@@ -10,14 +13,73 @@ const {
     loadOllamaApiKey, saveOllamaApiKey,
     loadAiModels, saveAiModels,
     loadThemeConfig, saveThemeConfig,
-    loadCaptchaSettings, saveCaptchaSettings
+    loadCaptchaSettings, saveCaptchaSettings,
+    loadSystemSettings, saveSystemSettings,
+    loadUsers, saveTasks, saveExecutions, saveCredentials
 } = require('../storage');
+const { DATA_DIR, STORAGE_STATE_PATH } = require('../constants');
+const { getStatus: getExecutionQueueStatus } = require('../execution-queue');
+const { getCaptchaResourceStatus } = require('../captcha-resources');
+const { runRetentionCleanup, getRetentionStatus } = require('../retention');
 const cookie = require('cookie');
 const { getUserAgentConfig, setUserAgentSelection } = require('../../../user-agent-settings');
 const { listProxies, addProxy, addProxies, updateProxy, deleteProxy, deleteProxies, setDefaultProxy, setIncludeDefaultInRotation, setRotationMode } = require('../../../proxy-rotation');
 const { DB_FIELDS, getEnvironmentDatabaseConfig, loadDatabaseConfig, maskedDatabaseConfig, saveDatabaseConfig } = require('../database-config');
 
 const router = express.Router();
+
+router.post('/reset', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
+    const currentPassword = req.body?.currentPassword;
+    if (typeof currentPassword !== 'string') return res.status(400).json({ error: 'CURRENT_PASSWORD_REQUIRED' });
+    const users = await loadUsers();
+    const user = users.find((candidate) => String(candidate.id) === String(req.session?.user?.id));
+    if (!user || !await bcrypt.compare(currentPassword, user.password)) return res.status(401).json({ error: 'INVALID_CURRENT_PASSWORD' });
+    try {
+        const captureDirs = [path.join(__dirname, '../../../public/captures'), path.join(__dirname, '../../../src/public/captures'), path.join(DATA_DIR, 'recordings')];
+        await Promise.all([
+            saveTasks([]), saveExecutions([]), saveCredentials([]), saveApiKey(null),
+            saveGeminiApiKey([]), saveOpenAiApiKey([]), saveClaudeApiKey([]), saveOllamaApiKey([]),
+            saveAiModels({}), saveThemeConfig('auto'), saveCaptchaSettings({}), saveSystemSettings({ retentionDays: 7 }),
+            ...captureDirs.map((dir) => fs.promises.rm(dir, { recursive: true, force: true })),
+            fs.promises.rm(path.join(DATA_DIR, 'browser-profile'), { recursive: true, force: true }),
+            fs.promises.rm(path.join(DATA_DIR, 'browser-profile-scrape'), { recursive: true, force: true }),
+            fs.promises.rm(path.join(DATA_DIR, 'browser-profile-headful'), { recursive: true, force: true }),
+            fs.promises.rm(path.join(DATA_DIR, 'captcha-model'), { recursive: true, force: true }),
+            fs.promises.rm(STORAGE_STATE_PATH, { recursive: true, force: true })
+        ]);
+        const proxyConfig = listProxies();
+        deleteProxies(proxyConfig.proxies.filter((proxy) => proxy.id !== 'host').map((proxy) => proxy.id));
+        await require('../cabinets').resetCabinets();
+        res.clearCookie('figranium_theme');
+        res.json({ success: true });
+    } catch (error) {
+        console.error('[SETTINGS] Workspace reset failed:', error);
+        res.status(500).json({ error: 'WORKSPACE_RESET_FAILED' });
+    }
+});
+
+router.get('/system', requireAuthForSettings, async (_req, res) => {
+    try {
+        res.json({
+            ...(await loadSystemSettings()),
+            protection: getExecutionQueueStatus(),
+            captcha: getCaptchaResourceStatus(),
+            cleanup: getRetentionStatus()
+        });
+    } catch (error) { res.status(500).json({ error: 'SYSTEM_SETTINGS_LOAD_FAILED' }); }
+});
+
+router.post('/system', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
+    try {
+        const previous = await loadSystemSettings();
+        const saved = await saveSystemSettings({ retentionDays: req.body?.retentionDays });
+        const reducing = saved.retentionDays !== null && (previous.retentionDays === null || saved.retentionDays < previous.retentionDays);
+        const cleanup = reducing ? await runRetentionCleanup() : getRetentionStatus();
+        res.json({ ...saved, cleanup });
+    } catch (error) {
+        res.status(400).json({ error: 'INVALID_SYSTEM_SETTINGS', message: error.message });
+    }
+});
 
 router.get('/database', requireAuthForSettings, async (_req, res) => {
     const environmentConfig = getEnvironmentDatabaseConfig();

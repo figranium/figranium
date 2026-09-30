@@ -148,6 +148,13 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 | `DB_POSTGRESDB_DATABASE` | Database name for PostgreSQL. | `postgres` |
 | `USE_CLOAK_ENGINE` | Set to `true` to run the browser engine on CloakBrowser instead of the default Playwright stealth stack. | `false` |
 | `CLOAKBROWSER_LICENSE_KEY` | CloakBrowser license key for the latest binary. | — |
+| `MAX_CONCURRENT_EXECUTIONS` | Override the automatic browser-execution limit. | host-aware |
+| `MAX_EXECUTION_QUEUE` | Maximum waiting executions before new work receives 503. | `50` |
+| `EXECUTION_QUEUE_TIMEOUT_MS` | Maximum time an execution may wait for capacity. | `600000` |
+| `EXECUTION_TIMEOUT_MS` | Maximum non-headful execution runtime. | `900000` |
+| `RESOURCE_MEMORY_RESERVE_MB` | Minimum memory headroom reserved for the host. | max(512 MB, 15%) |
+| `RESOURCE_CPU_THRESHOLD` | Normalized CPU load that pauses dequeuing. | `0.9` |
+| `RESOURCE_PROBE_INTERVAL_MS` | Runtime resource-protection sampling interval. CAPTCHA capacity is detected at startup. | `30000` |
 
 ## CAPTCHA solving
 

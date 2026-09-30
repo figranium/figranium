@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconGitBranch, IconPlus, IconClick, IconApi, IconArrowLeft, IconCircleChevronDown, IconFileText, IconWand, IconTrash, IconRefresh, IconBan, IconBolt, IconCircleX, IconCategory, IconFocusCentered, IconCheck, IconSquareCheck, IconSquare, IconCircleCheck, IconCircle, IconX, IconCode, IconDeviceDesktop, IconCopy, IconCut, IconCopyPlus, IconFolderPlus, IconFileTypeCsv, IconBraces, IconDatabase, IconTrashX, IconFileDescription, IconServer, IconDownload, IconArrowsMove, IconGripVertical, IconEdit, IconAlertCircle, IconCalendarRepeat, IconChevronDown, IconCompassOff, IconFile, IconMaximize, IconFolder, IconFolders, IconFileZip, IconListNumbers, IconHistory, IconHistoryToggle, IconHourglassEmpty, IconHourglassHigh, IconPhoto, IconLogin, IconPackage, IconBrandJavascript, IconJson, IconKeyboard, IconKey, IconWorld, IconLayersLinked, IconList, IconLogout, IconDotsVertical, IconMouse, IconMovie, IconLocation, IconNavigation, IconNumbers, IconBrowserMaximize, IconExternalLink, IconPalette, IconUserSearch, IconCamera, IconPlayerPlay, IconLoader2, IconRepeat, IconRocket, IconDeviceFloppy, IconClock, IconFlask, IconSearch, IconSearchOff, IconShield, IconSettings, IconArrowsShuffle, IconCpu, IconSortAscendingLetters, IconAbc, IconStar, IconPlayerStop, IconCornerDownRight, IconArrowsUpDown, IconTerminal2, IconTypography, IconTextSize, IconToggleRight, IconLanguage, IconAdjustmentsHorizontal, IconArrowsMaximize, IconUpload, IconFileUpload, IconVariable, IconShieldCheck, IconVideoOff, IconEye, IconEyeOff, IconLock, IconAlertTriangle, IconWifi, IconNote, IconInfoCircle, IconLink, IconTag, IconHome, IconFiles, IconCloud, IconDeviceDesktopCog, IconPuzzle } from '@tabler/icons-react';
+import { IconGitBranch, IconPlus, IconClick, IconApi, IconArrowLeft, IconCircleChevronDown, IconFileText, IconWand, IconTrash, IconRefresh, IconBan, IconBolt, IconCircleX, IconCategory, IconFocusCentered, IconCheck, IconSquareCheck, IconSquare, IconCircleCheck, IconCircle, IconX, IconCode, IconDeviceDesktop, IconCopy, IconCut, IconCopyPlus, IconFolderPlus, IconFileTypeCsv, IconBraces, IconDatabase, IconTrashX, IconFileDescription, IconServer, IconDownload, IconArrowsMove, IconGripVertical, IconEdit, IconAlertCircle, IconCalendarRepeat, IconChevronDown, IconCompassOff, IconFile, IconMaximize, IconFolder, IconFolderX, IconFolders, IconFileZip, IconListNumbers, IconHistory, IconHistoryToggle, IconHourglassEmpty, IconHourglassHigh, IconPhoto, IconLogin, IconPackage, IconBrandJavascript, IconJson, IconKeyboard, IconKey, IconWorld, IconLayersLinked, IconList, IconLogout, IconDotsVertical, IconMouse, IconMovie, IconLocation, IconNavigation, IconNumbers, IconBrowserMaximize, IconExternalLink, IconPalette, IconUserSearch, IconCamera, IconPlayerPlay, IconLoader2, IconRepeat, IconRocket, IconDeviceFloppy, IconClock, IconFlask, IconSearch, IconSearchOff, IconShield, IconSettings, IconSettingsCog, IconArrowsShuffle, IconCpu, IconSortAscendingLetters, IconAbc, IconStar, IconPlayerStop, IconCornerDownRight, IconArrowsUpDown, IconTerminal2, IconTypography, IconTextSize, IconToggleRight, IconLanguage, IconAdjustmentsHorizontal, IconArrowsMaximize, IconUpload, IconFileUpload, IconVariable, IconShieldCheck, IconVideoOff, IconEye, IconEyeOff, IconLock, IconAlertTriangle, IconWifi, IconNote, IconInfoCircle, IconLink, IconTag, IconHome, IconFiles, IconCloud, IconDeviceDesktopCog, IconPuzzle } from '@tabler/icons-react';
 
 type TablerIconProps = {
     /** Legacy Material symbol name retained while feature code migrates to semantic names. */
@@ -23,7 +23,7 @@ const iconNames: Record<string, string> = {
     dns: 'IconServer', done: 'IconCheck', download: 'IconDownload', drag_and_drop: 'IconArrowsMove',
     drag_indicator: 'IconGripVertical', edit: 'IconEdit', error: 'IconAlertCircle', event_repeat: 'IconCalendarRepeat',
     expand_more: 'IconChevronDown', explore_off: 'IconCompassOff', file: 'IconFile', fit_screen: 'IconMaximize',
-    folder: 'IconFolder', folders: 'IconFolders', folder_zip: 'IconFileZip', format_list_numbered: 'IconListNumbers', fullscreen: 'IconMaximize',
+    folder: 'IconFolder', folder_off: 'IconFolderX', folders: 'IconFolders', folder_zip: 'IconFileZip', format_list_numbered: 'IconListNumbers', fullscreen: 'IconMaximize',
     get_content: 'IconFileText', history: 'IconHistory', history_toggle: 'IconHistoryToggle', home: 'IconHome', hourglass_empty: 'IconHourglassEmpty',
     hourglass_top: 'IconHourglassHigh', image: 'IconPhoto', info: 'IconInfoCircle', input: 'IconLogin', inventory_2: 'IconPackage',
     javascript: 'IconBrandJavascript', json: 'IconJson', keyboard: 'IconKeyboard', key: 'IconKey',
@@ -35,7 +35,7 @@ const iconNames: Record<string, string> = {
     published_with_changes: 'IconRefresh', refresh: 'IconRefresh', reload: 'IconRefresh', repeat: 'IconRepeat', shelves: 'IconFiles',
     restart_alt: 'IconRefresh', restore: 'IconHistory', rocket_launch: 'IconRocket', save: 'IconDeviceFloppy', screenshot_monitor: 'IconDeviceDesktop',
     schedule: 'IconClock', science: 'IconFlask', search: 'IconSearch', search_off: 'IconSearchOff', security: 'IconShield',
-    select: 'IconChevronDown', settings: 'IconSettings', settings_input_component: 'IconAdjustmentsHorizontal', shuffle: 'IconArrowsShuffle', smart_toy: 'IconCpu',
+    select: 'IconChevronDown', settings: 'IconSettings', 'settings-cog': 'IconSettingsCog', settings_input_component: 'IconAdjustmentsHorizontal', shuffle: 'IconArrowsShuffle', smart_toy: 'IconCpu',
     sort_by_alpha: 'IconSortAscendingLetters', spellcheck: 'IconAbc', star: 'IconStar', star_border: 'IconStar',
     star_outline: 'IconStar', stop: 'IconPlayerStop', subdirectory_arrow_right: 'IconCornerDownRight', table: 'IconList', tag: 'IconTag',
     swap_vert: 'IconArrowsUpDown', sync: 'IconRefresh', task_alt: 'IconCircleCheck', terminal: 'IconTerminal2',
@@ -92,6 +92,7 @@ const tablerIcons: Record<string, IconComponent> = {
     IconFile,
     IconMaximize,
     IconFolder,
+    IconFolderX,
     IconFolders,
     IconFileZip,
     IconListNumbers,
@@ -132,6 +133,7 @@ const tablerIcons: Record<string, IconComponent> = {
     IconSearchOff,
     IconShield,
     IconSettings,
+    IconSettingsCog,
     IconArrowsShuffle,
     IconCpu,
     IconSortAscendingLetters,

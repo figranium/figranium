@@ -131,4 +131,35 @@ router.get('/me', (req, res) => {
     res.json(req.session.user ? { authenticated: true, user: req.session.user } : { authenticated: false });
 });
 
+router.patch('/account', authRateLimiter, async (req, res) => {
+    const { currentPassword, email, newPassword } = req.body || {};
+    if (typeof currentPassword !== 'string' || typeof email !== 'string' || typeof newPassword !== 'string') {
+        return res.status(400).json({ error: 'INVALID_INPUT_TYPE' });
+    }
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
+    const normalizedEmail = email.trim().toLowerCase();
+    const changingEmail = normalizedEmail !== String(req.session.user.email || '').toLowerCase();
+    const changingPassword = newPassword.length > 0;
+    if (!changingEmail && !changingPassword) return res.status(400).json({ error: 'NO_ACCOUNT_CHANGES' });
+    if (changingEmail && (normalizedEmail.length > 255 || !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(normalizedEmail))) {
+        return res.status(400).json({ error: 'INVALID_EMAIL' });
+    }
+    if (changingPassword && (newPassword.length < 8 || newPassword.length > 128)) {
+        return res.status(400).json({ error: newPassword.length < 8 ? 'PASSWORD_TOO_SHORT' : 'PASSWORD_TOO_LONG' });
+    }
+    const users = await loadUsers();
+    const user = users.find((candidate) => String(candidate.id) === String(userId));
+    if (!user || !await bcrypt.compare(currentPassword, user.password)) return res.status(401).json({ error: 'INVALID_CURRENT_PASSWORD' });
+    if (changingEmail && users.some((candidate) => candidate !== user && String(candidate.email || '').toLowerCase() === normalizedEmail)) {
+        return res.status(409).json({ error: 'EMAIL_IN_USE' });
+    }
+    if (changingEmail) user.email = normalizedEmail;
+    if (changingPassword) user.password = await bcrypt.hash(newPassword, 12);
+    await saveUsers(users);
+    req.session.user = { id: user.id, name: user.name, email: user.email };
+    await saveSession(req);
+    res.json({ success: true, user: req.session.user });
+});
+
 module.exports = router;

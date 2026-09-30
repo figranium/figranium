@@ -318,9 +318,9 @@ const ProxiesPanel: React.FC<ProxiesPanelProps> = ({
                 <button
                     onClick={submit}
                     disabled={loading}
-                    className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest !bg-blue-500 !text-white hover:!bg-blue-400 hover:scale-105 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="app-button-primary px-6 text-xs font-bold tracking-widest focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                    {loading && <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                    {loading && <div className="h-3 w-3 animate-spin rounded-full border-2" style={{ borderColor: 'color-mix(in srgb, var(--app-accent-text) 30%, transparent)', borderTopColor: 'var(--app-accent-text)' }} />}
                     Add Proxy
                 </button>
                 <button

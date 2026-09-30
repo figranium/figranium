@@ -57,8 +57,13 @@ function outerHtmlOf($, selection) {
     }).get().join('\n');
 }
 
+const EXTRACTION_WORKER_MAX_BYTES = Number(process.env.EXTRACTION_WORKER_MAX_BYTES || 256 * 1024);
+
 async function runExtractionScript(script, html, pageUrl) {
     if (!script || typeof script !== 'string') return { result: undefined, logs: [] };
+    if (Buffer.byteLength(String(html || ''), 'utf8') > 4 * 1024 * 1024) {
+        return { result: 'Extraction input exceeded the 4 MiB safety limit', logs: [] };
+    }
 
     return new Promise((resolve) => {
         const safeEnv = {
@@ -68,7 +73,7 @@ async function runExtractionScript(script, html, pageUrl) {
             TZ: process.env.TZ
         };
 
-        const worker = spawn('node', [path.join(__dirname, 'extraction-worker.js')], {
+        const worker = spawn('node', ['--max-old-space-size=128', path.join(__dirname, 'extraction-worker.js')], {
             stdio: ['pipe', 'pipe', 'pipe'],
             env: safeEnv
         });
@@ -84,10 +89,12 @@ async function runExtractionScript(script, html, pageUrl) {
 
         worker.stdout.on('data', (data) => {
             stdout += data.toString();
+            if (Buffer.byteLength(stdout, 'utf8') > EXTRACTION_WORKER_MAX_BYTES) worker.kill();
         });
 
         worker.stderr.on('data', (data) => {
             stderr += data.toString();
+            if (Buffer.byteLength(stderr, 'utf8') > EXTRACTION_WORKER_MAX_BYTES) worker.kill();
         });
 
         worker.on('close', (code) => {

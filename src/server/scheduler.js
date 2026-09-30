@@ -8,6 +8,7 @@ const { loadTasks, saveTasks, getTaskById } = require('./storage');
 const { appendExecution } = require('./storage');
 const { getNextRun, scheduleToCron, isValidCron } = require('./cron-parser');
 const { normalizeTaskOutcome } = require('../agent/outcomes');
+const { acquire } = require('./execution-queue');
 
 // Internal state
 let schedulerTimer = null;
@@ -234,7 +235,9 @@ async function executeScheduledTask(taskId) {
         on: () => { },
     };
 
-    return new Promise((resolve, reject) => {
+    const release = await acquire();
+    try {
+    return await new Promise((resolve, reject) => {
         let statusCode = 200;
         const mockRes = {
             status: (code) => { statusCode = code; return mockRes; },
@@ -259,6 +262,7 @@ async function executeScheduledTask(taskId) {
 
         Promise.resolve(handler(mockReq, mockRes)).catch(reject);
     });
+    } finally { release(); }
 }
 
 /**

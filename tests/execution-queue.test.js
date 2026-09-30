@@ -1,33 +1,38 @@
 const assert = require('assert');
 const EventEmitter = require('events');
 
+// Keep queue semantics deterministic; resource admission itself is covered in
+// resource-monitor.test.js.
+process.env.RESOURCE_MEMORY_RESERVE_MB = '1';
+process.env.RESOURCE_CPU_THRESHOLD = '99';
+
 function getModule() {
     delete require.cache[require.resolve('../src/server/execution-queue')];
-    return require('../src/server/execution-queue');
+    const queue = require('../src/server/execution-queue');
+    require('../src/server/resource-monitor').resourceMonitor.isPressured = () => false;
+    return queue;
 }
 
-async function testUnlimitedMode() {
-    console.log('Testing Unlimited Mode...');
+async function testAutomaticMode() {
+    console.log('Testing Automatic Mode...');
     process.env.MAX_CONCURRENT_EXECUTIONS = '0';
     const { acquire, getStatus } = getModule();
 
     const status = getStatus();
-    assert.strictEqual(status.maxConcurrent, 'unlimited');
+    assert(Number.isInteger(status.maxConcurrent) && status.maxConcurrent >= 1, 'Automatic mode should derive a safe positive limit');
     assert.strictEqual(status.active, 0);
     assert.strictEqual(status.queued, 0);
 
     const release1 = await acquire();
-    const release2 = await acquire();
 
     assert.strictEqual(typeof release1, 'function');
-    assert.strictEqual(typeof release2, 'function');
 
     const statusAfter = getStatus();
-    assert.strictEqual(statusAfter.active, 0, 'Active count should remain 0 in unlimited mode');
+    assert.strictEqual(statusAfter.active, 1, 'Automatic mode should account for active executions');
 
     release1();
-    release2();
-    console.log('✓ Unlimited Mode passed');
+    assert.strictEqual(getStatus().active, 0);
+    console.log('✓ Automatic Mode passed');
 }
 
 async function testLimitedMode() {
@@ -111,7 +116,7 @@ async function testMiddleware() {
 
 async function runTests() {
     try {
-        await testUnlimitedMode();
+        await testAutomaticMode();
         await testLimitedMode();
         await testMiddleware();
         console.log('\nAll execution-queue tests passed!');

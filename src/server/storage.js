@@ -15,6 +15,7 @@ const {
     THEME_FILE,
     DEFAULT_THEME_ID,
     CAPTCHA_SETTINGS_FILE,
+    SYSTEM_SETTINGS_FILE,
     ALLOWED_IPS_FILE,
     STORAGE_STATE_PATH,
     MAX_EXECUTIONS,
@@ -375,6 +376,25 @@ let executionsLoadPromise = null;
 let executionsSaveTimer = null;
 let executionsWritePromise = Promise.resolve();
 let dbExecutionsCount = null;
+const MAX_PERSISTED_EXECUTION_BYTES = Number(process.env.MAX_PERSISTED_EXECUTION_BYTES || 256 * 1024);
+
+function boundedExecution(entry) {
+    let copy;
+    try { copy = JSON.parse(JSON.stringify(entry)); } catch { return { ...entry, result: { truncated: true, reason: 'Result was not serializable' } }; }
+    if (Buffer.byteLength(JSON.stringify(copy), 'utf8') <= MAX_PERSISTED_EXECUTION_BYTES) return copy;
+    const result = copy.result && typeof copy.result === 'object' ? copy.result : {};
+    copy.result = {
+        ...result,
+        html: result.html ? '[Truncated from execution history to protect server memory.]' : result.html,
+        logs: Array.isArray(result.logs) ? result.logs.slice(0, 20).map((line) => String(line).slice(0, 2048)) : result.logs,
+        data: '[Truncated from execution history to protect server memory.]',
+        truncated: true
+    };
+    if (Buffer.byteLength(JSON.stringify(copy), 'utf8') > MAX_PERSISTED_EXECUTION_BYTES) {
+        copy.result = { truncated: true, reason: 'Execution result exceeded history safety limit' };
+    }
+    return copy;
+}
 
 function syncExecutionsMap() {
     if (!executionsCache) {
@@ -471,6 +491,8 @@ async function saveExecutions(executions) {
 async function appendExecution(entry) {
     if (!executionsCache) await loadExecutions();
 
+    entry = boundedExecution(entry);
+
     executionsCache.unshift(entry);
     // ⚡ Bolt: Incremental Map update instead of rebuilding the entire map (O(1) vs O(N))
     executionsMap.set(entry.id, entry);
@@ -530,6 +552,22 @@ async function appendExecution(entry) {
 let apiKeyCache = undefined;
 let apiKeyLoadPromise = null;
 
+// Deployments that do not expose Figranium's web UI (for example a native host
+// application) may provide a one-time bootstrap key as a mounted secret file.
+// A persisted API key always wins, so changing or removing the file never
+// rotates an already configured instance.
+async function loadBootstrapApiKey() {
+    const secretPath = process.env.FIGRANIUM_BOOTSTRAP_API_KEY_FILE;
+    if (!secretPath) return null;
+
+    try {
+        const key = (await fs.promises.readFile(secretPath, 'utf8')).trim();
+        return key.length >= 32 && key.length <= 512 ? key : null;
+    } catch {
+        return null;
+    }
+}
+
 async function loadApiKey() {
     if (apiKeyCache !== undefined) return apiKeyCache;
     if (apiKeyLoadPromise) return apiKeyLoadPromise;
@@ -560,6 +598,10 @@ async function loadApiKey() {
         if (apiKeyCache !== undefined) {
             apiKeyLoadPromise = null;
             return apiKeyCache;
+        }
+
+        if (!apiKey) {
+            apiKey = await loadBootstrapApiKey();
         }
 
         if (!apiKey) {
@@ -1216,6 +1258,17 @@ async function flushExecutions() {
     }
 }
 
+async function pruneExecutionsBefore(cutoffMs) {
+    const cutoff = Number(cutoffMs);
+    if (!Number.isFinite(cutoff)) return { deleted: 0, ids: [] };
+    const executions = await loadExecutions();
+    const expired = executions.filter((entry) => Number(entry?.timestamp) > 0 && Number(entry.timestamp) < cutoff);
+    if (!expired.length) return { deleted: 0, ids: [] };
+    const expiredIds = expired.map((entry) => entry.id);
+    await saveExecutions(executions.filter((entry) => !expiredIds.includes(entry.id)));
+    return { deleted: expiredIds.length, ids: expiredIds };
+}
+
 // AI Models Storage
 let aiModelsCache = null;
 
@@ -1396,6 +1449,48 @@ async function saveCaptchaSettings(settings) {
     return payload;
 }
 
+let systemSettingsCache = null;
+const DEFAULT_SYSTEM_SETTINGS = { retentionDays: 7 };
+
+async function loadSystemSettings() {
+    if (systemSettingsCache) return systemSettingsCache;
+    const useDB = await ensureDB();
+    if (useDB) {
+        try {
+            const pool = getPool();
+            const res = await pool.query('SELECT data FROM system_settings WHERE id = 1');
+            systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS, ...(res.rows[0]?.data || {}) };
+        } catch (error) {
+            console.error('[STORAGE] Failed to load system settings:', error.message);
+            systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS };
+        }
+        return systemSettingsCache;
+    }
+    try {
+        const parsed = JSON.parse(await fs.promises.readFile(SYSTEM_SETTINGS_FILE, 'utf8'));
+        systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS, ...(parsed && typeof parsed === 'object' ? parsed : {}) };
+    } catch { systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS }; }
+    return systemSettingsCache;
+}
+
+async function saveSystemSettings(settings) {
+    const retentionDays = settings?.retentionDays === null ? null : Number(settings?.retentionDays);
+    if (retentionDays !== null && (!Number.isInteger(retentionDays) || retentionDays < 1 || retentionDays > 365)) {
+        throw new Error('retentionDays must be null or an integer from 1 to 365');
+    }
+    const payload = { retentionDays };
+    systemSettingsCache = payload;
+    const useDB = await ensureDB();
+    if (useDB) {
+        const pool = getPool();
+        await pool.query('INSERT INTO system_settings (id, data) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [payload]);
+        return payload;
+    }
+    await fs.promises.mkdir(path.dirname(SYSTEM_SETTINGS_FILE), { recursive: true });
+    await fs.promises.writeFile(SYSTEM_SETTINGS_FILE, JSON.stringify(payload, null, 2));
+    return payload;
+}
+
 module.exports = {
     loadUsers,
     saveUsers,
@@ -1408,6 +1503,7 @@ module.exports = {
     getExecutionById,
     appendExecution,
     flushExecutions,
+    pruneExecutionsBefore,
     loadApiKey,
     saveApiKey,
     loadGeminiApiKey,
@@ -1428,5 +1524,7 @@ module.exports = {
     loadThemeConfig,
     saveThemeConfig,
     loadCaptchaSettings,
-    saveCaptchaSettings
+    saveCaptchaSettings,
+    loadSystemSettings,
+    saveSystemSettings
 };
