@@ -53,6 +53,7 @@ const COLOR_DOT: Record<StickyNoteColor, string> = {
 };
 
 const ALL_COLORS: StickyNoteColor[] = ['default', 'yellow', 'pink', 'green', 'purple'];
+const MIN_NOTE_WIDTH = 180;
 
 const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, onUpdate, onDelete, onDuplicate }) => {
     const normalizedContent = normalizeStickyNoteContent(note.content);
@@ -60,8 +61,10 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
     const [draft, setDraft] = useState(normalizedContent);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
     const [dragPosition, setDragPosition] = useState<{ x: number; y: number } | null>(null);
+    const [resizeWidth, setResizeWidth] = useState<number | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+    const resizeRef = useRef<{ startX: number; origWidth: number } | null>(null);
 
     const colors = COLOR_STYLES[note.color] || COLOR_STYLES.default;
 
@@ -121,6 +124,36 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
         }
     }, [dragPosition, getDragPosition, note.id, note.x, note.y, onUpdate]);
 
+    const getResizeWidth = useCallback((clientX: number) => {
+        if (!resizeRef.current) return null;
+        const dx = (clientX - resizeRef.current.startX) / canvasScale;
+        return Math.max(MIN_NOTE_WIDTH, Math.round(resizeRef.current.origWidth + dx));
+    }, [canvasScale]);
+
+    // Keep the resize preview local and persist the new width only when the
+    // gesture finishes, matching the drag interaction's save behavior.
+    const handleResizePointerDown = useCallback((e: React.PointerEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        resizeRef.current = { startX: e.clientX, origWidth: note.width };
+        setResizeWidth(note.width);
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }, [note.width]);
+
+    const handleResizePointerMove = useCallback((e: React.PointerEvent) => {
+        e.stopPropagation();
+        const next = getResizeWidth(e.clientX);
+        if (next !== null) setResizeWidth(next);
+    }, [getResizeWidth]);
+
+    const handleResizePointerUp = useCallback((e: React.PointerEvent) => {
+        e.stopPropagation();
+        const next = getResizeWidth(e.clientX) ?? resizeWidth;
+        resizeRef.current = null;
+        setResizeWidth(null);
+        if (next !== null && next !== note.width) onUpdate(note.id, { width: next });
+    }, [getResizeWidth, note.id, note.width, onUpdate, resizeWidth]);
+
     const commitEdit = useCallback(() => {
         onUpdate(note.id, { content: normalizeStickyNoteContent(draft) });
         setIsEditing(false);
@@ -128,7 +161,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
 
     const displayX = dragPosition?.x ?? note.x;
     const displayY = dragPosition?.y ?? note.y;
-    const displayWidth = note.width;
+    const displayWidth = resizeWidth ?? note.width;
     const displayHeight = note.height;
 
     return (
@@ -247,6 +280,18 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                             )}
                         </div>
                     )}
+                </div>
+
+                <div
+                    className="absolute right-0 top-0 h-full w-3 cursor-ew-resize touch-none opacity-0 transition-opacity group-hover:opacity-100"
+                    title="Drag to resize note"
+                    aria-label="Drag to resize note horizontally"
+                    onPointerDown={handleResizePointerDown}
+                    onPointerMove={handleResizePointerMove}
+                    onPointerUp={handleResizePointerUp}
+                    onPointerCancel={handleResizePointerUp}
+                >
+                    <div className="absolute right-1 top-1/2 h-8 w-px -translate-y-1/2 bg-white/40" />
                 </div>
             </div>
         </div>
