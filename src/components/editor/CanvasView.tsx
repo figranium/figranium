@@ -606,7 +606,7 @@ const LoopConnector: React.FC = () => {
         <div ref={hostRef} className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
             {height > 0 && (
                 <svg
-                    className="absolute inset-0 overflow-visible text-white/25"
+                    className="canvas-loop-connector absolute inset-0 overflow-visible text-white/25"
                     width="100%"
                     height="100%"
                     viewBox={`0 0 ${LOOP_CONNECTOR_WIDTH} ${height}`}

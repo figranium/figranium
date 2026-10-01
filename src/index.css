@@ -1087,6 +1087,11 @@ body {
     background-color: var(--app-border-strong);
 }
 
+[data-theme='light'] .canvas-workflow .canvas-loop-connector,
+[data-theme='solarized-light'] .canvas-workflow .canvas-loop-connector {
+    color: var(--app-border-strong);
+}
+
 .canvas-workflow .w-px.bg-white\/10,
 .canvas-workflow .w-px.bg-white\/20,
 .canvas-workflow .w-px.bg-white\/25 {
