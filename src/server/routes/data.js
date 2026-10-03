@@ -27,7 +27,7 @@ const readCapturesDir = async (dir, runId) => {
     const entries = await Promise.all(
         entriesRaw
             .filter(name => /\.(png|jpg|jpeg|webm)$/i.test(name))
-            .filter((name) => !runId || name.includes(runId))
+            .filter((name) => !runId || name.startsWith(`${runId}_`))
             .map(async (name) => {
                 const fullPath = path.join(dir, name);
                 try {
