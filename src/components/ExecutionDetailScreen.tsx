@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Execution, Results, ConfirmRequest } from '../types';
 import TablerIcon from './TablerIcon';
+import OutcomeIcon from './OutcomeIcon';
 import ResultsPane from './editor/ResultsPane';
 import { useHeadfulStatus } from '../hooks/useHeadfulStatus';
-import { normalizeTaskOutcome, taskOutcomeBadgeClass, taskOutcomeLabel } from '../utils/taskOutcome';
+import { normalizeTaskOutcome } from '../utils/taskOutcome';
 
 interface ExecutionDetailScreenProps {
     onConfirm: (request: string | ConfirmRequest) => Promise<boolean>;
@@ -18,7 +19,9 @@ const toResults = (exec: Execution): Results | null => {
         url: exec.url || result.url || '',
         finalUrl: result.final_url || result.finalUrl,
         html: result.html,
-        data: result.data ?? result.html ?? '',
+        data: typeof result.data === 'string' && result.data.startsWith('[Truncated from execution history')
+            ? ''
+            : (result.data ?? result.html ?? ''),
         screenshotUrl: result.screenshot_url || result.screenshotUrl,
         logs: result.logs || [],
         timestamp: new Date(exec.timestamp).toLocaleTimeString(),
@@ -31,6 +34,8 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
     const navigate = useNavigate();
     const [execution, setExecution] = useState<Execution | null>(null);
     const [loading, setLoading] = useState(false);
+    const [fullResultLoading, setFullResultLoading] = useState(false);
+    const [fullResultLoaded, setFullResultLoaded] = useState(false);
     const useNovnc = useHeadfulStatus();
 
     useEffect(() => {
@@ -42,6 +47,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                 if (!res.ok) throw new Error('Failed to load execution');
                 const data = await res.json();
                 setExecution(data.execution || null);
+                setFullResultLoaded(false);
             } catch {
                 setExecution(null);
             } finally {
@@ -59,18 +65,40 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                 const res = await fetch(`/api/executions/${id}`);
                 if (!res.ok) return;
                 const data = await res.json();
-                setExecution(data.execution || null);
+                setExecution((current) => {
+                    const next = data.execution || null;
+                    if (fullResultLoaded && current?.result && next?.result?.hasFullResult) {
+                        return { ...next, result: current.result };
+                    }
+                    return next;
+                });
             } catch {
                 // Keep the last known execution visible if a live refresh fails.
             }
         };
         return () => source.close();
-    }, [id]);
+    }, [fullResultLoaded, id]);
 
     useEffect(() => {
         const name = execution?.taskName?.trim();
         document.title = `${name ? `${name} Execution` : 'Execution Detail'} | Figranium`;
     }, [execution?.taskName]);
+
+    const loadFullResult = async () => {
+        if (!id || !execution?.result?.hasFullResult || fullResultLoading) return;
+        setFullResultLoading(true);
+        try {
+            const res = await fetch(`/api/executions/${id}/result`);
+            if (!res.ok) throw new Error('Full result is unavailable.');
+            const data = await res.json();
+            setExecution((current) => current ? { ...current, result: data.result } : current);
+            setFullResultLoaded(true);
+        } catch (error) {
+            onNotify(error instanceof Error ? error.message : 'Could not load the full result.', 'error');
+        } finally {
+            setFullResultLoading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -100,14 +128,14 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
     }
 
     const results = toResults(execution);
-    const outcome = normalizeTaskOutcome(execution.outcome, execution.status);
-    const outcomeClass = taskOutcomeBadgeClass(outcome);
+    const phase = execution.phase || 'finished';
+    const outcome = phase === 'finished' ? normalizeTaskOutcome(execution.outcome, execution.status) : null;
     const metrics = [
-        { label: 'Outcome', value: taskOutcomeLabel(outcome), mono: false },
+        { label: 'Outcome', value: phase, mono: false },
         { label: 'Started', value: new Date(execution.timestamp).toLocaleString(), mono: false },
-        { label: 'Source', value: execution.source, mono: true },
-        { label: 'Mode', value: execution.mode, mono: true },
-        { label: 'Runtime', value: `${execution.durationMs}ms`, mono: true },
+        { label: 'Source', value: execution.source, mono: false },
+        { label: 'Mode', value: execution.mode, mono: false },
+        { label: 'Runtime', value: execution.durationMs === undefined ? '—' : `${execution.durationMs}ms`, mono: false },
     ];
 
     return (
@@ -119,9 +147,9 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                         {execution.taskName ? (
                             <h1 className="app-page-title">{execution.taskName}</h1>
                         ) : (
-                            <h1 className="app-page-title font-mono">{execution.mode}</h1>
+                            <h1 className="app-page-title">{execution.mode}</h1>
                         )}
-                        <p className="text-xs theme-text-faint font-mono truncate max-w-3xl">{execution.url || execution.path}</p>
+                        <p className="text-xs theme-text-faint truncate max-w-3xl">{execution.url || execution.path}</p>
                     </div>
                     <button
                         onClick={() => navigate('/executions')}
@@ -139,7 +167,11 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                         <div key={label} className="app-metric !py-4">
                             <div className="app-metric-label">{label}</div>
                             {index === 0 ? (
-                                <span className={`app-badge mt-3 ${outcomeClass}`}>{value}</span>
+                                <div className="mt-3">
+                                    {phase === 'queued' ? <span role="status" aria-label="Queued" title="Queued"><TablerIcon name="hourglass_empty" className="text-xl text-amber-400" /><span className="sr-only">Queued</span></span>
+                                        : phase === 'running' ? <span role="status" aria-label="Running" title="Running"><TablerIcon name="progress_activity" className="text-xl text-blue-400 animate-spin" /><span className="sr-only">Running</span></span>
+                                            : outcome ? <OutcomeIcon outcome={outcome} /> : null}
+                                </div>
                             ) : (
                                 <div className={`mt-3 text-xs font-bold theme-text break-words ${mono ? 'font-mono' : ''}`}>{value}</div>
                             )}
@@ -150,20 +182,27 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                 <section className="app-panel p-6 flex flex-col min-h-[420px]">
                         <div className="flex items-center justify-between border-b theme-border pb-4 mb-6">
                             <span className="text-xs font-bold theme-text-muted tracking-widest">Output</span>
+                            {execution.result?.hasFullResult && !fullResultLoaded && (
+                                <button type="button" onClick={loadFullResult} disabled={fullResultLoading} className="app-button-secondary text-xs disabled:opacity-50">
+                                    <TablerIcon name={fullResultLoading ? 'sync' : 'visibility'} className={`text-base ${fullResultLoading ? 'animate-spin' : ''}`} />
+                                    {fullResultLoading ? 'Loading…' : 'Load full data'}
+                                </button>
+                            )}
                         </div>
-                        {results ? (
-                            <ResultsPane
-                                results={results}
-                                isExecuting={false}
-                                mode={execution.mode}
-                                onConfirm={onConfirm}
-                                onNotify={onNotify}
-                                fullWidth
-                                useNovnc={useNovnc}
-                            />
-                        ) : (
-                            <div className="text-xs theme-text-faint tracking-widest">No output captured.</div>
-                        )}
+                        <ResultsPane
+                            results={results || {
+                                url: execution.url || '',
+                                logs: [],
+                                timestamp: new Date(execution.timestamp).toLocaleTimeString(),
+                                outcome: outcome || undefined,
+                            }}
+                            isExecuting={phase === 'queued' || phase === 'running'}
+                            mode={execution.mode}
+                            onConfirm={onConfirm}
+                            onNotify={onNotify}
+                            fullWidth
+                            useNovnc={useNovnc}
+                        />
                 </section>
             </div>
         </main>

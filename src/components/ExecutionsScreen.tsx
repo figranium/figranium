@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router-dom';
 import TablerIcon from './TablerIcon';
+import OutcomeIcon from './OutcomeIcon';
 import { Execution, ConfirmRequest } from '../types';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
-import { normalizeTaskOutcome, taskOutcomeBadgeClass, taskOutcomeLabel } from '../utils/taskOutcome';
+import { normalizeTaskOutcome } from '../utils/taskOutcome';
+import { formatLabel } from '../utils/taskUtils';
 
 const EXECUTION_ITEM_SIZE = 94;
 const EXECUTION_LIST_MAX_VISIBLE = 7;
@@ -23,7 +25,10 @@ interface ExecutionListItemData {
 const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<ExecutionListItemData>) => {
     const execution = data.items[index];
     if (!execution) return null;
-    const outcome = normalizeTaskOutcome(execution.outcome, execution.status);
+    const phase = execution.phase || 'finished';
+    const outcome = phase === 'finished' ? normalizeTaskOutcome(execution.outcome, execution.status) : null;
+    const sourceLabel = execution.source === 'api' ? 'API' : formatLabel(execution.source || 'editor');
+    const modeLabel = formatLabel(execution.mode || 'agent');
 
     return (
         <div style={style}>
@@ -40,27 +45,31 @@ const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<Exec
                 className="app-list-row h-full grid grid-cols-[minmax(240px,1.5fr)_110px_120px_120px_44px] items-center gap-4 px-5 max-lg:grid-cols-[minmax(220px,1fr)_110px_44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/30"
             >
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl border theme-border theme-input flex items-center justify-center shrink-0">
-                        <TablerIcon name={execution.source === 'api' ? 'cloud' : 'monitor'} className="text-lg theme-text-faint" />
-                    </div>
+                    <TablerIcon name={execution.source === 'api' ? 'cloud' : 'monitor'} className="text-xl theme-text-faint shrink-0" />
                     <div className="min-w-0">
                         {execution.taskName ? (
                             <div className="text-xs font-bold theme-text truncate">{execution.taskName}</div>
                         ) : (
-                            <div className="text-xs font-bold theme-text font-mono truncate">{execution.mode}</div>
+                            <div className="text-xs font-bold theme-text truncate">{modeLabel}</div>
                         )}
-                        <div className="mt-1 text-[10px] theme-text-faint font-mono truncate">{execution.url || new Date(execution.timestamp).toLocaleString()}</div>
+                        <div className="mt-1 text-[10px] theme-text-faint truncate">{execution.url || new Date(execution.timestamp).toLocaleString()}</div>
                     </div>
                 </div>
-                <div><span className={`app-badge ${taskOutcomeBadgeClass(outcome)}`}>{taskOutcomeLabel(outcome)}</span></div>
-                <div className="text-[11px] theme-text-muted font-mono max-lg:hidden">{execution.source} · {execution.mode}</div>
+                <div>
+                    {phase === 'queued' ? (
+                        <span role="status" aria-label="Queued" title="Queued"><TablerIcon name="hourglass_empty" className="text-xl text-amber-400" /><span className="sr-only">Queued</span></span>
+                    ) : phase === 'running' ? (
+                        <span role="status" aria-label="Running" title="Running"><TablerIcon name="progress_activity" className="text-xl text-blue-400 animate-spin" /><span className="sr-only">Running</span></span>
+                    ) : outcome ? <OutcomeIcon outcome={outcome} /> : null}
+                </div>
+                <div className="text-[11px] theme-text-muted max-lg:hidden">{sourceLabel} · {modeLabel}</div>
                 <div className="max-lg:hidden">
-                    <div className="text-[11px] theme-text-muted font-mono">{execution.durationMs}ms</div>
+                    <div className="text-[11px] theme-text-muted">{execution.durationMs === undefined ? '—' : `${execution.durationMs}ms`}</div>
                     <div className="mt-1 text-[10px] theme-text-faint">{new Date(execution.timestamp).toLocaleString()}</div>
                 </div>
                 <button
                     onClick={(event) => { event.stopPropagation(); data.deleteExecution(execution.id); }}
-                    className="app-button-icon hover:!text-red-400 hover:!border-red-500/30 hover:!bg-red-500/10"
+                    className="p-2 theme-text-faint hover:text-red-400 transition-colors"
                     aria-label={`Delete execution ${execution.id}`}
                     title="Delete execution"
                 >
@@ -129,17 +138,22 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
         let duration = 0;
         let api = 0;
         for (const execution of executions) {
+            if ((execution.phase || 'finished') !== 'finished') {
+                if (execution.source === 'api') api += 1;
+                continue;
+            }
             const outcome = normalizeTaskOutcome(execution.outcome, execution.status);
             if (outcome === 'success') successful += 1;
             if (outcome === 'error' || outcome === 'crashed' || outcome === 'anti_bot') failed += 1;
             if (execution.source === 'api') api += 1;
             duration += Number(execution.durationMs) || 0;
         }
+        const finished = executions.filter((execution) => (execution.phase || 'finished') === 'finished');
         return [
             { label: 'Total runs', value: executions.length },
             { label: 'Successful', value: successful },
             { label: 'Failed', value: failed },
-            { label: 'Average runtime', value: executions.length ? `${Math.round(duration / executions.length)}ms` : '0ms' },
+            { label: 'Average runtime', value: finished.length ? `${Math.round(duration / finished.length)}ms` : '0ms' },
             { label: 'API runs', value: api },
         ];
     }, [executions]);

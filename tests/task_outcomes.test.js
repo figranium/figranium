@@ -104,6 +104,8 @@ async function run() {
     assert.strictEqual(getExecutionOutcome({ status: 500 }), 'error');
     assert.strictEqual(getExecutionOutcome({ status: 200, result: { outcome: 'anti_bot' } }), 'anti_bot');
     assert.strictEqual(summarizeExecution({ id: 'x', status: 200, result: { outcome: 'stopped' } }).outcome, 'stopped');
+    assert.strictEqual(summarizeExecution({ id: 'queued', phase: 'queued' }).phase, 'queued');
+    assert.strictEqual(summarizeExecution({ id: 'queued', phase: 'queued' }).outcome, undefined);
 
     const agentMock = mockResponse();
     await handleAgent({ method: 'POST', body: { actions: [] }, query: {}, socket: {}, protocol: 'http' }, agentMock.response);

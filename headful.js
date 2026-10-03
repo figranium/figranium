@@ -4,6 +4,8 @@ const { selectUserAgent } = require('./user-agent-settings');
 const { validateUrl, setupNavigationProtection } = require('./url-utils');
 const { parseBooleanFlag } = require('./common-utils');
 const { installPageTranslation } = require('./src/agent/translate');
+
+const SEVERE_PERFORMANCE_STYLE_ID = '__figranium_severe_stream_performance';
 const { Mutex } = require('./src/server/utils');
 const { loadSharedBrowserState, saveSharedBrowserState } = require('./browser-storage-state');
 
@@ -69,7 +71,9 @@ const teardownActiveSession = async () => {
 async function runHeadful(data, options = {}) {
     const { res } = options;
     if (activeSession) {
-        await teardownActiveSession();
+        const responseData = { message: 'Headful session already active.', reused: true };
+        if (res && !res.headersSent) res.json(responseData);
+        return activeSession;
     }
 
     const url = data.url || 'https://www.google.com';
@@ -549,9 +553,8 @@ async function runHeadful(data, options = {}) {
         attachPageTracking(page);
 
         if (!navigated && url) {
-            await page.goto(url).catch(() => { });
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20_000 }).catch(() => { });
         }
-        await installPageTranslation(page, data.translation || data.taskSnapshot?.translation);
 
         const syncInterval = statelessExecution ? null : setInterval(() => {
             if (activeSession && activeSession.context) {
@@ -568,8 +571,18 @@ async function runHeadful(data, options = {}) {
             inspectScopeSelector: activeSession.inspectScopeSelector || null,
             inspectRevision: Number(activeSession.inspectRevision) || 0,
             statelessExecution,
+            viewerProfile: 'full',
             interval: syncInterval
         };
+
+        const readyInMs = Date.now() - activeSession.startedAt;
+        console.info(`[HEADFUL] Session ready in ${readyInMs}ms.`);
+
+        page.on('domcontentloaded', () => {
+            if (activeSession?.page === page && activeSession.viewerProfile === 'severe') {
+                applyViewerPerformanceProfile('severe').catch(() => {});
+            }
+        });
 
         const responseData = {
             message: 'Headful session started.',
@@ -579,6 +592,11 @@ async function runHeadful(data, options = {}) {
         if (res) {
             res.json(responseData);
         }
+
+        // Translation is optional presentation work. Register it after the session
+        // is ready so a remote translation script never delays the live viewer.
+        installPageTranslation(page, data.translation || data.taskSnapshot?.translation)
+            .catch((error) => console.warn('[HEADFUL] Deferred translation setup failed:', error.message));
 
         if (browser) {
             await new Promise((resolve) => browser.once('disconnected', resolve));
@@ -598,6 +616,45 @@ async function runHeadful(data, options = {}) {
         activeSession = null;
         throw error;
     }
+}
+
+async function applyViewerPerformanceProfile(profile) {
+    if (!activeSession?.page || activeSession.page.isClosed()) return false;
+    const severe = profile === 'severe';
+    try {
+        await activeSession.page.evaluate(({ id, severeMode }) => {
+            document.getElementById(id)?.remove();
+            if (!severeMode) return;
+            const style = document.createElement('style');
+            style.id = id;
+            style.textContent = `
+                *, *::before, *::after {
+                    animation-duration: 0.001ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.001ms !important;
+                    scroll-behavior: auto !important;
+                }
+            `;
+            (document.head || document.documentElement).appendChild(style);
+            document.querySelectorAll('video, audio').forEach((media) => {
+                try { media.pause(); } catch { /* ignore */ }
+            });
+        }, { id: SEVERE_PERFORMANCE_STYLE_ID, severeMode: severe });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+async function setHeadfulViewerProfile(req, res) {
+    if (!activeSession) return res.status(409).json({ error: 'NO_ACTIVE_HEADFUL_SESSION' });
+    const requested = String(req.body?.profile || '').toLowerCase();
+    const profile = ['full', 'constrained', 'severe'].includes(requested) ? requested : 'full';
+    const changed = activeSession.viewerProfile !== profile;
+    activeSession.viewerProfile = profile;
+    const applied = await applyViewerPerformanceProfile(profile);
+    console.info(`[HEADFUL] Viewer profile ${profile}${changed ? ' selected' : ' reaffirmed'}.`);
+    return res.json({ profile, applied });
 }
 
 function isDisplayUnavailableError(err) {
@@ -749,5 +806,6 @@ module.exports = {
     headfulEventEmitter,
     getActiveSession,
     launchApiSession,
+    setHeadfulViewerProfile,
     ensureSessionId
 };

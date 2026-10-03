@@ -3,6 +3,7 @@ import { Action, BlockTestResult, Variable } from '../../types';
 import TablerIcon from '../TablerIcon';
 import ConfigVariableList from './ConfigVariableList';
 import { isBlockStartAction } from '../../utils/actionBlocks';
+import { formatLabel } from '../../utils/taskUtils';
 
 interface InputEntry { key: string; label: string; raw: unknown; resolved: unknown }
 interface BlockConfigWorkspaceProps {
@@ -43,6 +44,7 @@ const resolveValue = (value: unknown, variables: Record<string, Variable>) => {
 export const getActionInputEntries = (action: Action, variables: Record<string, Variable>): InputEntry[] => {
     const entries: InputEntry[] = [];
     for (const key of inputKeys) {
+        if (key === 'typeMode' && action.type !== 'type') continue;
         const raw = action[key];
         if (raw === undefined || raw === null || raw === '') continue;
         entries.push({ key, label: inputLabels[key] || key, raw, resolved: resolveValue(raw, variables) });
@@ -140,7 +142,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                         <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
                             <TablerIcon name="science" className="text-sm" /> Test block
                         </div>
-                        {testResult && <span className={`text-[10px] font-bold tracking-wider ${statusTone[testResult.status]}`}>{testResult.status.replace('_', ' ')}</span>}
+                        {testResult && <span className={`text-[10px] font-bold tracking-wider ${statusTone[testResult.status]}`}>{formatLabel(testResult.status)}</span>}
                     </div>
                     <p className="mt-2 text-[10px] leading-4 text-[var(--app-text-faint)]">Runs preceding blocks in a temporary browser. Actions may affect the target site.</p>
                     <button

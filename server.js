@@ -6,6 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const cookie = require('cookie');
 const signature = require('cookie-signature');
+const SERVER_BOOTED_AT = Date.now();
 
 // Catch unhandled promise rejections from playwright-extra stealth plugin.
 // When pages close before the plugin finishes async CDP initialization,
@@ -28,6 +29,7 @@ const {
     SESSION_SECRET_FILE,
     SESSION_TTL_SECONDS,
     NOVNC_PORT,
+    NOVNC_LOW_PORT,
     WEBSOCKIFY_PATH,
     VNC_PASSWORD_FILE
 } = require('./src/server/constants');
@@ -66,7 +68,7 @@ const {
 const { handleScrape } = require('./scrape');
 const { handleAgent, setProgressReporter, setStopChecker, setStopCleaner } = require('./src/agent/figranite');
 const { normalizeTaskOutcome } = require('./src/agent/outcomes');
-const { handleHeadful, stopHeadful, toggleInspectMode, headfulEventEmitter } = require('./headful');
+const { handleHeadful, stopHeadful, toggleInspectMode, setHeadfulViewerProfile, headfulEventEmitter } = require('./headful');
 
 // Routes
 const authRoutes = require('./src/server/routes/auth');
@@ -81,6 +83,7 @@ const healthRoutes = require('./src/server/routes/health');
 const browserRoutes = require('./src/server/routes/browser');
 const capabilitiesRoutes = require('./src/server/routes/capabilities');
 const cabinetRoutes = require('./src/server/routes/cabinets');
+const templateRoutes = require('./src/server/routes/templates');
 const { pushOutput } = require('./src/server/outputProviders');
 const { migrateStorageState } = require('./src/server/migrate-storage');
 const { concurrencyGate, closeQueue } = require('./src/server/execution-queue');
@@ -96,6 +99,8 @@ app.disable('x-powered-by');
 // A short-lived, one-time ticket proves the upgrade originated from the signed-in
 // application session, without relying on a proxy to preserve the public Host.
 const VNC_TICKET_TTL_MS = 60_000;
+const HEADFUL_PROBE_BYTES = 192 * 1024;
+const headfulProbePayload = Buffer.alloc(HEADFUL_PROBE_BYTES, 0x61);
 const vncViewerTickets = new Map();
 
 const createVncViewerTicket = (sessionId) => {
@@ -180,7 +185,7 @@ app.use((req, res, next) => {
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
-        "img-src 'self' data: blob: https://www.google.com https://*.gstatic.com https://cdn.jsdelivr.net https://raw.githubusercontent.com",
+        "img-src 'self' data: blob: https://www.google.com https://*.gstatic.com https://cdn.jsdelivr.net https://raw.githubusercontent.com https://avatars.githubusercontent.com",
         "connect-src 'self' https://api.github.com https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.baserow.io",
         "media-src 'self' blob:",
         "frame-src 'self'"
@@ -248,6 +253,7 @@ app.use('/api/data', dataRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/credentials', credentialRoutes);
 app.use('/api/cabinets', cabinetRoutes);
+app.use('/api', templateRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/capabilities', capabilitiesRoutes);
 app.use('/api', browserRoutes);
@@ -256,90 +262,109 @@ app.use('/api', browserRoutes);
 app.use('/', viewRoutes);
 
 // Execution Entry Points (Top-level routes kept for compatibility/simplicity)
-const registerExecution = (req, res, baseMeta = {}) => {
-    // This is a simplified version of the one in server.js, 
-    // relying on the fact that handleScrape/Agent/Headful will handle the response.
-    // However, the original registerExecution wrapped res.json to capture result
-    // and appended to execution log on finish.
-    // We need to restore that logic here or import it.
-    // Since it was local to server.js, I should probably implement it here or imports.
-    // It depends on `appendExecution`.
+const persistExecution = async (entry) => {
+    const { upsertExecution } = require('./src/server/storage');
+    const { sendExecutionListUpdate } = require('./src/server/state');
+    await upsertExecution(entry);
+    sendExecutionListUpdate({ type: 'upsert', execution: entry });
+};
 
-    // For now, I will re-implement it here using imports.
-    const { appendExecution } = require('./src/server/storage');
+const prepareExecution = (baseMeta = {}) => async (req, res, next) => {
+    try {
+        if (!req.body || typeof req.body !== 'object') req.body = {};
+        const queuedAt = Date.now();
+        const requestId = String(req.body.runId || `exec_${queuedAt}_${Math.floor(Math.random() * 1000)}`);
+        req.body.runId = requestId;
+        res.locals.executionId = requestId;
 
-    const start = Date.now();
-    const requestId = 'exec_' + start + '_' + Math.floor(Math.random() * 1000);
-    res.locals.executionId = requestId;
-    if (req.body && typeof req.body === 'object' && !req.body.runId) req.body.runId = requestId;
-    const executionTimeoutMs = Number(process.env.EXECUTION_TIMEOUT_MS || 15 * 60 * 1000);
-    const timeout = baseMeta.mode === 'headful' || req.body?.mode === 'headful' ? null : setTimeout(() => {
-        try { require('./src/agent/execution-control').requestStop(requestId); } catch { }
-        if (!res.headersSent) res.status(504).json({ error: 'EXECUTION_TIMEOUT', outcome: 'crashed' });
-    }, executionTimeoutMs);
-    if (timeout) {
-        timeout.unref?.();
-        res.once('finish', () => clearTimeout(timeout));
-        res.once('close', () => clearTimeout(timeout));
-    }
-    const originalJson = res.json.bind(res);
-    res.json = (body) => {
-        res.locals.executionResult = body;
-        return originalJson(body);
-    };
-    res.on('finish', () => {
-        const durationMs = Date.now() - start;
-        const body = req.body || {};
         const entry = {
             id: requestId,
-            timestamp: start,
+            timestamp: queuedAt,
             method: req.method,
             path: req.path,
-            status: res.statusCode,
-            durationMs,
-            source: body.runSource || req.query.runSource || baseMeta.source || 'api',
-            mode: body.mode || baseMeta.mode || 'unknown',
-            taskId: body.taskId || baseMeta.taskId || null,
-            taskName: body.name || baseMeta.taskName || null,
-            url: body.url || req.query.url || null,
-            taskSnapshot: body.taskSnapshot || null,
-            result: res.locals.executionResult || null,
-            outcome: res.locals.executionResult?.outcome
-                ? normalizeTaskOutcome(res.locals.executionResult.outcome)
-                : undefined
+            phase: 'queued',
+            source: req.body.runSource || req.query.runSource || baseMeta.source || 'api',
+            mode: req.body.mode || baseMeta.mode || 'unknown',
+            taskId: req.body.taskId || baseMeta.taskId || req.params?.id || null,
+            taskName: req.body.taskName || req.body.name || baseMeta.taskName || null,
+            url: req.body.url || req.query.url || null,
+            taskSnapshot: req.body.taskSnapshot || null
         };
-        appendExecution(entry)
-            .then(() => {
-                const { sendExecutionListUpdate } = require('./src/server/state');
-                sendExecutionListUpdate({ type: 'upsert', execution: entry });
-            })
-            .catch(err => console.error('Failed to append execution:', err));
+        res.locals.executionEntry = entry;
+        await persistExecution(entry);
 
-        const outputConfig = body.output || (body.taskSnapshot && body.taskSnapshot.output);
-        if (outputConfig && entry.result && entry.result.data !== undefined) {
-            pushOutput(outputConfig, entry.result.data, requestId)
-                .catch(err => console.error('[OUTPUT] Unexpected error:', err));
-        }
+        let timeout = null;
+        res.locals.markExecutionRunning = async () => {
+            if (entry.phase !== 'queued') return;
+            entry.phase = 'running';
+            entry.startedAt = Date.now();
+            await persistExecution({ ...entry });
+            const executionTimeoutMs = Number(process.env.EXECUTION_TIMEOUT_MS || 15 * 60 * 1000);
+            if (entry.mode !== 'headful') {
+                timeout = setTimeout(() => {
+                    try { require('./src/agent/execution-control').requestStop(requestId); } catch { }
+                    if (!res.headersSent) res.status(504).json({ error: 'EXECUTION_TIMEOUT', outcome: 'crashed' });
+                }, executionTimeoutMs);
+                timeout.unref?.();
+            }
+        };
 
-        // Webhook callback: POST result to caller-provided URL
-        const webhookUrl = res.locals.webhookUrl;
-        if (webhookUrl && entry.result) {
-            const payload = JSON.stringify({
-                executionId: entry.id,
-                taskId: entry.taskId,
-                status: entry.status,
-                outcome: entry.outcome,
-                durationMs: entry.durationMs,
-                result: entry.result
+        const originalJson = res.json.bind(res);
+        res.json = (body) => {
+            res.locals.executionResult = body;
+            return originalJson(body);
+        };
+
+        let finalized = false;
+        const finalize = async (closedEarly = false) => {
+            if (finalized) return;
+            finalized = true;
+            if (timeout) clearTimeout(timeout);
+            const body = req.body || {};
+            const finishedAt = Date.now();
+            const result = res.locals.executionResult || (closedEarly ? { outcome: 'stopped', logs: ['Execution connection closed.'] } : null);
+            Object.assign(entry, {
+                phase: 'finished',
+                finishedAt,
+                status: closedEarly ? 499 : res.statusCode,
+                durationMs: Math.max(0, finishedAt - (entry.startedAt || entry.timestamp)),
+                source: body.runSource || entry.source,
+                mode: body.mode || entry.mode,
+                taskId: body.taskId || entry.taskId,
+                taskName: body.taskName || body.name || entry.taskName,
+                url: body.url || entry.url,
+                taskSnapshot: body.taskSnapshot || entry.taskSnapshot,
+                result,
+                outcome: result?.outcome ? normalizeTaskOutcome(result.outcome) : normalizeTaskOutcome(undefined, res.statusCode >= 200 && res.statusCode < 300 ? 'success' : 'error')
             });
-            fetchWithRedirectValidation(webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: payload,
-                signal: AbortSignal.timeout(10000)
-            }).catch(err => console.error('[WEBHOOK] Failed to deliver:', err.message));
-        }
-    });
+            try {
+                await persistExecution({ ...entry });
+            } catch (err) {
+                console.error('Failed to finalize execution:', err);
+            }
+
+            const outputConfig = body.output || body.taskSnapshot?.output;
+            if (outputConfig && result?.data !== undefined) {
+                pushOutput(outputConfig, result.data, requestId).catch(err => console.error('[OUTPUT] Unexpected error:', err));
+            }
+            if (res.locals.webhookUrl && result) {
+                const payload = JSON.stringify({ executionId: entry.id, taskId: entry.taskId, status: entry.status, outcome: entry.outcome, durationMs: entry.durationMs, result });
+                fetchWithRedirectValidation(res.locals.webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, signal: AbortSignal.timeout(10000) })
+                    .catch(err => console.error('[WEBHOOK] Failed to deliver:', err.message));
+            }
+        };
+        res.once('finish', () => { void finalize(false); });
+        res.once('close', () => { if (!res.writableEnded) void finalize(true); });
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+const enrichExecution = (res, metadata) => {
+    if (!res.locals.executionEntry) return;
+    Object.assign(res.locals.executionEntry, metadata);
+    void persistExecution({ ...res.locals.executionEntry }).catch(err => console.error('Failed to enrich execution:', err));
 };
 
 const preprocessScrapeRequest = (req) => {
@@ -409,7 +434,7 @@ const executeTaskById = async (req, res) => {
         }
     }
 
-    registerExecution(req, res, { mode: task.mode || 'agent', taskId: task.id, taskName: task.name });
+    enrichExecution(res, { mode: task.mode || 'agent', taskId: task.id, taskName: task.name, url: req.body.url || task.url });
 
     const clientVars = req.body.variables || req.body.taskVariables || {};
     const taskVars = {};
@@ -449,25 +474,21 @@ const executeTaskById = async (req, res) => {
     }
 };
 
-app.post('/tasks/:id/api', requireApiKey, dataRateLimiter, concurrencyGate, executeTaskById);
-app.post('/api/tasks/:id/api', requireApiKey, dataRateLimiter, concurrencyGate, executeTaskById);
+app.post('/tasks/:id/api', requireApiKey, dataRateLimiter, prepareExecution({ source: 'api' }), concurrencyGate, executeTaskById);
+app.post('/api/tasks/:id/api', requireApiKey, dataRateLimiter, prepareExecution({ source: 'api' }), concurrencyGate, executeTaskById);
 
-app.all('/scrape', requireAuth, dataRateLimiter, concurrencyGate, (req, res) => {
-    registerExecution(req, res, { mode: 'scrape' });
+app.all('/scrape', requireAuth, dataRateLimiter, prepareExecution({ mode: 'scrape' }), concurrencyGate, (req, res) => {
     preprocessScrapeRequest(req);
     return handleScrape(req, res);
 });
-app.all('/scraper', requireAuth, dataRateLimiter, concurrencyGate, (req, res) => {
-    registerExecution(req, res, { mode: 'scrape' });
+app.all('/scraper', requireAuth, dataRateLimiter, prepareExecution({ mode: 'scrape' }), concurrencyGate, (req, res) => {
     preprocessScrapeRequest(req);
     return handleScrape(req, res);
 });
-app.all('/agent', requireAuth, dataRateLimiter, concurrencyGate, (req, res) => {
-    registerExecution(req, res, { mode: 'agent' });
+app.all('/agent', requireAuth, dataRateLimiter, prepareExecution({ mode: 'agent' }), concurrencyGate, (req, res) => {
     return handleAgent(req, res);
 });
-app.post('/headful', requireAuth, dataRateLimiter, concurrencyGate, (req, res) => {
-    registerExecution(req, res, { mode: 'headful' });
+app.post('/headful', requireAuth, dataRateLimiter, prepareExecution({ mode: 'headful' }), concurrencyGate, (req, res) => {
     if (req.body) {
         // Flatten variables from {type, value} objects to plain values
         const rawVars = req.body.taskVariables || req.body.variables || {};
@@ -545,9 +566,28 @@ app.get('/api/headful/status', requireAuth, async (req, res) => {
         return res.json({ useNovnc: false });
     }
     // Check if the novnc port is actually in use
-    const portAvailable = await isPortAvailable(NOVNC_PORT);
+    const [portAvailable, lowPortAvailable] = await Promise.all([
+        isPortAvailable(NOVNC_PORT),
+        isPortAvailable(NOVNC_LOW_PORT)
+    ]);
     // If the port is NOT available, something (websockify) is listening on it
-    res.json({ useNovnc: !portAvailable });
+    res.json({
+        useNovnc: !portAvailable,
+        adaptiveProfiles: !portAvailable && !lowPortAvailable ? ['full', 'constrained', 'severe'] : ['full', 'constrained']
+    });
+});
+
+// Fixed-size, authenticated payload used by the embedded viewer to estimate
+// transport throughput. Deliberately cache-proof so each sample is meaningful.
+app.get('/api/headful/connection-probe', requireAuth, (req, res) => {
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        Pragma: 'no-cache',
+        Expires: '0',
+        'Content-Type': 'application/octet-stream',
+        'Content-Length': String(HEADFUL_PROBE_BYTES)
+    });
+    res.end(headfulProbePayload);
 });
 
 app.get('/api/headful/selector_stream', requireAuth, (req, res) => {
@@ -614,6 +654,7 @@ app.get('/headful/selector_stream', requireAuth, (req, res) => {
 
 app.post('/api/headful/inspect', requireAuth, toggleInspectMode);
 app.post('/headful/inspect', requireAuth, toggleInspectMode);
+app.post('/api/headful/viewer-profile', requireAuth, setHeadfulViewerProfile);
 
 app.get('/api/headful/vnc-password', requireAuth, (req, res) => {
     try {
@@ -628,14 +669,24 @@ app.get('/api/headful/vnc-password', requireAuth, (req, res) => {
     }
 });
 
-// Client-side routes must remain reloadable. Keep this after all API and
-// browser endpoints so unknown API paths still return their normal 404s.
+// Keep unknown API requests as JSON responses. This prevents the SPA fallback
+// below from ever turning a missing API route into an HTML document.
+app.use('/api', (_req, res) => res.status(404).json({ error: 'API_NOT_FOUND' }));
+
+// One terminal fallback owns every client-side navigation. Adding a React
+// route never requires a matching Express route: extensionless GET requests
+// receive the app shell after all APIs, browser endpoints, and static assets.
 app.use(dataRateLimiter, (req, res, next) => {
     if (req.method !== 'GET' || req.path.startsWith('/api/') || req.path.startsWith('/captures/') || req.path.startsWith('/screenshots/') || req.path.startsWith('/novnc/') || path.extname(req.path)) {
         return next();
     }
-    if (!req.accepts('html')) return next();
-    return requireAuth(req, res, () => res.sendFile(path.join(DIST_DIR, 'index.html')));
+    // Browser reloads can send a navigation Accept header that differs from
+    // XHR requests (notably through Safari and reverse proxies). All
+    // extensionless, non-API GETs are client-side routes, so serve the SPA
+    // shell without relying on content negotiation.
+    // The shell has no private data. The client checks /api/auth/me, preserving
+    // the requested route while Safari restores its session after a reload.
+    return res.sendFile(path.join(DIST_DIR, 'index.html'));
 });
 
 // Start Server
@@ -652,10 +703,13 @@ findAvailablePort(port, 20)
             // One-time migration of storage_state.json cookies into persistent browser profiles
             migrateStorageState().catch(err => console.error('[MIGRATION] Failed:', err.message));
             require('./src/server/cabinets').ensure().catch(err => console.error('[CABINETS] Initialization failed:', err.message));
-
-            // Start the cron scheduler
-            const { startScheduler } = require('./src/server/scheduler');
-            startScheduler().catch(err => console.error('[SCHEDULER] Failed to start:', err.message));
+            require('./src/server/storage').reconcileInFlightExecutions(SERVER_BOOTED_AT)
+                .catch(err => console.error('[EXECUTIONS] Reconciliation failed:', err.message))
+                .finally(() => {
+                    // Start scheduled work only after stale in-flight records are reconciled.
+                    const { startScheduler } = require('./src/server/scheduler');
+                    startScheduler().catch(err => console.error('[SCHEDULER] Failed to start:', err.message));
+                });
 
             // Initialize proxies from DB if available
             const { loadProxyConfigAsync } = require('./proxy-rotation');

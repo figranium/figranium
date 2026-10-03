@@ -51,7 +51,7 @@ export default function ReleaseNotesModal() {
             <div className="theme-modal-elevation glass-card w-full max-w-2xl max-h-[80vh] flex flex-col rounded-[32px] border border-white/10 p-8 text-left overflow-hidden">
                 <div className="flex justify-between items-center mb-6 shrink-0">
                     <h2 className="text-lg md:text-2xl font-bold text-white tracking-tight">What's new in v0.8.0</h2>
-                    <span className="bg-white/10 text-white/70 px-3 py-1 rounded-full text-xs font-mono ml-4 shrink-0">v{APP_VERSION}</span>
+                    <span className="bg-white/10 text-white/70 px-3 py-1 rounded-full text-xs ml-4 shrink-0">v{APP_VERSION}</span>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar text-sm text-gray-300">
@@ -60,7 +60,7 @@ export default function ReleaseNotesModal() {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                         </div>
                     ) : (
-                        <div className="whitespace-pre-wrap font-mono text-xs">
+                        <div className="whitespace-pre-wrap text-xs">
                             {notesHtml}
                         </div>
                     )}

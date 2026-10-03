@@ -89,5 +89,5 @@ const CaptureCard: React.FC<CaptureCardProps> = ({ capture, onDelete }) => {
 };
 
 // ⚡ Bolt: Add React.memo() to prevent unnecessary re-renders when parent lists update.
-// CapturesScreen uses react-window which provides itemData with a stabilized onDelete callback.
+// ResultsPane uses react-window and provides stable capture data to each rendered card.
 export default React.memo(CaptureCard);

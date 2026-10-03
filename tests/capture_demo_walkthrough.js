@@ -22,7 +22,7 @@ async function run() {
     const dataDir = path.join(__dirname, '../data');
     console.log(`Cleaning files in ${dataDir}...`);
     if (fs.existsSync(dataDir)) {
-        ['users.json', 'tasks.json', 'executions.json', 'api_key.json', 'session_secret.txt', 'gemini_api_key.json', 'openai_api_key.json', 'claude_api_key.json', 'ollama_api_key.json'].forEach(file => {
+        ['users.json', 'tasks.json', 'executions.json', 'api_key.json', 'session_secret.txt'].forEach(file => {
             const filePath = path.join(dataDir, file);
             if (fs.existsSync(filePath)) {
                 console.log(`Removing ${file}...`);

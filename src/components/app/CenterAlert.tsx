@@ -27,6 +27,7 @@ const CenterAlert: React.FC<CenterAlertProps> = ({ message, tone, onClose }) => 
         <div className={`fixed bottom-6 right-6 z-[220] max-w-sm w-full ${closing ? 'animate-out fade-out slide-out-to-bottom-3 duration-200' : 'animate-in fade-in slide-in-from-bottom-3 duration-300'}`}>
             <div
                 role={tone === 'error' ? 'alert' : 'status'}
+                aria-label={tone === 'error' ? 'Error' : 'Success'}
                 className={`glass-card rounded-2xl border border-white/10 p-4 shadow-2xl flex items-start gap-3 ${closing ? 'animate-out fade-out zoom-out-95 duration-200' : 'animate-in fade-in zoom-in-95 duration-300'}`}
             >
                 <div className="mt-0.5">
@@ -37,10 +38,7 @@ const CenterAlert: React.FC<CenterAlertProps> = ({ message, tone, onClose }) => 
                     )}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold tracking-[0.35em] text-gray-500">
-                        {tone === 'error' ? 'Error' : 'Success'}
-                    </p>
-                    <p className="mt-1.5 font-mono text-xs text-white leading-relaxed break-words">{message}</p>
+                    <p className="text-xs text-white leading-relaxed break-words">{message}</p>
                 </div>
                 <button
                     onClick={() => setClosing(true)}

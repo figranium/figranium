@@ -11,6 +11,14 @@ export const taskOutcomeLabel = (outcome: TaskOutcome) => outcome === 'anti_bot'
     ? 'Anti-bot'
     : `${outcome.charAt(0).toUpperCase()}${outcome.slice(1)}`;
 
+export const taskOutcomeIcon = (outcome: TaskOutcome) => {
+    if (outcome === 'success') return { name: 'task_alt', className: 'text-emerald-400' };
+    if (outcome === 'anti_bot') return { name: 'security', className: 'text-amber-400' };
+    if (outcome === 'stopped') return { name: 'stop', className: 'text-slate-400' };
+    if (outcome === 'crashed') return { name: 'warning', className: 'text-red-400' };
+    return { name: 'cancel', className: 'text-red-400' };
+};
+
 export const taskOutcomeBadgeClass = (outcome: TaskOutcome) => {
     if (outcome === 'success') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
     if (outcome === 'anti_bot') return 'bg-amber-500/10 text-amber-300 border-amber-500/20';

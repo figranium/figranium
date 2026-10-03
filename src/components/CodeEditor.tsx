@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { highlightCode, SyntaxLanguage } from '../utils/syntaxHighlight';
 import { getVariableDragToken, isVariableDrag, moveTextControlCaretToPoint } from '../utils/variableDrag';
 
@@ -17,6 +17,7 @@ interface CodeEditorProps {
 const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, onBlur, language, placeholder, className, readOnly, variables, allowVariableInsertion = true }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const preRef = useRef<HTMLPreElement>(null);
+    const [dropPreview, setDropPreview] = useState<{ token: string; left: number; top: number } | null>(null);
 
     const displayValue = value || placeholder || '';
     const isPlaceholder = !value && !!placeholder;
@@ -38,7 +39,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, onBlur, langua
 
     return (
         <div
-            className={`code-editor ${className || ''}`}
+            className={`code-editor relative ${className || ''} ${dropPreview ? 'variable-drop-target' : ''}`}
             onWheel={(event) => {
                 const textarea = textareaRef.current;
                 if (!textarea) return;
@@ -72,6 +73,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, onBlur, langua
                     event.preventDefault();
                     event.dataTransfer.dropEffect = 'copy';
                     moveTextControlCaretToPoint(event.currentTarget, event.clientX, event.clientY);
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    setDropPreview({
+                        token: getVariableDragToken(event.dataTransfer),
+                        left: event.clientX - rect.left,
+                        top: event.clientY - rect.top,
+                    });
                 }}
                 onDrop={(event) => {
                     if (readOnly || !allowVariableInsertion || !isVariableDrag(event.dataTransfer)) return;
@@ -79,6 +86,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, onBlur, langua
                     event.stopPropagation();
                     const token = getVariableDragToken(event.dataTransfer);
                     if (!token) return;
+                    setDropPreview(null);
                     const index = moveTextControlCaretToPoint(event.currentTarget, event.clientX, event.clientY);
                     const nextValue = `${value.slice(0, index)}${token}${value.slice(index)}`;
                     onChange?.(nextValue);
@@ -88,7 +96,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, onBlur, langua
                         textareaRef.current?.setSelectionRange(caret, caret);
                     });
                 }}
+                onDragLeave={() => setDropPreview(null)}
             />
+            {dropPreview && (
+                <span className="variable-drop-preview" style={{ left: dropPreview.left, top: dropPreview.top }} aria-hidden="true">
+                    {dropPreview.token}
+                </span>
+            )}
         </div>
     );
 };

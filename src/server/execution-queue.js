@@ -17,7 +17,7 @@ const waitQueue = [];
  * burst of Chromium processes to exhaust a small host.
  * Returns a release function that MUST be called when execution completes.
  */
-function acquire() {
+function acquire(options = {}) {
     resourceMonitor.start();
     const status = resourceMonitor.status();
     if (!resourceMonitor.isPressured() && activeCount < status.maxConcurrent) {
@@ -29,7 +29,7 @@ function acquire() {
         return Promise.reject(Object.assign(new Error('Execution queue is full'), { code: 'RESOURCE_CAPACITY_EXCEEDED' }));
     }
     return new Promise((resolve, reject) => {
-        const item = { resolve, reject, timer: null };
+        const item = { resolve, reject, timer: null, runId: options.runId || null };
         item.timer = setTimeout(() => {
             const index = waitQueue.indexOf(item);
             if (index >= 0) waitQueue.splice(index, 1);
@@ -37,6 +37,16 @@ function acquire() {
         }, QUEUE_TIMEOUT_MS);
         waitQueue.push(item);
     });
+}
+
+function cancelQueuedExecution(runId) {
+    if (!runId) return false;
+    const index = waitQueue.findIndex((item) => item.runId === runId);
+    if (index < 0) return false;
+    const [item] = waitQueue.splice(index, 1);
+    clearTimeout(item.timer);
+    item.reject(Object.assign(new Error('Execution stopped while queued'), { code: 'EXECUTION_STOPPED' }));
+    return true;
 }
 
 function release() {
@@ -65,12 +75,11 @@ resourceMonitor.on('change', () => setImmediate(drain));
  * If MAX_CONCURRENT_EXECUTIONS is not set, passes through immediately.
  */
 function concurrencyGate(req, res, next) {
-    acquire().then((releaseFn) => {
-        res.locals._releaseExecution = releaseFn;
-        res.on('finish', releaseFn);
-        res.on('close', releaseFn);
-
-        // Prevent double-release
+    const runId = String(req.body?.runId || res.locals?.executionId || '').trim() || null;
+    const cancelIfQueued = () => cancelQueuedExecution(runId);
+    res.once('close', cancelIfQueued);
+    acquire({ runId }).then(async (releaseFn) => {
+        res.removeListener('close', cancelIfQueued);
         let released = false;
         const safeRelease = () => {
             if (!released) {
@@ -79,13 +88,17 @@ function concurrencyGate(req, res, next) {
             }
         };
         res.locals._releaseExecution = safeRelease;
-        res.removeAllListeners('finish');
-        res.removeAllListeners('close');
-        res.on('finish', safeRelease);
-        res.on('close', safeRelease);
+        res.once('finish', safeRelease);
+        res.once('close', safeRelease);
 
+        if (typeof res.locals.markExecutionRunning === 'function') await res.locals.markExecutionRunning();
         next();
     }).catch((error) => {
+        res.removeListener('close', cancelIfQueued);
+        if (res.writableEnded || res.destroyed) return;
+        if (error?.code === 'EXECUTION_STOPPED') {
+            return res.status(200).json({ outcome: 'stopped', logs: ['Execution stopped while queued.'] });
+        }
         if (error?.code === 'RESOURCE_CAPACITY_EXCEEDED') {
             res.setHeader('Retry-After', String(Math.ceil(QUEUE_TIMEOUT_MS / 1000)));
             return res.status(503).json({ error: 'RESOURCE_CAPACITY_EXCEEDED', retryAfterMs: QUEUE_TIMEOUT_MS });
@@ -112,4 +125,4 @@ function closeQueue() {
     }
 }
 
-module.exports = { acquire, concurrencyGate, getStatus, closeQueue, drain };
+module.exports = { acquire, concurrencyGate, getStatus, closeQueue, drain, cancelQueuedExecution };

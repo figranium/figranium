@@ -129,7 +129,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                                 role="option"
                                 aria-selected={idx === activeIndex}
                                 onClick={() => onSelect(item.type)}
-                                className={`action-palette-item flex flex-col items-start gap-2 text-left p-4 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 group focus:outline-none focus-visible:ring-2 ${idx === activeIndex ? 'action-palette-item-active ring-1' : ''}`}
+                                className={`action-palette-item flex flex-col items-start gap-2 text-left p-4 rounded-2xl border transition-[background-color,border-color,box-shadow] group focus:outline-none focus-visible:ring-2 ${idx === activeIndex ? 'action-palette-item-active ring-1' : ''}`}
                             >
                                 <TablerIcon name={item.icon || 'extension'} className="action-palette-item-icon text-2xl transition-colors shrink-0 mb-1" />
                                 <div>

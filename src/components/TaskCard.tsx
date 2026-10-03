@@ -117,12 +117,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
                 </div>
                 <div className="min-w-0">
                     <h3 className="text-sm font-bold theme-text truncate" title={task.name || 'Untitled'}>{task.name || 'Untitled'}</h3>
-                    <p className="mt-1 text-[11px] theme-text-faint font-mono truncate" title={task.url || 'Target undefined'}>{task.url || 'Target undefined'}</p>
+                    <p className="mt-1 text-[11px] theme-text-faint truncate" title={task.url || 'Target undefined'}>{task.url || 'Target undefined'}</p>
                 </div>
             </div>
 
             <div className="max-sm:hidden">
-                <span className="app-badge font-mono">{formatLabel(task.mode)}</span>
+                <span className="app-badge">{formatLabel(task.mode)}</span>
             </div>
 
             <div className="text-[11px] theme-text-muted max-lg:hidden">

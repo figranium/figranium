@@ -1,6 +1,7 @@
 const Module = require('module');
 const originalRequire = Module.prototype.require;
 const path = require('path');
+const assert = require('assert');
 
 // Mock for db.js
 const mockDB = {
@@ -10,14 +11,30 @@ const mockDB = {
         this.queryCount++;
         // console.log('DB QUERY:', text, values);
         if (text.includes('CREATE TABLE') || text.includes('ALTER TABLE') || text.includes('BEGIN') || text.includes('COMMIT') || text.includes('TRUNCATE')) {
+            if (text.includes('TRUNCATE executions')) this.data.executions = [];
             return { rows: [] };
         }
-        if (text.includes('SELECT key FROM ollama_api_key')) {
-            return { rows: (this.data.ollama || []).map(k => ({ key: k })) };
+        if (text.includes('INSERT INTO execution_results')) {
+            this.data.execution_results = this.data.execution_results || {};
+            this.data.execution_results[values[0]] = values[1];
+            return { rows: [] };
         }
-        if (text.includes('INSERT INTO ollama_api_key')) {
-            this.data.ollama = this.data.ollama || [];
-            this.data.ollama.push(values[1]);
+        if (text.includes('SELECT data FROM execution_results')) {
+            const result = this.data.execution_results?.[values[0]];
+            return { rows: result ? [{ data: result }] : [] };
+        }
+        if (text.includes('DELETE FROM execution_results')) {
+            for (const id of values[0]) delete this.data.execution_results?.[id];
+            return { rows: [] };
+        }
+        if (text.includes('SELECT COUNT(*) FROM executions')) {
+            return { rows: [{ count: String((this.data.executions || []).length) }] };
+        }
+        if (text.includes('INSERT INTO executions')) {
+            this.data.executions = this.data.executions || [];
+            const index = this.data.executions.findIndex((entry) => entry.id === values[0]);
+            if (index >= 0) this.data.executions[index] = values[1];
+            else this.data.executions.push(values[1]);
             return { rows: [] };
         }
         if (text.includes('SELECT data FROM credentials')) {
@@ -26,13 +43,6 @@ const mockDB = {
         if (text.includes('INSERT INTO credentials')) {
             this.data.credentials = this.data.credentials || [];
             this.data.credentials.push(values[1]);
-            return { rows: [] };
-        }
-        if (text.includes('SELECT data FROM ai_models')) {
-            return { rows: this.data.ai_models ? [{ data: this.data.ai_models }] : [] };
-        }
-        if (text.includes('INSERT INTO ai_models')) {
-            this.data.ai_models = values[0];
             return { rows: [] };
         }
         if (text.includes('SELECT data FROM proxies_config')) {
@@ -70,25 +80,16 @@ process.env.DB_POSTGRESDB_HOST = 'localhost';
 process.env.DB_POSTGRESDB_PORT = '5432';
 process.env.DB_POSTGRESDB_USER = 'user';
 process.env.DB_POSTGRESDB_PASSWORD = 'pass';
+process.env.MAX_PERSISTED_EXECUTION_BYTES = '256';
 
 const {
-    loadOllamaApiKey, saveOllamaApiKey,
-    loadCredentials, saveCredentials,
-    loadAiModels, saveAiModels
+    loadCredentials, saveCredentials, upsertExecution, getExecutionById,
+    loadFullExecutionResult, saveExecutions
 } = require('../src/server/storage');
 const ProxyRotation = require('../proxy-rotation');
 
 async function runTests() {
     console.log('--- Database Storage Integration Test ---');
-
-    // Test Ollama
-    await saveOllamaApiKey(['http://ollama:11434']);
-    const ollama = await loadOllamaApiKey();
-    if (ollama[0] === 'http://ollama:11434') {
-        console.log('SUCCESS: Ollama API key saved and loaded from DB.');
-    } else {
-        console.error('FAIL: Ollama API key mismatch:', ollama);
-    }
 
     // Test Credentials
     await saveCredentials([{ label: 'test', value: 'secret' }]);
@@ -97,15 +98,6 @@ async function runTests() {
         console.log('SUCCESS: Credentials saved and loaded from DB.');
     } else {
         console.error('FAIL: Credentials mismatch:', creds);
-    }
-
-    // Test AI Models
-    await saveAiModels({ gemini: 'model-v1' });
-    const models = await loadAiModels();
-    if (models.gemini === 'model-v1') {
-        console.log('SUCCESS: AI models saved and loaded from DB.');
-    } else {
-        console.error('FAIL: AI models mismatch:', models);
     }
 
     // Test Proxies
@@ -117,6 +109,17 @@ async function runTests() {
     } else {
         console.error('FAIL: Proxy config mismatch:', proxies);
     }
+
+    // Oversized execution data remains available on demand without bloating history.
+    const fullData = { data: 'x'.repeat(2048), logs: ['complete'], outcome: 'success' };
+    await upsertExecution({ id: 'full-result', timestamp: Date.now(), result: fullData });
+    const summary = getExecutionById('full-result');
+    assert.equal(summary.result.hasFullResult, true);
+    assert.equal(summary.result.data, undefined);
+    assert.deepEqual(await loadFullExecutionResult('full-result'), fullData);
+    await saveExecutions([]);
+    assert.equal(await loadFullExecutionResult('full-result'), null);
+    console.log('SUCCESS: Oversized execution results load on demand and clean up with history.');
 
     console.log('Total DB Queries:', mockDB.queryCount);
 }

@@ -12,8 +12,8 @@ interface ExecutionConfigModalProps {
 }
 
 const modeOptions = [
-    { mode: 'agent' as const, icon: 'smart_toy', label: 'Agent Mode', description: 'Custom action sequence with logic' },
-    { mode: 'scrape' as const, icon: 'api', label: 'Scrape Mode', description: 'Fixed data extraction flow' },
+    { mode: 'agent' as const, icon: 'ads_click', label: 'Agent Mode', description: 'Custom action sequence with logic' },
+    { mode: 'scrape' as const, icon: 'language', label: 'Scrape Mode', description: 'Fixed data extraction flow' },
 ];
 
 const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpdate, onClose }) => {

@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import TablerIcon from '../../TablerIcon';
 import { ProxyPreset } from '../../../types';
+import { formatLabel } from '../../../utils/taskUtils';
 
 interface InfrastructureTabProps {
     proxies: ProxyPreset[];
@@ -136,8 +137,8 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                             <div key={p.id} className="flex items-center justify-between bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2">
                                 <div className="flex-1 min-w-0">
                                     <div className="text-xs font-bold text-white/80 truncate">{p.name}</div>
-                                    <div className="text-xs text-gray-500 font-mono">
-                                        {p.proxies?.length || 0} proxy(ies) · {p.rotationMode} · {p.stickyBinding ? 'sticky' : 'floating'}
+                                    <div className="text-xs text-gray-500">
+                                        {p.proxies?.length || 0} proxy(ies) · {formatLabel(p.rotationMode || 'sequential')} · {p.stickyBinding ? 'Sticky' : 'Floating'}
                                     </div>
                                 </div>
                                 <div className="flex gap-1">
@@ -165,13 +166,13 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                     <h4 className="text-xs font-bold text-gray-600 tracking-widest">Infrastructure Config</h4>
                     <div className="grid grid-cols-[120px_1fr] gap-2 text-xs">
                         <span className="text-gray-500">Browser pool size</span>
-                        <span className="text-white/60 font-mono">{fleetConfig?.poolSize || 10}</span>
+                        <span className="text-white/60">{fleetConfig?.poolSize || 10}</span>
                         <span className="text-gray-500">Worker limit</span>
-                        <span className="text-white/60 font-mono">{fleetConfig?.maxWorkers || 50}</span>
+                        <span className="text-white/60">{fleetConfig?.maxWorkers || 50}</span>
                         <span className="text-gray-500">Proxy bind mode</span>
-                        <span className="text-cyan-400 font-mono">{fleetConfig?.proxyBindingMode || 'STICKY_AUTO_BIND'}</span>
+                        <span className="text-cyan-400">{formatLabel(fleetConfig?.proxyBindingMode || 'STICKY_AUTO_BIND')}</span>
                         <span className="text-gray-500">Fallback strategy</span>
-                        <span className="text-white/60 font-mono">{fleetConfig?.fallbackStrategy || 'LOOP'}</span>
+                        <span className="text-white/60">{formatLabel(fleetConfig?.fallbackStrategy || 'LOOP')}</span>
                     </div>
                 </div>
             </div>

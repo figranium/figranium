@@ -1,6 +1,7 @@
 import React from 'react';
 import { Task } from '../../types';
 import CodeEditor from '../CodeEditor';
+import { formatLabel } from '../../utils/taskUtils';
 
 interface VersionPreviewModalProps {
     versionPreview: { id: string; timestamp: number; snapshot: Task } | null;
@@ -23,7 +24,7 @@ const VersionPreviewModal: React.FC<VersionPreviewModalProps> = ({
                         <div className="text-xs font-bold text-gray-500 tracking-[0.3em]">Task Snapshot</div>
                         <div className="text-lg font-bold text-white">{versionPreview.snapshot.name}</div>
                         <div className="text-xs text-gray-500 tracking-[0.2em]">
-                            {new Date(versionPreview.timestamp).toLocaleString()} | {versionPreview.snapshot.mode}
+                            {new Date(versionPreview.timestamp).toLocaleString()} | {formatLabel(versionPreview.snapshot.mode)}
                         </div>
                     </div>
                     <div className="flex items-center gap-2">

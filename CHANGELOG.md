@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.20.0] - 2026-10-03
+
+### Embedded templates
+- Added an in-app Templates catalog with featured dashboard templates, text search, category filters, popularity/newest/name sorting, pagination, previews, README and expected-output display, and one-click import into the workspace.
+- Added authenticated template catalog and detail endpoints with bounded upstream requests, catalog caching, query validation, and summary responses that keep workflow details out of listing payloads.
+- Documented template listing and detail endpoints, supported query parameters, response shapes, and workspace-session authentication in the OpenAPI specification.
+
+### Execution reliability and results
+- Added cancellation for queued executions and explicit queued/running/finished execution updates, including scheduled runs.
+- Kept large execution payloads out of bounded history records while persisting complete results separately for on-demand retrieval; added result availability metadata and cleanup alongside execution-history retention.
+- Improved task outcome normalization and presentation for stopped, queued, failed, and successful runs.
+
+### Runtime and workspace
+- Improved headful browser startup and added adaptive viewer performance profiles for constrained connections, including a lower-bandwidth VNC stream and optional page animation/media reduction.
+- Refined resource monitoring, scheduling, persistence, and server lifecycle handling, with additional regression coverage for queue cancellation, execution outcomes, and database behavior.
+- Added resizable canvas sticky notes, theme-aware loop connectors, and native Tabler file-type icons.
+- Updated task creation and dashboard navigation, consolidated settings, and removed the dedicated Captures page because capture access is handled through Executions, avoiding duplicated execution logic. Refined execution details, results, and editor controls.
+
 ## [0.19.0] - 2026-09-30
 
 ### Resource protection and retention

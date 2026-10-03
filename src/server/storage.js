@@ -4,14 +4,9 @@ const {
     USERS_FILE,
     TASKS_FILE,
     EXECUTIONS_FILE,
+    EXECUTION_RESULTS_DIR,
     CREDENTIALS_FILE,
     API_KEY_FILE,
-    GEMINI_API_KEY_FILE,
-    OPENAI_API_KEY_FILE,
-    CLAUDE_API_KEY_FILE,
-    OLLAMA_API_KEY_FILE,
-    AI_MODELS_FILE,
-    DEFAULT_AI_MODELS,
     THEME_FILE,
     DEFAULT_THEME_ID,
     CAPTCHA_SETTINGS_FILE,
@@ -378,20 +373,71 @@ let executionsWritePromise = Promise.resolve();
 let dbExecutionsCount = null;
 const MAX_PERSISTED_EXECUTION_BYTES = Number(process.env.MAX_PERSISTED_EXECUTION_BYTES || 256 * 1024);
 
-function boundedExecution(entry) {
+const executionResultPath = (id) => path.join(EXECUTION_RESULTS_DIR, `${String(id).replace(/[^a-zA-Z0-9_-]/g, '_')}.json`);
+
+async function saveFullExecutionResult(id, result) {
+    if (!id || result === undefined) return;
+    const useDB = await ensureDB();
+    if (useDB) {
+        const pool = getPool();
+        await pool.query('INSERT INTO execution_results (execution_id, data) VALUES ($1, $2) ON CONFLICT (execution_id) DO UPDATE SET data = EXCLUDED.data', [id, result]);
+        return;
+    }
+    await fs.promises.mkdir(EXECUTION_RESULTS_DIR, { recursive: true });
+    await fs.promises.writeFile(executionResultPath(id), JSON.stringify(result));
+}
+
+async function loadFullExecutionResult(id) {
+    if (!id) return null;
+    const useDB = await ensureDB();
+    if (useDB) {
+        const pool = getPool();
+        const res = await pool.query('SELECT data FROM execution_results WHERE execution_id = $1', [id]);
+        return res.rows[0]?.data || null;
+    }
+    try { return JSON.parse(await fs.promises.readFile(executionResultPath(id), 'utf8')); } catch { return null; }
+}
+
+async function deleteFullExecutionResults(ids) {
+    const safeIds = [...new Set((Array.isArray(ids) ? ids : [ids]).filter(Boolean).map(String))];
+    if (!safeIds.length) return;
+    const useDB = await ensureDB();
+    if (useDB) {
+        const pool = getPool();
+        await pool.query('DELETE FROM execution_results WHERE execution_id = ANY($1)', [safeIds]);
+        return;
+    }
+    await Promise.all(safeIds.map((id) => fs.promises.unlink(executionResultPath(id)).catch(() => undefined)));
+}
+
+async function boundedExecution(entry) {
     let copy;
     try { copy = JSON.parse(JSON.stringify(entry)); } catch { return { ...entry, result: { truncated: true, reason: 'Result was not serializable' } }; }
     if (Buffer.byteLength(JSON.stringify(copy), 'utf8') <= MAX_PERSISTED_EXECUTION_BYTES) return copy;
     const result = copy.result && typeof copy.result === 'object' ? copy.result : {};
+    let hasFullResult = false;
+    try {
+        await saveFullExecutionResult(copy.id, result);
+        hasFullResult = true;
+    } catch (error) {
+        console.error('[STORAGE] Failed to save full execution result:', error.message);
+    }
+    // Keep the history entry deliberately small and predictable. The complete
+    // payload is available through the on-demand execution result store.
     copy.result = {
-        ...result,
-        html: result.html ? '[Truncated from execution history to protect server memory.]' : result.html,
-        logs: Array.isArray(result.logs) ? result.logs.slice(0, 20).map((line) => String(line).slice(0, 2048)) : result.logs,
-        data: '[Truncated from execution history to protect server memory.]',
-        truncated: true
+        outcome: result.outcome,
+        error: typeof result.error === 'string' ? result.error.slice(0, 2048) : result.error,
+        url: result.url,
+        final_url: result.final_url,
+        finalUrl: result.finalUrl,
+        screenshot_url: result.screenshot_url,
+        screenshotUrl: result.screenshotUrl,
+        logs: Array.isArray(result.logs) ? result.logs.slice(0, 20).map((line) => String(line).slice(0, 2048)) : undefined,
+        truncated: true,
+        hasFullResult
     };
     if (Buffer.byteLength(JSON.stringify(copy), 'utf8') > MAX_PERSISTED_EXECUTION_BYTES) {
-        copy.result = { truncated: true, reason: 'Execution result exceeded history safety limit' };
+        copy.result = { truncated: true, hasFullResult };
     }
     return copy;
 }
@@ -460,8 +506,10 @@ async function saveExecutions(executions) {
         clearTimeout(executionsSaveTimer);
         executionsSaveTimer = null;
     }
+    const removedIds = (executionsCache || []).map((entry) => entry.id).filter((id) => !executions.some((entry) => entry.id === id));
     executionsCache = executions;
     syncExecutionsMap();
+    await deleteFullExecutionResults(removedIds);
 
     const useDB = await ensureDB();
     if (useDB) {
@@ -491,7 +539,7 @@ async function saveExecutions(executions) {
 async function appendExecution(entry) {
     if (!executionsCache) await loadExecutions();
 
-    entry = boundedExecution(entry);
+    entry = await boundedExecution(entry);
 
     executionsCache.unshift(entry);
     // ⚡ Bolt: Incremental Map update instead of rebuilding the entire map (O(1) vs O(N))
@@ -499,7 +547,10 @@ async function appendExecution(entry) {
 
     if (executionsCache.length > MAX_EXECUTIONS) {
         const removed = executionsCache.pop();
-        if (removed) executionsMap.delete(removed.id);
+        if (removed) {
+            executionsMap.delete(removed.id);
+            await deleteFullExecutionResults(removed.id);
+        }
     }
 
     const useDB = await ensureDB();
@@ -546,6 +597,89 @@ async function appendExecution(entry) {
             console.error('[STORAGE] Failed to save executions (debounced):', err);
         }
     }, 1000);
+}
+
+async function upsertExecution(entry) {
+    if (!entry?.id) throw new Error('Execution id is required');
+    if (!executionsCache) await loadExecutions();
+
+    entry = await boundedExecution(entry);
+    const existingIndex = executionsCache.findIndex((candidate) => candidate.id === entry.id);
+    const isNew = existingIndex < 0;
+    if (existingIndex >= 0) executionsCache[existingIndex] = entry;
+    else executionsCache.unshift(entry);
+    executionsMap.set(entry.id, entry);
+
+    if (executionsCache.length > MAX_EXECUTIONS) {
+        const removed = executionsCache.pop();
+        if (removed) {
+            executionsMap.delete(removed.id);
+            await deleteFullExecutionResults(removed.id);
+        }
+    }
+
+    const useDB = await ensureDB();
+    if (useDB) {
+        const pool = getPool();
+        await pool.query(
+            'INSERT INTO executions (id, data) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data',
+            [entry.id, entry]
+        );
+        if (isNew) {
+            if (dbExecutionsCount === null) {
+                const countRes = await pool.query('SELECT COUNT(*) FROM executions');
+                dbExecutionsCount = parseInt(countRes.rows[0].count);
+            } else {
+                dbExecutionsCount++;
+            }
+            if (dbExecutionsCount > MAX_EXECUTIONS) {
+                await pool.query(`
+                    DELETE FROM executions
+                    WHERE id IN (
+                        SELECT id FROM executions
+                        ORDER BY CAST(data->>'timestamp' AS BIGINT) ASC
+                        LIMIT 1
+                    )
+                `);
+                dbExecutionsCount--;
+            }
+        }
+        return entry;
+    }
+
+    if (executionsSaveTimer) clearTimeout(executionsSaveTimer);
+    executionsSaveTimer = setTimeout(async () => {
+        executionsSaveTimer = null;
+        try {
+            await performExecutionsWrite(JSON.stringify(executionsCache, null, 2));
+        } catch (err) {
+            console.error('[STORAGE] Failed to save executions (debounced):', err);
+        }
+    }, 1000);
+    return entry;
+}
+
+async function reconcileInFlightExecutions(startupCutoff = Date.now()) {
+    const executions = await loadExecutions();
+    const now = Date.now();
+    let changed = false;
+    for (const execution of executions) {
+        if (execution.phase !== 'queued' && execution.phase !== 'running') continue;
+        if (Number(execution.timestamp) >= startupCutoff) continue;
+        changed = true;
+        execution.phase = 'finished';
+        execution.finishedAt = now;
+        execution.durationMs = Math.max(0, now - (execution.startedAt || execution.timestamp || now));
+        execution.status = 500;
+        execution.outcome = 'crashed';
+        execution.result = {
+            ...(execution.result && typeof execution.result === 'object' ? execution.result : {}),
+            outcome: 'crashed',
+            error: 'Server restarted before the execution completed.'
+        };
+    }
+    if (changed) await saveExecutions(executions);
+    return changed;
 }
 
 // API Key Storage
@@ -657,453 +791,6 @@ async function saveApiKey(apiKeyArg) {
             await saveUsers(users);
         }
     } catch (e) { }
-}
-
-// Gemini API Key Storage
-let geminiKeysCache = null;
-let geminiKeysMtime = 0;
-let geminiKeysLastCheck = 0;
-let geminiKeysLoadPromise = null;
-
-async function loadGeminiApiKey() {
-    const useDB = await ensureDB();
-    const now = Date.now();
-
-    if (useDB) {
-        if (geminiKeysCache && (now - geminiKeysLastCheck < STORAGE_CACHE_TTL)) return geminiKeysCache;
-        if (geminiKeysLoadPromise) {
-            return await geminiKeysLoadPromise;
-        }
-
-        geminiKeysLoadPromise = (async () => {
-            try {
-                const pool = getPool();
-                if (!pool) throw new Error('Database pool not available');
-                const res = await pool.query('SELECT key FROM gemini_api_key ORDER BY id ASC');
-                geminiKeysCache = res.rows.map(row => row.key ? row.key.trim() : '').filter(k => k);
-                geminiKeysLastCheck = Date.now();
-            } catch (e) {
-                console.error('[STORAGE] Failed to load Gemini keys from DB:', e.message);
-                geminiKeysCache = geminiKeysCache || [];
-            }
-            geminiKeysLoadPromise = null;
-            return geminiKeysCache;
-        })();
-
-        return await geminiKeysLoadPromise;
-    }
-
-    if (geminiKeysCache && (now - geminiKeysLastCheck < STORAGE_CACHE_TTL)) return geminiKeysCache;
-
-    let stat;
-    try {
-        stat = await fs.promises.stat(GEMINI_API_KEY_FILE);
-    } catch {
-        geminiKeysCache = [];
-        geminiKeysMtime = 0;
-        return [];
-    }
-
-    if (geminiKeysCache && geminiKeysMtime === stat.mtimeMs) {
-        geminiKeysLastCheck = now;
-        return geminiKeysCache;
-    }
-
-    if (geminiKeysLoadPromise) {
-        return await geminiKeysLoadPromise;
-    }
-
-    geminiKeysLoadPromise = (async () => {
-        try {
-            const raw = await fs.promises.readFile(GEMINI_API_KEY_FILE, 'utf8');
-            const data = JSON.parse(raw);
-            if (Array.isArray(data.geminiApiKeys)) {
-                geminiKeysCache = data.geminiApiKeys.map(k => typeof k === 'string' ? k.trim() : '').filter(k => k);
-            } else if (data.geminiApiKey) {
-                geminiKeysCache = [data.geminiApiKey.trim()]; // backward compatibility
-            }
-            geminiKeysMtime = stat.mtimeMs;
-            geminiKeysLastCheck = Date.now();
-        } catch (e) {
-            console.error('[STORAGE] Failed to load Gemini keys from file:', e.message);
-            geminiKeysCache = geminiKeysCache || [];
-            geminiKeysMtime = 0;
-        }
-        geminiKeysLoadPromise = null;
-        return geminiKeysCache;
-    })();
-
-    return await geminiKeysLoadPromise;
-}
-
-async function saveGeminiApiKey(keysArg) {
-    const keys = (Array.isArray(keysArg) ? keysArg : (keysArg ? [keysArg] : []))
-        .map(k => typeof k === 'string' ? k.trim() : '')
-        .filter(k => k);
-
-    geminiKeysCache = keys;
-    geminiKeysLastCheck = Date.now();
-
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            await client.query('TRUNCATE gemini_api_key');
-            const rows = keys.map((key, i) => ({ id: i + 1, key }));
-            await bulkInsert(client, 'gemini_api_key', ['id', 'key'], rows);
-            await client.query('COMMIT');
-        } catch (e) {
-            await client.query('ROLLBACK');
-            console.error('[STORAGE] Failed to save Gemini keys to DB:', e.message);
-        } finally {
-            client.release();
-        }
-        return;
-    }
-
-    try {
-        await fs.promises.writeFile(GEMINI_API_KEY_FILE, JSON.stringify({ geminiApiKeys: keys }, null, 2));
-        const stat = await fs.promises.stat(GEMINI_API_KEY_FILE);
-        geminiKeysMtime = stat.mtimeMs;
-    } catch (e) {
-        console.error('[STORAGE] Failed to save Gemini keys to file:', e.message);
-    }
-}
-
-// OpenAI API Key Storage
-let openAiKeysCache = null;
-let openAiKeysMtime = 0;
-let openAiKeysLastCheck = 0;
-let openAiKeysLoadPromise = null;
-
-async function loadOpenAiApiKey() {
-    const useDB = await ensureDB();
-    const now = Date.now();
-
-    if (useDB) {
-        if (openAiKeysCache && (now - openAiKeysLastCheck < STORAGE_CACHE_TTL)) return openAiKeysCache;
-        if (openAiKeysLoadPromise) {
-            return await openAiKeysLoadPromise;
-        }
-
-        openAiKeysLoadPromise = (async () => {
-            try {
-                const pool = getPool();
-                if (!pool) throw new Error('Database pool not available');
-                const res = await pool.query('SELECT key FROM openai_api_key ORDER BY id ASC');
-                openAiKeysCache = res.rows.map(row => row.key ? row.key.trim() : '').filter(k => k);
-                openAiKeysLastCheck = Date.now();
-            } catch (e) {
-                console.error('[STORAGE] Failed to load OpenAI keys from DB:', e.message);
-                openAiKeysCache = openAiKeysCache || [];
-            }
-            openAiKeysLoadPromise = null;
-            return openAiKeysCache;
-        })();
-
-        return await openAiKeysLoadPromise;
-    }
-
-    if (openAiKeysCache && (now - openAiKeysLastCheck < STORAGE_CACHE_TTL)) return openAiKeysCache;
-
-    let stat;
-    try {
-        stat = await fs.promises.stat(OPENAI_API_KEY_FILE);
-    } catch {
-        openAiKeysCache = [];
-        openAiKeysMtime = 0;
-        return [];
-    }
-
-    if (openAiKeysCache && openAiKeysMtime === stat.mtimeMs) {
-        openAiKeysLastCheck = now;
-        return openAiKeysCache;
-    }
-
-    if (openAiKeysLoadPromise) {
-        return await openAiKeysLoadPromise;
-    }
-
-    openAiKeysLoadPromise = (async () => {
-        try {
-            const raw = await fs.promises.readFile(OPENAI_API_KEY_FILE, 'utf8');
-            const data = JSON.parse(raw);
-            if (Array.isArray(data.openAiApiKeys)) {
-                openAiKeysCache = data.openAiApiKeys.map(k => typeof k === 'string' ? k.trim() : '').filter(k => k);
-            } else if (data.openAiApiKey) {
-                openAiKeysCache = [data.openAiApiKey.trim()];
-            }
-            openAiKeysMtime = stat.mtimeMs;
-            openAiKeysLastCheck = Date.now();
-        } catch (e) {
-            console.error('[STORAGE] Failed to load OpenAI keys from file:', e.message);
-            openAiKeysCache = openAiKeysCache || [];
-            openAiKeysMtime = 0;
-        }
-        openAiKeysLoadPromise = null;
-        return openAiKeysCache;
-    })();
-
-    return await openAiKeysLoadPromise;
-}
-
-async function saveOpenAiApiKey(keysArg) {
-    const keys = (Array.isArray(keysArg) ? keysArg : (keysArg ? [keysArg] : []))
-        .map(k => typeof k === 'string' ? k.trim() : '')
-        .filter(k => k);
-
-    openAiKeysCache = keys;
-    openAiKeysLastCheck = Date.now();
-
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            await client.query('TRUNCATE openai_api_key');
-            const rows = keys.map((key, i) => ({ id: i + 1, key }));
-            await bulkInsert(client, 'openai_api_key', ['id', 'key'], rows);
-            await client.query('COMMIT');
-        } catch (e) {
-            await client.query('ROLLBACK');
-            console.error('[STORAGE] Failed to save OpenAI keys to DB:', e.message);
-        } finally {
-            client.release();
-        }
-        return;
-    }
-
-    try {
-        await fs.promises.writeFile(OPENAI_API_KEY_FILE, JSON.stringify({ openAiApiKeys: keys }, null, 2));
-        const stat = await fs.promises.stat(OPENAI_API_KEY_FILE);
-        openAiKeysMtime = stat.mtimeMs;
-    } catch (e) {
-        console.error('[STORAGE] Failed to save OpenAI keys to file:', e.message);
-    }
-}
-
-// Claude API Key Storage
-let claudeKeysCache = null;
-let claudeKeysMtime = 0;
-let claudeKeysLastCheck = 0;
-let claudeKeysLoadPromise = null;
-
-async function loadClaudeApiKey() {
-    const useDB = await ensureDB();
-    const now = Date.now();
-
-    if (useDB) {
-        if (claudeKeysCache && (now - claudeKeysLastCheck < STORAGE_CACHE_TTL)) return claudeKeysCache;
-        if (claudeKeysLoadPromise) {
-            return await claudeKeysLoadPromise;
-        }
-
-        claudeKeysLoadPromise = (async () => {
-            try {
-                const pool = getPool();
-                if (!pool) throw new Error('Database pool not available');
-                const res = await pool.query('SELECT key FROM claude_api_key ORDER BY id ASC');
-                claudeKeysCache = res.rows.map(row => row.key ? row.key.trim() : '').filter(k => k);
-                claudeKeysLastCheck = Date.now();
-            } catch (e) {
-                console.error('[STORAGE] Failed to load Claude keys from DB:', e.message);
-                claudeKeysCache = claudeKeysCache || [];
-            }
-            claudeKeysLoadPromise = null;
-            return claudeKeysCache;
-        })();
-
-        return await claudeKeysLoadPromise;
-    }
-
-    if (claudeKeysCache && (now - claudeKeysLastCheck < STORAGE_CACHE_TTL)) return claudeKeysCache;
-
-    let stat;
-    try {
-        stat = await fs.promises.stat(CLAUDE_API_KEY_FILE);
-    } catch {
-        claudeKeysCache = [];
-        claudeKeysMtime = 0;
-        return [];
-    }
-
-    if (claudeKeysCache && claudeKeysMtime === stat.mtimeMs) {
-        claudeKeysLastCheck = now;
-        return claudeKeysCache;
-    }
-
-    if (claudeKeysLoadPromise) {
-        return await claudeKeysLoadPromise;
-    }
-
-    claudeKeysLoadPromise = (async () => {
-        try {
-            const raw = await fs.promises.readFile(CLAUDE_API_KEY_FILE, 'utf8');
-            const data = JSON.parse(raw);
-            if (Array.isArray(data.claudeApiKeys)) {
-                claudeKeysCache = data.claudeApiKeys.map(k => typeof k === 'string' ? k.trim() : '').filter(k => k);
-            } else if (data.claudeApiKey) {
-                claudeKeysCache = [data.claudeApiKey.trim()];
-            }
-            claudeKeysMtime = stat.mtimeMs;
-            claudeKeysLastCheck = Date.now();
-        } catch (e) {
-            console.error('[STORAGE] Failed to load Claude keys from file:', e.message);
-            claudeKeysCache = claudeKeysCache || [];
-            claudeKeysMtime = 0;
-        }
-        claudeKeysLoadPromise = null;
-        return claudeKeysCache;
-    })();
-
-    return await claudeKeysLoadPromise;
-}
-
-async function saveClaudeApiKey(keysArg) {
-    const keys = (Array.isArray(keysArg) ? keysArg : (keysArg ? [keysArg] : []))
-        .map(k => typeof k === 'string' ? k.trim() : '')
-        .filter(k => k);
-
-    claudeKeysCache = keys;
-    claudeKeysLastCheck = Date.now();
-
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            await client.query('TRUNCATE claude_api_key');
-            const rows = keys.map((key, i) => ({ id: i + 1, key }));
-            await bulkInsert(client, 'claude_api_key', ['id', 'key'], rows);
-            await client.query('COMMIT');
-        } catch (e) {
-            await client.query('ROLLBACK');
-            console.error('[STORAGE] Failed to save Claude keys to DB:', e.message);
-        } finally {
-            client.release();
-        }
-        return;
-    }
-
-    try {
-        await fs.promises.writeFile(CLAUDE_API_KEY_FILE, JSON.stringify({ claudeApiKeys: keys }, null, 2));
-        const stat = await fs.promises.stat(CLAUDE_API_KEY_FILE);
-        claudeKeysMtime = stat.mtimeMs;
-    } catch (e) {
-        console.error('[STORAGE] Failed to save Claude keys to file:', e.message);
-    }
-}
-
-// Ollama API Key Storage (stores base URLs, e.g. http://localhost:11434)
-let ollamaKeysCache = null;
-let ollamaKeysMtime = 0;
-let ollamaKeysLastCheck = 0;
-let ollamaKeysLoadPromise = null;
-
-async function loadOllamaApiKey() {
-    const useDB = await ensureDB();
-    const now = Date.now();
-
-    if (useDB) {
-        if (ollamaKeysCache && (now - ollamaKeysLastCheck < STORAGE_CACHE_TTL)) return ollamaKeysCache;
-        if (ollamaKeysLoadPromise) return await ollamaKeysLoadPromise;
-
-        ollamaKeysLoadPromise = (async () => {
-            try {
-                const pool = getPool();
-                if (!pool) throw new Error('Database pool not available');
-                const res = await pool.query('SELECT key FROM ollama_api_key ORDER BY id ASC');
-                ollamaKeysCache = res.rows.map(row => row.key ? row.key.trim() : '').filter(k => k);
-                ollamaKeysLastCheck = Date.now();
-            } catch (e) {
-                console.error('[STORAGE] Failed to load Ollama keys from DB:', e.message);
-                ollamaKeysCache = ollamaKeysCache || [];
-            }
-            ollamaKeysLoadPromise = null;
-            return ollamaKeysCache;
-        })();
-
-        return await ollamaKeysLoadPromise;
-    }
-
-    if (ollamaKeysCache && (now - ollamaKeysLastCheck < STORAGE_CACHE_TTL)) return ollamaKeysCache;
-    if (ollamaKeysLoadPromise) return await ollamaKeysLoadPromise;
-
-    let stat;
-    try {
-        stat = await fs.promises.stat(OLLAMA_API_KEY_FILE);
-    } catch {
-        ollamaKeysCache = [];
-        ollamaKeysMtime = 0;
-        return [];
-    }
-
-    if (ollamaKeysCache && ollamaKeysMtime === stat.mtimeMs) {
-        ollamaKeysLastCheck = now;
-        return ollamaKeysCache;
-    }
-
-    ollamaKeysLoadPromise = (async () => {
-        try {
-            const raw = await fs.promises.readFile(OLLAMA_API_KEY_FILE, 'utf8');
-            const data = JSON.parse(raw);
-            if (Array.isArray(data.ollamaApiKeys)) {
-                ollamaKeysCache = data.ollamaApiKeys.map(k => typeof k === 'string' ? k.trim() : '').filter(k => k);
-            } else {
-                ollamaKeysCache = [];
-            }
-            ollamaKeysMtime = stat.mtimeMs;
-            ollamaKeysLastCheck = Date.now();
-        } catch (e) {
-            console.error('[STORAGE] Failed to load Ollama keys from file:', e.message);
-            ollamaKeysCache = ollamaKeysCache || [];
-            ollamaKeysMtime = 0;
-        }
-        ollamaKeysLoadPromise = null;
-        return ollamaKeysCache;
-    })();
-
-    return await ollamaKeysLoadPromise;
-}
-
-async function saveOllamaApiKey(keysArg) {
-    const keys = (Array.isArray(keysArg) ? keysArg : (keysArg ? [keysArg] : []))
-        .map(k => typeof k === 'string' ? k.trim() : '')
-        .filter(k => k);
-
-    ollamaKeysCache = keys;
-    ollamaKeysLastCheck = Date.now();
-
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            await client.query('TRUNCATE ollama_api_key');
-            const rows = keys.map((key, i) => ({ id: i + 1, key }));
-            await bulkInsert(client, 'ollama_api_key', ['id', 'key'], rows);
-            await client.query('COMMIT');
-        } catch (e) {
-            await client.query('ROLLBACK');
-            console.error('[STORAGE] Failed to save Ollama keys to DB:', e.message);
-        } finally {
-            client.release();
-        }
-        return;
-    }
-
-    try {
-        await fs.promises.writeFile(OLLAMA_API_KEY_FILE, JSON.stringify({ ollamaApiKeys: keys }, null, 2));
-        const stat = await fs.promises.stat(OLLAMA_API_KEY_FILE);
-        ollamaKeysMtime = stat.mtimeMs;
-    } catch (e) {
-        console.error('[STORAGE] Failed to save Ollama keys to file:', e.message);
-    }
 }
 
 // Credentials Storage
@@ -1267,52 +954,6 @@ async function pruneExecutionsBefore(cutoffMs) {
     const expiredIds = expired.map((entry) => entry.id);
     await saveExecutions(executions.filter((entry) => !expiredIds.includes(entry.id)));
     return { deleted: expiredIds.length, ids: expiredIds };
-}
-
-// AI Models Storage
-let aiModelsCache = null;
-
-async function loadAiModels() {
-    if (aiModelsCache) return aiModelsCache;
-    const useDB = await ensureDB();
-    if (useDB) {
-        try {
-            const pool = getPool();
-            if (!pool) throw new Error('Database pool not available');
-            const res = await pool.query('SELECT data FROM ai_models WHERE id = 1');
-            if (res.rows.length > 0) {
-                aiModelsCache = { ...DEFAULT_AI_MODELS, ...res.rows[0].data };
-            } else {
-                aiModelsCache = { ...DEFAULT_AI_MODELS };
-            }
-        } catch (e) {
-            console.error('[STORAGE] Failed to load AI models from DB:', e.message);
-            aiModelsCache = { ...DEFAULT_AI_MODELS };
-        }
-        return aiModelsCache;
-    }
-    try {
-        const raw = await fs.promises.readFile(AI_MODELS_FILE, 'utf8');
-        aiModelsCache = { ...DEFAULT_AI_MODELS, ...JSON.parse(raw) };
-    } catch {
-        aiModelsCache = { ...DEFAULT_AI_MODELS };
-    }
-    return aiModelsCache;
-}
-
-async function saveAiModels(models) {
-    aiModelsCache = { ...DEFAULT_AI_MODELS, ...models };
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        try {
-            await pool.query('INSERT INTO ai_models (id, data) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [aiModelsCache]);
-        } catch (e) {
-            console.error('[STORAGE] Failed to save AI models to DB:', e.message);
-        }
-        return;
-    }
-    await fs.promises.writeFile(AI_MODELS_FILE, JSON.stringify(aiModelsCache, null, 2));
 }
 
 // Theme Config Storage
@@ -1501,26 +1142,20 @@ module.exports = {
     loadExecutions,
     saveExecutions,
     getExecutionById,
+    loadFullExecutionResult,
+    deleteFullExecutionResults,
     appendExecution,
+    upsertExecution,
+    reconcileInFlightExecutions,
     flushExecutions,
     pruneExecutionsBefore,
     loadApiKey,
     saveApiKey,
-    loadGeminiApiKey,
-    saveGeminiApiKey,
-    loadOpenAiApiKey,
-    saveOpenAiApiKey,
-    loadClaudeApiKey,
-    saveClaudeApiKey,
-    loadOllamaApiKey,
-    saveOllamaApiKey,
     loadCredentials,
     saveCredentials,
     saveSession,
     loadAllowedIps,
     getStorageStateFile,
-    loadAiModels,
-    saveAiModels,
     loadThemeConfig,
     saveThemeConfig,
     loadCaptchaSettings,

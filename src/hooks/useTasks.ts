@@ -8,6 +8,7 @@ export function useTasks(
     requestConfirm: (msg: string) => Promise<boolean>
 ) {
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasksLoaded, setTasksLoaded] = useState(false);
     const [currentTask, setCurrentTask] = useState<Task | null>(null);
     const currentTaskRef = useRef<Task | null>(null);
     const latestSaveRequestRef = useRef(0);
@@ -20,9 +21,11 @@ export function useTasks(
         try {
             const res = await fetch('/api/tasks', { credentials: 'include' });
             const data = await res.json();
+            if (!res.ok || !Array.isArray(data)) throw new Error('Unable to load tasks');
             const list = Array.isArray(data) ? data : [];
             const sorted = [...list].sort((a: Task, b: Task) => (b.last_opened || 0) - (a.last_opened || 0));
             setTasks(sorted);
+            setTasksLoaded(true);
             return sorted;
         } catch (e) {
             console.error("Failed to load tasks", e);
@@ -202,6 +205,26 @@ export function useTasks(
         }
     }, [showAlert, loadTasks]);
 
+    const importTemplate = useCallback(async (configuration: unknown) => {
+        const normalized = normalizeImportedTask(configuration, 0);
+        if (!normalized) throw new Error('Invalid template configuration');
+
+        // A marketplace preset is always imported as an independent local copy.
+        const taskToCreate: Task = {
+            ...normalized,
+            id: `task_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+        };
+        const response = await fetch('/api/tasks?create=true', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskToCreate)
+        });
+        const saved = await response.json();
+        if (!response.ok) throw new Error(saved?.error || 'Failed to import template');
+        setTasks((previous) => [saved, ...previous.filter((task) => task.id !== saved.id)]);
+        return saved as Task;
+    }, []);
+
     useEffect(() => {
         loadTasks();
     }, [loadTasks]);
@@ -237,6 +260,7 @@ export function useTasks(
 
     return {
         tasks,
+        tasksLoaded,
         setTasks,
         currentTask,
         setCurrentTask,
@@ -247,6 +271,7 @@ export function useTasks(
         deleteTask,
         saveTask,
         exportTasks,
-        importTasks
+        importTasks,
+        importTemplate
     };
 }

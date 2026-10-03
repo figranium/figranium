@@ -3,14 +3,6 @@ import { createPortal } from 'react-dom';
 import TablerIcon from '../TablerIcon';
 import CopyButton from '../CopyButton';
 
-export interface ProviderConfig {
-    id: string;
-    name: string;
-    iconComponent?: React.FC<{ className?: string }>;
-    iconUrl?: string;
-    disabled?: boolean;
-}
-
 export interface DbProviderConfig {
     providerKey: 'baserow';
     name: string;
@@ -35,27 +27,14 @@ export interface ApiKeyConfig {
     readOnly?: boolean;
     startEditing?: boolean;
     badge?: string;
-    urlModel?: boolean; // treat value as JSON {url, model} — shows plain text fields instead of password
 }
 
 interface ApiKeysPanelProps {
     keys: ApiKeyConfig[];
-    availableProviders?: ProviderConfig[];
-    onAddProvider?: (providerId: string) => void;
     dbProviders?: DbProviderConfig[];
     onAddDbCredential?: (cred: { name: string; provider: 'baserow'; config: { baseUrl: string; token: string } }) => Promise<boolean>;
     onConfirm?: (msg: string) => Promise<boolean>;
 }
-
-const parseUrlModel = (raw: string | null): { url: string; model: string } => {
-    if (!raw) return { url: '', model: '' };
-    try {
-        const parsed = JSON.parse(raw);
-        return { url: parsed.url || '', model: parsed.model || '' };
-    } catch {
-        return { url: raw, model: '' };
-    }
-};
 
 const ApiKeyRow: React.FC<{
     config: ApiKeyConfig;
@@ -64,32 +43,20 @@ const ApiKeyRow: React.FC<{
     const [isEditing, setIsEditing] = useState(config.startEditing || false);
     const [editValue, setEditValue] = useState(config.startEditing ? (config.value || '') : '');
     const [showPlaintext, setShowPlaintext] = useState(false);
-    // urlModel-specific state
-    const [editUrl, setEditUrl] = useState('');
-
     const handleEditStart = () => {
-        if (config.urlModel) {
-            setEditUrl(parseUrlModel(config.value).url);
-        } else {
-            setEditValue(config.value || '');
-            setShowPlaintext(false);
-        }
+        setEditValue(config.value || '');
+        setShowPlaintext(false);
         setIsEditing(true);
     };
 
     const handleCancel = () => {
         setIsEditing(false);
         setEditValue('');
-        setEditUrl('');
         setShowPlaintext(false);
     };
 
     const handleSave = async () => {
-        if (config.urlModel) {
-            await config.onSave(editUrl.trim());
-        } else {
-            await config.onSave(editValue.trim());
-        }
+        await config.onSave(editValue.trim());
         setIsEditing(false);
     };
 
@@ -129,70 +96,6 @@ const ApiKeyRow: React.FC<{
             <TablerIcon name="delete" className="text-base" />
         </button>
     );
-
-    // ── URL + Model variant (Ollama) ─────────────────────────────────────────
-    if (config.urlModel) {
-        const parsed = parseUrlModel(config.value);
-
-        return (
-            <div className="flex flex-col gap-4 py-4 border-b border-white/5 last:border-0">
-                <div className="flex items-center gap-4">
-                    {icon}
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-white tracking-widest">{config.name}</h4>
-                            {config.badge && (
-                                <span className={`text-xs font-bold tracking-widest px-2 py-0.5 rounded-full ${config.badge === 'Primary' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-white/10 text-white/50 border border-white/10'}`}>{config.badge}</span>
-                            )}
-                        </div>
-                        <p className="text-xs text-gray-500 tracking-widest mt-1">{config.description}</p>
-                    </div>
-                </div>
-
-                {!isEditing ? (
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 rounded-2xl bg-black/40 border border-white/10 px-4 py-3 text-xs text-blue-200/80 min-h-[44px] flex items-center">
-                            {config.loading ? (
-                                <span className="opacity-50">Loading...</span>
-                            ) : config.value ? (
-                                <span className="font-mono">{parsed.url || <span className="opacity-40">No URL</span>}</span>
-                            ) : (
-                                <span className="opacity-40">Not configured</span>
-                            )}
-                        </div>
-                        {!config.readOnly && (
-                            <button onClick={handleEditStart} disabled={config.loading || config.saving} className="app-button-secondary px-6 text-xs font-bold tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0">
-                                <TablerIcon name="edit" className="text-base" />
-                                Edit
-                            </button>
-                        )}
-                        {deleteBtn}
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3 rounded-2xl bg-black/40 border border-white/30 focus-within:border-white px-4 py-3 transition-all">
-                            <input
-                                type="text"
-                                value={editUrl}
-                                onChange={e => setEditUrl(e.target.value)}
-                                disabled={config.saving}
-                                placeholder="http://localhost:11434"
-                                className="flex-1 bg-transparent text-xs text-white font-mono focus:outline-none"
-                                autoFocus
-                            />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <button onClick={handleCancel} disabled={config.saving} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-transparent border border-white/20 text-white hover:bg-white/10 transition-all disabled:opacity-50">Cancel</button>
-                            <button onClick={handleSave} disabled={config.saving || !editUrl.trim()} className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-blue-500 text-white hover:bg-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                                <TablerIcon name="save" className="text-base" />
-                                {config.saving ? 'Saving...' : 'Save'}
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
-    }
 
     // ── Standard API key variant ─────────────────────────────────────────────
     return (
@@ -294,7 +197,7 @@ const ApiKeyRow: React.FC<{
 
 type ModalView = 'list' | 'db-form';
 
-const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, onAddProvider, dbProviders, onAddDbCredential, onConfirm }) => {
+const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbCredential, onConfirm }) => {
     const [showAddMenu, setShowAddMenu] = useState(false);
     const [modalView, setModalView] = useState<ModalView>('list');
     const [selectedDb, setSelectedDb] = useState<DbProviderConfig | null>(null);
@@ -302,7 +205,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, o
     const [dbSaving, setDbSaving] = useState(false);
     const [dbError, setDbError] = useState<string | null>(null);
 
-    const hasAnything = (availableProviders && availableProviders.length > 0 && onAddProvider) || (dbProviders && dbProviders.length > 0 && onAddDbCredential);
+    const hasAnything = !!(dbProviders && dbProviders.length > 0 && onAddDbCredential);
 
     const closeModal = () => {
         setShowAddMenu(false);
@@ -397,45 +300,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, availableProviders, o
                                             <h3 className="text-2xl font-bold text-white tracking-wide mb-2">Add Key</h3>
                                             <p className="text-sm text-white/50 mb-8">Choose what you'd like to add.</p>
 
-                                            {availableProviders && availableProviders.length > 0 && onAddProvider && (
-                                                <div className="mb-8">
-                                                    <p className="text-xs font-bold text-gray-500 tracking-[0.2em] mb-4">AI Providers</p>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                        {availableProviders.map(provider => (
-                                                            <button
-                                                                key={provider.id}
-                                                                onClick={() => {
-                                                                    if (!provider.disabled) {
-                                                                        onAddProvider(provider.id);
-                                                                        closeModal();
-                                                                    }
-                                                                }}
-                                                                disabled={provider.disabled}
-                                                                className={`flex items-start gap-4 p-5 rounded-3xl border transition-all text-left ${provider.disabled
-                                                                    ? 'border-white/5 bg-white/5 opacity-40 cursor-not-allowed grayscale'
-                                                                    : 'border-white/10 hover:border-blue-400/30 hover:bg-blue-500/5 cursor-pointer group'
-                                                                    }`}
-                                                            >
-                                                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden ${provider.disabled ? 'bg-black/20' : 'bg-white/5 group-hover:scale-110 transition-transform'}`}>
-                                                                    {provider.iconUrl ? (
-                                                                        <img src={provider.iconUrl} alt={provider.name} className="w-8 h-8 object-contain drop-shadow-md" />
-                                                                    ) : provider.iconComponent ? (
-                                                                        <provider.iconComponent className="w-6 h-6 text-white" />
-                                                                    ) : (
-                                                                        <TablerIcon name="api" className="text-xl text-white" />
-                                                                    )}
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <div className="text-base font-bold text-white mb-1">{provider.name}</div>
-                                                                    <div className="text-xs text-white/50 tracking-widest">{provider.disabled ? 'Coming Soon' : 'Available'}</div>
-                                                                </div>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {dbProviders && dbProviders.length > 0 && onAddDbCredential && (
+                                            {dbProviders && dbProviders.length > 0 && (
                                                 <div>
                                                     <p className="text-xs font-bold text-gray-500 tracking-[0.2em] mb-4">Database / Output</p>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

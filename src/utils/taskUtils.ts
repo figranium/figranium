@@ -15,7 +15,13 @@ export const parseBooleanFlag = (value: any) => {
     return normalized === 'true' || normalized === '1';
 };
 
-export const formatLabel = (value: string) => value ? value[0].toUpperCase() + value.slice(1) : value;
+export const formatLabel = (value: string) => value
+    ? value
+        .trim()
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .replace(/\b[a-z]/g, character => character.toUpperCase())
+    : value;
 
 export const ensureActionIds = (task: Task) => {
     if (!task.actions || !Array.isArray(task.actions)) return task;

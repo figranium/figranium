@@ -2,10 +2,10 @@ import React from 'react';
 import TablerIcon from './TablerIcon';
 
 interface SidebarProps {
-    onNavigate: (screen: 'dashboard' | 'editor' | 'settings' | 'executions' | 'captures' | 'cabinets') => void;
+    onNavigate: (screen: 'dashboard' | 'editor' | 'templates' | 'settings' | 'executions' | 'cabinets') => void;
     onNewTask: () => void;
     onLogout: () => void;
-    currentScreen: 'dashboard' | 'editor' | 'settings' | 'executions' | 'captures' | 'cabinets';
+    currentScreen: 'dashboard' | 'editor' | 'templates' | 'settings' | 'executions' | 'cabinets';
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, currentScreen }) => {
@@ -34,10 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
 
                 {([
                     ['dashboard', 'home', 'Dashboard (Alt/Option + 1)'],
-                    ['settings', 'settings', 'Settings (Alt/Option + 2)'],
+                    ['templates', 'sketching', 'Templates (Alt/Option + 2)'],
                     ['executions', 'history', 'Executions (Alt/Option + 3)'],
-                    ['captures', 'photo_camera', 'Captures (Alt/Option + 4)'],
-                    ['cabinets', 'folders', 'Cabinets (Alt/Option + 5)'],
+                    ['cabinets', 'folders', 'Cabinets (Alt/Option + 4)'],
+                    ['settings', 'settings', 'Settings (Alt/Option + 5)'],
                 ] as const).map(([screen, icon, title]) => (
                     <button
                         key={screen}

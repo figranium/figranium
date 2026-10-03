@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, useMemo, memo } from 'react';
+import { createPortal } from 'react-dom';
 import TablerIcon from '../TablerIcon';
 import { ConfirmRequest, Results, CaptureEntry } from '../../types';
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import CaptureCard from '../CaptureCard';
 import CodeEditor from '../CodeEditor';
 import JSZip from 'jszip';
 import { SyntaxLanguage } from '../../utils/syntaxHighlight';
 import GithubStarPrompt from '../GithubStarPrompt';
 import FileTypeIcon from '../FileTypeIcon';
-import { normalizeTaskOutcome, taskOutcomeBadgeClass, taskOutcomeLabel } from '../../utils/taskOutcome';
+import { normalizeTaskOutcome, taskOutcomeIcon, taskOutcomeLabel } from '../../utils/taskOutcome';
+import { formatLabel } from '../../utils/taskUtils';
 
 interface ResultsPaneProps {
     results: Results | null;
@@ -31,18 +32,25 @@ const MAX_PREVIEW_KEYS = 200;
 const MAX_COPY_CHARS = 1000000;
 const MAX_COPY_ITEMS = 2000;
 const MAX_COPY_KEYS = 2000;
-const CAPTURE_MODAL_ITEM_HEIGHT = 360;
-const CAPTURE_MODAL_ITEM_SPACING = 12;
-const CAPTURE_MODAL_ITEM_SIZE = CAPTURE_MODAL_ITEM_HEIGHT + CAPTURE_MODAL_ITEM_SPACING;
-const CAPTURE_MODAL_MAX_VISIBLE = 4;
-const CAPTURE_MODAL_OVERSCAN = 4;
+const ResultsSkeleton = ({ animated }: { animated: boolean }) => {
+    if (!animated) {
+        return <div className="app-empty-state min-h-[240px]"><p className="text-sm theme-text-muted">Results will appear here</p></div>;
+    }
 
-const renderCaptureModalItem = ({ index, style, data }: ListChildComponentProps<CaptureEntry[]>) => {
-    const capture = data[index];
-    if (!capture) return null;
     return (
-        <div style={{ ...style, paddingBottom: CAPTURE_MODAL_ITEM_SPACING }} className="overflow-hidden">
-            <CaptureCard capture={capture} />
+        <div className="space-y-6" aria-label="Waiting for results" aria-busy="true">
+            <div className="flex items-end justify-between border-b border-white/5 pb-4">
+                <div className="space-y-3 w-2/3">
+                    <div className="results-skeleton-line h-3 w-20 results-skeleton-shine" />
+                    <div className="results-skeleton-line h-4 w-full results-skeleton-shine" />
+                </div>
+                <div className="results-skeleton-line h-6 w-6 rounded-full results-skeleton-shine" />
+            </div>
+            <div className="space-y-4">
+                {[176, 148, 196].map((height, index) => (
+                    <div key={index} className="results-skeleton-line w-full rounded-2xl results-skeleton-shine" style={{ height }} />
+                ))}
+            </div>
         </div>
     );
 };
@@ -302,7 +310,7 @@ const downloadText = (filename: string, content: string, mime: string) => {
     URL.revokeObjectURL(url);
 };
 
-const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExecuting, isHeadful, runId, mode, onConfirm, onNotify, onPin, onUnpin, fullWidth, useNovnc }) => {
+const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExecuting, isHeadful, runId, onConfirm, onNotify, onPin, onUnpin, fullWidth, useNovnc }) => {
     const [copied, setCopied] = useState<string | null>(null);
     const [dataView, setDataView] = useState<'raw' | 'table'>('raw');
     const [mainView, setMainView] = useState<'data' | 'downloads'>('data');
@@ -316,6 +324,9 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     const [capturesOpen, setCapturesOpen] = useState(false);
     const [capturesLoading, setCapturesLoading] = useState(false);
     const [captures, setCaptures] = useState<CaptureEntry[]>([]);
+    const [screenshotState, setScreenshotState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
+    const [fallbackScreenshotUrl, setFallbackScreenshotUrl] = useState<string | null>(null);
+    const [failedPrimaryScreenshotUrl, setFailedPrimaryScreenshotUrl] = useState<string | null>(null);
     const wasExecutingRef = useRef(isExecuting);
     const headfulFrameRef = useRef<HTMLDivElement | null>(null);
     const activeResults = resultView === 'pinned' && pinnedResults ? pinnedResults : results;
@@ -323,10 +334,16 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     const preview = useMemo(() => activeResults && activeResults.data !== undefined && activeResults.data !== null && activeResults.data !== ''
         ? getResultsPreview(activeResults)
         : null, [activeResults?.data]);
-    // ⚡ Bolt: Cache bust screenshotUrl only when the url itself changes, not when other activeResults fields (like logs) update
-    const screenshotSrc = useMemo(() => activeResults?.screenshotUrl
-        ? `${activeResults.screenshotUrl}${resultView === 'latest' ? `?t=${Date.now()}` : ''}`
-        : null, [activeResults?.screenshotUrl, resultView]);
+    const primaryScreenshotUrl = activeResults?.screenshotUrl || null;
+    const screenshotSrc = primaryScreenshotUrl && primaryScreenshotUrl !== failedPrimaryScreenshotUrl
+        ? primaryScreenshotUrl
+        : fallbackScreenshotUrl;
+    const hasUsableResults = Boolean(activeResults && (
+        screenshotSrc
+        || activeResults.logs?.length
+        || (activeResults.downloads && activeResults.downloads.length > 0)
+        || (activeResults.data !== undefined && activeResults.data !== null && activeResults.data !== '')
+    ));
     const renderCellValue = (value: any) => {
         const boolValue = normalizeBoolean(value);
         if (boolValue !== null) {
@@ -356,6 +373,32 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
             setCapturesLoading(false);
         }
     };
+
+    useEffect(() => {
+        let active = true;
+        setFallbackScreenshotUrl(null);
+        setFailedPrimaryScreenshotUrl(null);
+        if (activeResults?.screenshotUrl || !runId) return () => { active = false; };
+
+        void (async () => {
+            try {
+                const res = await fetch(`/api/data/captures?runId=${encodeURIComponent(runId)}`);
+                const data = res.ok ? await res.json() : { captures: [] };
+                const capture = Array.isArray(data.captures)
+                    ? data.captures.find((entry: CaptureEntry) => entry.type === 'screenshot')
+                    : null;
+                if (active && capture?.url) setFallbackScreenshotUrl(capture.url);
+            } catch {
+                // A missing capture is an expected result for some execution modes.
+            }
+        })();
+
+        return () => { active = false; };
+    }, [activeResults?.screenshotUrl, runId]);
+
+    useEffect(() => {
+        setScreenshotState(screenshotSrc ? 'loading' : 'idle');
+    }, [screenshotSrc]);
 
     useEffect(() => {
         if (tableData) {
@@ -503,18 +546,18 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
         );
     }
 
-    if (!activeResults && !(isExecuting && resultView === 'latest')) {
-        return (
-            <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-20">
-                <div className="w-16 h-16 border border-white/10 rounded-full flex items-center justify-center">
-                    <TablerIcon name="terminal" className="text-2xl text-white" />
-                </div>
-                <p className="text-xs font-bold tracking-[0.3em]">Ready</p>
-            </div>
-        );
+    if (!hasUsableResults) {
+        return <ResultsSkeleton animated={isExecuting && resultView === 'latest'} />;
     }
 
     const containerClassName = fullWidth ? 'space-y-8 relative z-10 w-full' : 'space-y-12 relative z-10 max-w-5xl mx-auto';
+    const normalizedOutcome = normalizeTaskOutcome(activeResults?.outcome);
+    const statusIndicator = resultView === 'pinned'
+        ? { name: 'star', className: 'text-amber-400', label: 'Pinned' }
+        : isExecuting
+            ? { name: 'progress_activity', className: 'text-blue-400 animate-spin', label: 'Running' }
+            : { ...taskOutcomeIcon(normalizedOutcome), label: taskOutcomeLabel(normalizedOutcome) };
+    const showCapture = Boolean(screenshotSrc && screenshotState !== 'error');
 
     return (
         <div className={containerClassName}>
@@ -523,23 +566,19 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
             )}
             <div className="flex items-end justify-between border-b border-white/5 pb-4">
                 <div className="space-y-2 min-w-0 mr-3">
-                    <p className="text-xs font-bold text-gray-500 tracking-[0.3em]">Preview</p>
-                    <h2 className="text-sm font-mono text-white truncate tracking-tight italic">
+                    <p className="text-xs font-bold text-gray-500 tracking-[0.3em]">Results</p>
+                    <h2 className="text-sm text-white truncate tracking-tight">
                         {activeResults?.finalUrl || activeResults?.url || ''}
                     </h2>
                 </div>
-                <div className={`px-4 py-2 rounded-xl border text-xs font-bold tracking-[0.2em] ${resultView === 'pinned'
-                    ? 'bg-amber-500/10 text-amber-300'
-                    : isExecuting
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 animate-pulse'
-                        : taskOutcomeBadgeClass(normalizeTaskOutcome(activeResults?.outcome))
-                    }`}>
-                    {resultView === 'pinned' ? 'Pinned' : (isExecuting ? 'Running' : taskOutcomeLabel(normalizeTaskOutcome(activeResults?.outcome)))}
+                <div role="status" aria-label={statusIndicator.label} title={statusIndicator.label} className="shrink-0 pb-0.5">
+                    <TablerIcon name={statusIndicator.name} className={`text-2xl ${statusIndicator.className}`} />
+                    <span className="sr-only">{statusIndicator.label}</span>
                 </div>
             </div>
 
-            <div className={`grid grid-cols-1 ${fullWidth ? 'gap-6' : 'xl:grid-cols-2 gap-8'}`}>
-                <div className={`glass-card overflow-hidden flex flex-col ${fullWidth ? 'rounded-2xl min-h-[260px]' : 'rounded-[32px] min-h-[400px]'}`}>
+            <div className={`grid grid-cols-1 ${fullWidth ? 'gap-6' : `${showCapture ? 'xl:grid-cols-2' : ''} gap-8`}`}>
+                {showCapture && <div className={`glass-card overflow-hidden flex flex-col ${fullWidth ? 'rounded-2xl min-h-[260px]' : 'rounded-[32px] min-h-[400px]'}`}>
                     <div className={`border-b border-white/5 flex items-center justify-between text-xs font-bold text-gray-500 tracking-widest ${fullWidth ? 'p-4' : 'p-6'}`}>
                         <span>Screenshot</span>
                         <div className="flex items-center gap-2">
@@ -558,17 +597,38 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                     </div>
                     <div className="relative bg-black flex-1 flex items-center justify-center overflow-hidden">
                         {screenshotSrc ? (
-                            <img
-                                src={screenshotSrc}
-                                className="absolute inset-0 w-full h-full object-contain transition-opacity duration-1000"
-                            />
-                        ) : mode === 'scrape' ? (
-                            <div className="text-xs font-bold text-white/20 tracking-widest px-6 text-center">Scrape mode does not support screenshots</div>
-                        ) : (
-                            <div className="text-xs font-bold text-white/5 tracking-widest">Waiting for Frame...</div>
-                        )}
+                            <>
+                                {screenshotState === 'loading' && <div className="absolute inset-4 results-skeleton-line results-skeleton-shine" />}
+                                <img
+                                    key={screenshotSrc}
+                                    src={screenshotSrc}
+                                    alt="Task result screenshot"
+                                    onLoad={() => setScreenshotState('loaded')}
+                                    onError={() => {
+                                        if (screenshotSrc === primaryScreenshotUrl && primaryScreenshotUrl) {
+                                            setFailedPrimaryScreenshotUrl(primaryScreenshotUrl);
+                                            if (runId) {
+                                                void fetch(`/api/data/captures?runId=${encodeURIComponent(runId)}`)
+                                                    .then((res) => res.ok ? res.json() : { captures: [] })
+                                                    .then((data) => {
+                                                        const capture = Array.isArray(data.captures)
+                                                            ? data.captures.find((entry: CaptureEntry) => entry.type === 'screenshot' && entry.url !== primaryScreenshotUrl)
+                                                            : null;
+                                                        setFallbackScreenshotUrl(capture?.url || null);
+                                                    })
+                                                    .catch(() => setFallbackScreenshotUrl(null));
+                                            }
+                                        } else {
+                                            setFallbackScreenshotUrl(null);
+                                        }
+                                        setScreenshotState('error');
+                                    }}
+                                    className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${screenshotState === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                            </>
+                        ) : null}
                     </div>
-                </div>
+                </div>}
                 <div className={`glass-card flex flex-col ${fullWidth ? 'rounded-2xl p-4 h-[240px]' : 'rounded-[32px] p-8 h-[400px]'}`}>
                     <div className={`flex items-center justify-between border-b border-white/5 ${fullWidth ? 'mb-4 pb-3' : 'mb-6 pb-4'}`}>
                         <span className="text-xs font-bold text-gray-500 tracking-widest">Activity Log</span>
@@ -593,13 +653,13 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                 </div>
             </div>
 
-            {capturesOpen && (
-                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
-                    <div className="glass-card rounded-[32px] w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
+            {capturesOpen && createPortal(
+                <div className="fixed inset-0 z-[220] bg-black/70 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setCapturesOpen(false)}>
+                    <div role="dialog" aria-modal="true" aria-labelledby="captures-dialog-title" className="glass-card theme-modal-elevation border theme-border-strong rounded-[32px] w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col" style={{ backgroundColor: 'var(--app-surface)' }} onClick={(event) => event.stopPropagation()}>
                         <div className="p-6 border-b border-white/10 flex items-center justify-between">
                             <div>
                                 <div className="text-xs font-bold text-gray-500 tracking-widest">Captures</div>
-                                <div className="text-sm font-bold text-white">Recordings and Screenshots</div>
+                                <div id="captures-dialog-title" className="text-sm font-bold text-white">Recordings and Screenshots</div>
                             </div>
                             <button
                                 onClick={() => setCapturesOpen(false)}
@@ -615,25 +675,10 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                             {!capturesLoading && captures.length === 0 && (
                                 <div className="text-xs text-gray-600 tracking-widest">No captures found.</div>
                             )}
-                            {!capturesLoading && captures.length > 0 && (
-                                <FixedSizeList
-                                    height={Math.min(
-                                        Math.max(CAPTURE_MODAL_ITEM_SIZE, captures.length * CAPTURE_MODAL_ITEM_SIZE),
-                                        CAPTURE_MODAL_ITEM_SIZE * CAPTURE_MODAL_MAX_VISIBLE
-                                    )}
-                                    width="100%"
-                                    itemCount={captures.length}
-                                    itemSize={CAPTURE_MODAL_ITEM_SIZE}
-                                    overscanCount={CAPTURE_MODAL_OVERSCAN}
-                                    itemData={captures}
-                                    className="custom-scrollbar"
-                                >
-                                    {renderCaptureModalItem}
-                                </FixedSizeList>
-                            )}
+                            {!capturesLoading && captures.length > 0 && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{captures.map((capture) => <CaptureCard key={capture.name} capture={capture} />)}</div>}
                         </div>
                     </div>
-                </div>
+                </div>, document.body
             )}
 
             <div className={`glass-card flex flex-col relative ${fullWidth ? 'rounded-2xl p-4' : 'rounded-[32px] p-8'}`}>
@@ -652,7 +697,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         onClick={() => setMainView(mode)}
                                         className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${mainView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
-                                        {mode}
+                                        {formatLabel(mode)}
                                     </button>
                                 ))}
                             </div>
@@ -667,7 +712,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         onClick={() => setResultView(mode)}
                                         className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${resultView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
-                                        {mode}
+                                        {formatLabel(mode)}
                                     </button>
                                 ))}
                             </div>
@@ -816,30 +861,22 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
                                     void handleCopy(copyText, 'data', { skipSizeConfirm: true, truncatedNotice: usedTruncated });
                                 }}
-                                className={`px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${copied === 'data' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
+                                className={`relative overflow-visible px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${copied === 'data' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`}
                                 title="Copy extracted data"
                             >
                                 {copied === 'data' ? <TablerIcon name="check" className="text-sm" /> : <TablerIcon name="content_copy" className="text-sm" />}
                                 {copied === 'data' ? 'Copied' : 'Copy'}
+{preview?.truncated && <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-amber-400" title="Preview truncated" aria-label="Preview truncated" />}
                             </button>
                         )}
                     </div>
                 </div>
-                {preview?.truncated && (
-                    <button
-                        type="button"
-                        onClick={() => onNotify('Preview truncated for performance.', 'error')}
-                        className="absolute top-5 right-5 h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]"
-                        title="Preview truncated"
-                        aria-label="Preview truncated"
-                    />
-                )}
                 <div className="max-h-[70vh] overflow-y-auto custom-scrollbar pr-2 relative">
                     {(() => {
                         const hasData = activeResults && activeResults.data !== undefined && activeResults.data !== null && activeResults.data !== '';
                         const hasDownloads = activeResults && activeResults.downloads && activeResults.downloads.length > 0;
                         if (isExecuting && resultView === 'latest' && (!activeResults || (!hasData && !hasDownloads))) {
-                            return <pre className="font-mono text-xs text-blue-300/60 whitespace-pre-wrap leading-relaxed">Buffering data stream...</pre>;
+                            return <p className="text-xs text-blue-300/60 leading-relaxed">Buffering data stream…</p>;
                         }
                         if (!activeResults || (!hasData && !hasDownloads)) {
                             return null;

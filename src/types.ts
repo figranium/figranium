@@ -220,9 +220,12 @@ export interface Execution {
     timestamp: number;
     method: string;
     path: string;
-    status: number;
+    status?: number;
     outcome?: TaskOutcome;
-    durationMs: number;
+    phase?: 'queued' | 'running' | 'finished';
+    startedAt?: number;
+    finishedAt?: number;
+    durationMs?: number;
     source: string;
     mode: string;
     taskId?: string | null;

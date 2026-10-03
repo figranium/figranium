@@ -1,13 +1,13 @@
 {
   "name": "figranium",
-  "version": "0.19.0",
+  "version": "0.20.0",
   "main": "index.js",
   "bin": {
     "figranium": "bin/cli.js"
   },
   "scripts": {
     "dev": "vite",
-    "server": "node server.js",
+    "server": "node --watch server.js",
     "start": "node server.js",
     "build": "tsc && vite build",
     "preview": "vite preview",

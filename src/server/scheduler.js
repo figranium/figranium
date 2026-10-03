@@ -5,7 +5,7 @@
  */
 
 const { loadTasks, saveTasks, getTaskById } = require('./storage');
-const { appendExecution } = require('./storage');
+const { upsertExecution } = require('./storage');
 const { getNextRun, scheduleToCron, isValidCron } = require('./cron-parser');
 const { normalizeTaskOutcome } = require('../agent/outcomes');
 const { acquire } = require('./execution-queue');
@@ -111,18 +111,41 @@ async function tick(taskId) {
     console.log(`[SCHEDULER] Executing task "${taskId}" (cron: ${info.cron})`);
 
     const startTime = Date.now();
+    const executionId = 'sched_' + startTime + '_' + Math.floor(Math.random() * 1000);
     let status = 'success';
     let result = null;
     let requestFailed = false;
 
+    const taskAtQueueTime = getTaskById(taskId);
+    const executionEntry = {
+        id: executionId,
+        timestamp: startTime,
+        method: 'POST',
+        path: `/api/tasks/${taskId}/api`,
+        phase: 'queued',
+        source: 'scheduler',
+        mode: taskAtQueueTime?.mode || 'unknown',
+        taskId,
+        taskName: taskAtQueueTime?.name || null,
+        url: taskAtQueueTime?.url || null
+    };
+    const { sendExecutionListUpdate } = require('./state');
+    await upsertExecution(executionEntry);
+    sendExecutionListUpdate({ type: 'upsert', execution: executionEntry });
+
     try {
-        result = await executeScheduledTask(taskId);
+        result = await executeScheduledTask(taskId, executionId, async () => {
+            executionEntry.phase = 'running';
+            executionEntry.startedAt = Date.now();
+            await upsertExecution(executionEntry);
+            sendExecutionListUpdate({ type: 'upsert', execution: executionEntry });
+        });
         status = normalizeTaskOutcome(result?.outcome, 'success');
     } catch (err) {
-        status = 'error';
-        requestFailed = true;
+        status = err?.code === 'EXECUTION_STOPPED' ? 'stopped' : 'error';
+        requestFailed = status === 'error';
         console.error(`[SCHEDULER] Task "${taskId}" failed:`, err.message);
-        result = { error: err.message };
+        result = { error: err.message, outcome: status };
     }
 
     const durationMs = Date.now() - startTime;
@@ -157,10 +180,9 @@ async function tick(taskId) {
     // Log execution
     try {
         const entry = {
-            id: 'sched_' + startTime + '_' + Math.floor(Math.random() * 1000),
-            timestamp: startTime,
-            method: 'POST',
-            path: `/api/tasks/${taskId}/api`,
+            ...executionEntry,
+            phase: 'finished',
+            finishedAt: Date.now(),
             status: requestFailed ? 500 : 200,
             outcome: status,
             durationMs,
@@ -182,8 +204,7 @@ async function tick(taskId) {
             }
         } catch { }
 
-        await appendExecution(entry);
-        const { sendExecutionListUpdate } = require('./state');
+        await upsertExecution(entry);
         sendExecutionListUpdate({ type: 'upsert', execution: entry });
     } catch (err) {
         console.error(`[SCHEDULER] Failed to log execution for task "${taskId}":`, err.message);
@@ -196,7 +217,7 @@ async function tick(taskId) {
  * Execute a task using the same logic as the API endpoint.
  * Creates mock req/res to reuse existing handlers.
  */
-async function executeScheduledTask(taskId) {
+async function executeScheduledTask(taskId, runId, onRunning) {
     await loadTasks();
     const task = getTaskById(taskId);
     if (!task) throw new Error('Task not found: ' + taskId);
@@ -235,7 +256,8 @@ async function executeScheduledTask(taskId) {
         on: () => { },
     };
 
-    const release = await acquire();
+    const release = await acquire({ runId });
+    await onRunning?.();
     try {
     return await new Promise((resolve, reject) => {
         let statusCode = 200;
@@ -255,7 +277,6 @@ async function executeScheduledTask(taskId) {
             end: () => resolve(null),
         };
 
-        const runId = 'sched_' + Date.now();
         mockReq.body.runId = runId;
 
         const handler = task.mode === 'scrape' ? handleScrape : handleAgent;

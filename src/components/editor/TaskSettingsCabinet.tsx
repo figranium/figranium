@@ -10,6 +10,7 @@ import { generateExtractionScript } from '../../utils/extractionScriptGen';
 import { taskFieldInspectId, taskGroupContainerInspectId, taskGroupFieldInspectId } from '../../utils/extractionFieldIds';
 import CustomSelect from '../common/CustomSelect';
 import { EXTRACTION_ATTRIBUTE_OPTIONS } from './extractionOptions';
+import { formatLabel } from '../../utils/taskUtils';
 
 const TRANSLATION_LANGUAGES = [
     { value: 'english', label: 'English' },
@@ -297,7 +298,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 }`}
                                         >
                                             <div className="w-8 h-8 rounded-full bg-[var(--app-input)] flex items-center justify-center">
-                                                <TablerIcon name="smart_toy" className="text-[var(--app-text-muted)]" />
+                                                <TablerIcon name="ads_click" className="text-[var(--app-text-muted)]" />
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-[var(--app-text)]">Agent Mode</div>
@@ -312,7 +313,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 }`}
                                         >
                                             <div className="w-8 h-8 rounded-full bg-[var(--app-input)] flex items-center justify-center">
-                                                <TablerIcon name="api" className="text-[var(--app-text-muted)]" />
+                                                <TablerIcon name="language" className="text-[var(--app-text-muted)]" />
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-[var(--app-text)]">Scrape Mode</div>
@@ -1168,7 +1169,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                             <div className="flex flex-col gap-1">
                                                 <div className="text-xs font-bold text-[var(--app-text)] mb-0.5">{new Date(v.timestamp).toLocaleString()}</div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--app-surface-2)] text-[var(--app-text-muted)] font-bold tracking-widest">{v.mode}</span>
+                                                    <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--app-surface-2)] text-[var(--app-text-muted)] font-bold tracking-widest">{formatLabel(v.mode)}</span>
                                                     <span className="text-xs text-[var(--app-text-faint)] truncate max-w-[150px]">{v.name || 'Untitled'}</span>
                                                 </div>
                                             </div>

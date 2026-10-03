@@ -36,7 +36,7 @@ const ResultsDrawer: React.FC<ResultsDrawerProps> = ({
 }) => {
     return (
         <div
-            className={`editor-results-drawer fixed top-0 right-0 h-full w-[420px] max-w-[90vw] bg-[#080808] border-l border-white/10 shadow-2xl transition-transform duration-500 ease-in-out z-40 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+            className={`editor-results-drawer fixed top-10 right-0 h-[calc(100%-2.5rem)] w-[420px] max-w-[90vw] bg-[#080808] border-l border-white/10 shadow-2xl transition-transform duration-500 ease-in-out z-40 transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         >
             <button
                 onClick={onToggle}
