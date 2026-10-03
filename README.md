@@ -24,8 +24,8 @@
 # What You Get
 
 - **Block‑based automation** — build flows with actions like click, type, wait, hover, and execute JavaScript against modern pages.
-- **Task API** — trigger saved tasks via HTTP (`/api/tasks/:id/api`), pass variables at runtime, and secure runs with the API key you control.
-- **Captures & Cabinets** — review screenshots and recordings in Captures, while browser downloads are routed into task-selected Cabinets for later download or upload.
+- **Task API** — trigger saved tasks via HTTP API, pass variables at runtime, and secure runs with the API key you control.
+- **Captures & Cabinets** — review screenshots and recordings, while browser downloads are routed into task-selected Cabinets for later download or upload.
 - **Proxy management** — host, rotate, or import HTTP/SOCKS proxies, flag a default, and toggle rotation per task.
 - **Task Scheduling** — run workflows automatically using visual interval/daily/weekly/monthly settings or advanced cron expressions.
 - **Security-first** — session authentication, IP allowlists, secret management, and audit trails live entirely inside your environment.
@@ -183,7 +183,6 @@ Visible browser sessions are a debugging/runtime capability, not a third task mo
 - **Dashboard** — view Task and execution metrics, search and sort Tasks, and open or create Tasks.
 - **Task Editor** — build Agent or Scrape Tasks, configure actions and extraction, test blocks, manage variables, choose a Cabinet, schedule runs, and trigger executions.
 - **Executions** — browse and filter run history, inspect outcomes and execution details, and review returned data.
-- **Captures** — review generated screenshots and recordings with open, download, copy, and delete controls.
 - **Cabinets** — manage durable file queues used by Task downloads and Upload blocks, including files, ZIPs, folders, and upload status.
 - **Settings** — manage API Keys, AI Models, User Agent, Proxies, Appearance, and About settings.
 
