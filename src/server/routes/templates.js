@@ -1,4 +1,8 @@
 const express = require('express');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const { DATA_DIR } = require('../constants');
 const { requireAuth, dataRateLimiter } = require('../middleware');
 
 const router = express.Router();
@@ -16,11 +20,11 @@ const isCatalogPreset = (preset) => preset
     && typeof preset.configuration === 'object'
     && !Array.isArray(preset.configuration);
 
-const fetchOfficial = async (url) => {
+const fetchOfficial = async (url, options = {}) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
-        return await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal });
+        return await fetch(url, { headers: { Accept: 'application/json', ...options.headers }, ...options, signal: controller.signal });
     } finally {
         clearTimeout(timer);
     }
@@ -109,6 +113,49 @@ router.get('/templates/:id', requireAuth, dataRateLimiter, async (req, res) => {
         return res.json(preset);
     } catch (error) {
         return sendCatalogError(res, error);
+    }
+});
+
+// The ID lives in the persistent data directory and is unrelated to telemetry.
+// Every installation can import freely, but contributes at most one count per template.
+const instanceIdPath = path.join(DATA_DIR, 'template-instance-id');
+let instanceId;
+const getInstanceId = () => {
+    if (instanceId) return instanceId;
+    try {
+        const existing = fs.readFileSync(instanceIdPath, 'utf8').trim();
+        if (/^[0-9a-f-]{36}$/i.test(existing)) return (instanceId = existing);
+    } catch (_) { /* Generate on first use. */ }
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const created = crypto.randomUUID();
+    try {
+        fs.writeFileSync(instanceIdPath, created, { flag: 'wx', mode: 0o600 });
+        return (instanceId = created);
+    } catch (error) {
+        if (error.code === 'EEXIST') {
+            const existing = fs.readFileSync(instanceIdPath, 'utf8').trim();
+            if (/^[0-9a-f-]{36}$/i.test(existing)) return (instanceId = existing);
+        }
+        throw error;
+    }
+};
+
+// Called only after a successful local import; failures never undo the import.
+router.post('/templates/:id/import', requireAuth, dataRateLimiter, async (req, res) => {
+    const id = req.params.id;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        return res.status(400).json({ error: 'INVALID_TEMPLATE_ID' });
+    }
+    try {
+        const upstream = await fetchOfficial(`${TEMPLATE_CATALOG_URL}/${id}/import`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ instance_id: getInstanceId() })
+        });
+        if (!upstream.ok) return res.status(502).json({ error: 'TEMPLATE_IMPORT_TRACKING_UNAVAILABLE' });
+        return res.json(await upstream.json());
+    } catch (_) {
+        return res.status(502).json({ error: 'TEMPLATE_IMPORT_TRACKING_UNAVAILABLE' });
     }
 });
 
