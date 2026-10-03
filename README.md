@@ -25,9 +25,11 @@
 
 - **Block‑based automation** — build flows with actions like click, type, wait, hover, and execute JavaScript against modern pages.
 - **Task API** — trigger saved tasks via HTTP API, pass variables at runtime, and secure runs with the API key you control.
-- **Captures & Cabinets** — review screenshots and recordings, while browser downloads are routed into task-selected Cabinets for later download or upload.
+- **Executions & Cabinets** — inspect results, screenshots, and recordings in Executions; route browser downloads into task-selected Cabinets for later download or upload.
 - **Proxy management** — host, rotate, or import HTTP/SOCKS proxies, flag a default, and toggle rotation per task.
+- **Embedded Templates** — browse, preview, and import community workflows directly from the Dashboard or task-creation menu.
 - **Task Scheduling** — run workflows automatically using visual interval/daily/weekly/monthly settings or advanced cron expressions.
+- **Reliable execution** — track queued and running tasks, cancel queued executions, and retrieve complete results beyond bounded history previews.
 - **Security-first** — session authentication, IP allowlists, secret management, and audit trails live entirely inside your environment.
 
 # Official Partners
@@ -180,11 +182,11 @@ Visible browser sessions are a debugging/runtime capability, not a third task mo
 
 # UI Walkthrough
 
-- **Dashboard** — view Task and execution metrics, search and sort Tasks, and open or create Tasks.
-- **Task Editor** — build Agent or Scrape Tasks, configure actions and extraction, test blocks, manage variables, choose a Cabinet, schedule runs, and trigger executions.
-- **Executions** — browse and filter run history, inspect outcomes and execution details, and review returned data.
+- **Dashboard** — view metrics, search and sort Tasks, explore featured Templates, and create Tasks from scratch or a Template.
+- **Task Editor** — build Agent or Scrape Tasks, configure actions and extraction, test blocks, manage variables, choose a Cabinet, schedule runs, add resizable canvas notes, and trigger executions.
+- **Executions** — browse queued, running, and completed runs; inspect outcomes, complete results, screenshots, and recordings; and cancel queued executions.
 - **Cabinets** — manage durable file queues used by Task downloads and Upload blocks, including files, ZIPs, folders, and upload status.
-- **Settings** — manage API Keys, AI Models, User Agent, Proxies, Appearance, and About settings.
+- **Settings** — manage API Keys, User Agent, Proxies, Appearance, and Advanced settings, including retention, account controls, and resource information.
 
 # Task Capabilities
 
@@ -231,6 +233,10 @@ If enabled, provide the `x-api-key` header or `Authorization: Bearer <key>`. For
 * **`GET /api/executions`**: Retrieve paginated history of past runs.
 * **`GET /api/executions/:id`**: View the steps, result data, and configuration state of a specific run.
 
+### Templates API
+* **`GET /api/templates`**: Browse the community Templates catalog with search, category, sort, and pagination.
+* **`GET /api/templates/:id`**: Retrieve an individual Template for preview or import. These endpoints require an authenticated workspace session.
+
 ### Cabinets API
 * **`GET /api/cabinets`**: List Cabinets.
 * Cabinet routes under **`/api/cabinets`** manage file queues, items, downloads, upload state, ZIP creation, and extraction.
@@ -276,7 +282,8 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 
 # Data Lifecycle
 
-- Screenshots and recordings are surfaced through the standalone Captures workspace.
+- Screenshots and recordings are accessible through **Executions**, not a separate Captures page.
+- Large execution results are persisted separately from bounded history previews and retrieved on demand; retention cleanup also removes their stored payloads.
 - Browser downloads are stored in Cabinets. Tasks can select a Cabinet, and Upload blocks can consume queued Cabinet items.
 - Browser state can persist between executions; enable a Task's stateless execution option when a run should start without persisted cookies or local storage.
 - Proxy lists, user-agent preferences, and other server settings persist under `data/`; back up that directory when those settings matter to your deployment.
@@ -291,7 +298,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 # Roadmap
 
 - [x] **Settings shortcuts** — dedicated API Keys, User Agent, Proxies, and Appearance sections let operators tune core settings without leaving the UI.
-- [x] **Storage cleanup** — the standalone Captures page lets you review captured media.
+- [x] **Unified execution history** — review results, screenshots, and recordings through Executions rather than a duplicate Captures page.
 - [x] **IP rotation tooling** — import proxies and automatically rotate them.
 - [x] **API key workflow** — manage API access without extra setup.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/405" target="_blank">Scoped API keys</a>** — support multiple individually revocable API keys with explicit permissions.
@@ -307,7 +314,8 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [ ] **<a href="https://github.com/figranium/figranium/issues/368" target="_blank">Adblocking filters</a>** — optional ad/malware filtering for execution contexts.
 - [x] **Extraction response mode** — choose between HTML+data and data-only API responses.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/369" target="_blank">Folder organization</a>** — organize Tasks and assets into named folders.
-- [ ] **<a href="https://github.com/figranium/figranium/issues/370" target="_blank">Stable capture retention</a>** — filtering, pinning, and archiving for captures.
+- [x] **Configurable capture and execution retention** — set retention in Advanced Settings, with automatic cleanup.
+- [ ] **<a href="https://github.com/figranium/figranium/issues/370" target="_blank">Capture pinning and archiving</a>** — further organization beyond configurable retention.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/371" target="_blank">Workspace templates</a>** — reusable workspace presets.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/372" target="_blank">Geo-targeted exits</a>** — choose proxy regions for Tasks.
 - [x] **Complete anti-detection coverage** — anti-detection controls across browser executions.
@@ -324,7 +332,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [x] **Autosave** — automatically persist Task changes and editor state.
 - [x] **Highlight tool** — highlight elements while building workflows.
 - [x] **Cron triggers** — schedule Tasks with cron expressions.
-- [x] **Canvas notes** — add annotations alongside workflows.
+- [x] **Resizable canvas notes** — add and resize annotations alongside workflows.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/380" target="_blank">Page triggers</a>** — trigger a Task when a page changes in a specified way.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/382" target="_blank">Task-dedicated browser state & cookie buckets</a>** — isolate or intentionally share persistent browser state between Tasks.
 
