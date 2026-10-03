@@ -5,7 +5,7 @@
 
   <a href="https://github.com/figranium/figranium/blob/main/LICENSE" target="_blank"><img src="https://img.shields.io/github/license/figranium/figranium?style=for-the-badge&label=License&color=3DA639&logo=opensourceinitiative&logoColor=white" alt="License"></a>
   <a href="https://github.com/figranium/figranium/pkgs/container/figranium" target="_blank"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffigranium%2Ffigranium%2Fmain%2Fghcr-stats.json&query=downloads_compact&label=Pulls&color=2496ED&style=for-the-badge&logo=docker&logoColor=white" alt="Docker Pulls"></a>
-  <a href="https://marketplace.digitalocean.com/apps/figranium?refcode=b7e1a1c88134" target="_blank"><img src="https://img.shields.io/badge/Deploy-0080FF?style=for-the-badge&logo=digitalocean&logoColor=white" alt="Deploy on DigitalOcean"></a>
+  <a href="https://marketplace.digitalocean.com/apps/figranium?refcode=b7e1a1c88134" target="_blank"><img src="https://img.shields.io/badge/DigitalOcean-Deploy-0080FF?style=for-the-badge&logo=digitalocean&logoColor=white" alt="Deploy on DigitalOcean"></a>
 
   <p><strong>Stack blocks visually to build complex browser workflows and execute them via API.</strong></p>
 
