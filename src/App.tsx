@@ -215,6 +215,11 @@ export default function App() {
     const handleImportTemplate = useCallback(async (template: MarketplaceTemplate) => {
         try {
             const saved = await importTemplate(template.configuration);
+            // Track only completed imports. Tracking is best-effort: it must not
+            // turn a successfully saved local task into an import failure.
+            void fetch(`/api/templates/${encodeURIComponent(template.id)}/import`, {
+                method: 'POST', credentials: 'include'
+            }).catch(() => {});
             setCurrentTask(saved);
             setResults(null);
             setTriggerExpanded(false);
