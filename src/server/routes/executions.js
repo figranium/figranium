@@ -1,6 +1,7 @@
 const express = require('express');
 const { requireAuth, requireAuthOrApiKey, requireApiKey } = require('../middleware');
-const { loadExecutions, saveExecutions, getExecutionById } = require('../storage');
+const { loadExecutions, saveExecutions, getExecutionById, loadFullExecutionResult } = require('../storage');
+const { cancelQueuedExecution } = require('../execution-queue');
 const { executionStreams, executionListStreams, stopRequests, sendExecutionUpdate, sendExecutionListUpdate } = require('../state');
 const { normalizeTaskOutcome } = require('../../agent/outcomes');
 const { requestStop } = require('../../agent/execution-control');
@@ -25,7 +26,10 @@ const summarizeExecution = (exec) => ({
     method: exec.method,
     path: exec.path,
     status: exec.status,
-    outcome: getExecutionOutcome(exec),
+    outcome: (exec.phase || 'finished') === 'finished' ? getExecutionOutcome(exec) : undefined,
+    phase: exec.phase || 'finished',
+    startedAt: exec.startedAt,
+    finishedAt: exec.finishedAt,
     durationMs: exec.durationMs,
     source: normalizeExecutionSource(exec.source),
     mode: exec.mode,
@@ -95,7 +99,17 @@ router.get('/:id', requireAuthOrApiKey, async (req, res) => {
     await loadExecutions();
     const exec = getExecutionById(req.params.id);
     if (!exec) return res.status(404).json({ error: 'EXECUTION_NOT_FOUND' });
-    res.json({ execution: { ...exec, source: normalizeExecutionSource(exec.source), outcome: getExecutionOutcome(exec) } });
+    res.json({ execution: { ...exec, source: normalizeExecutionSource(exec.source), outcome: (exec.phase || 'finished') === 'finished' ? getExecutionOutcome(exec) : undefined } });
+});
+
+router.get('/:id/result', requireAuthOrApiKey, async (req, res) => {
+    await loadExecutions();
+    const exec = getExecutionById(req.params.id);
+    if (!exec) return res.status(404).json({ error: 'EXECUTION_NOT_FOUND' });
+    if (!exec.result?.hasFullResult) return res.status(404).json({ error: 'FULL_RESULT_NOT_AVAILABLE' });
+    const result = await loadFullExecutionResult(req.params.id);
+    if (!result) return res.status(404).json({ error: 'FULL_RESULT_NOT_AVAILABLE' });
+    res.json({ result });
 });
 
 router.post('/clear', requireAuth, async (req, res) => {
@@ -109,6 +123,7 @@ router.post('/stop', requireAuth, (req, res) => {
     if (!runId) return res.status(400).json({ error: 'MISSING_RUN_ID' });
     stopRequests.add(runId);
     requestStop(runId);
+    if (cancelQueuedExecution(runId)) stopRequests.delete(runId);
     // Try to notify the stream as well
     try {
         sendExecutionUpdate(runId, { status: 'stop_requested' });

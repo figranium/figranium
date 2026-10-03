@@ -123,10 +123,6 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
     const testRunIdRef = useRef<string | null>(null);
     const testStartedAtRef = useRef(0);
 
-    const [showAiPrompt, setShowAiPrompt] = useState(false);
-    const [aiDescription, setAiDescription] = useState('');
-    const [aiLoading, setAiLoading] = useState(false);
-    const [aiError, setAiError] = useState<string | null>(null);
     const [cabinets, setCabinets] = useState<{ id: string; name: string }[]>([]);
     useEffect(() => {
         if (action.type !== 'upload') return;
@@ -135,27 +131,6 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
         }).catch(() => undefined);
     }, [action.type]);
 
-    const handleGenerateScript = async () => {
-        if (!aiDescription.trim()) return;
-        setAiLoading(true);
-        setAiError(null);
-        try {
-            const res = await fetch('/api/tasks/generate-script', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description: aiDescription.trim() })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.details ? `${data.error}: ${data.details}` : (data.error || 'Generation failed'));
-            onUpdate(action.id, { value: data.script });
-            setShowAiPrompt(false);
-            setAiDescription('');
-        } catch (e: any) {
-            setAiError(e.message);
-        } finally {
-            setAiLoading(false);
-        }
-    };
     const stopTest = useCallback((recordStoppedResult = true) => {
         const runId = testRunIdRef.current;
         if (runId) {
@@ -427,42 +402,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 {(action.type === 'navigate' || action.type === 'type' || action.type === 'select' || action.type === 'wait' || action.type === 'wait_selector' || action.type === 'javascript' || action.type === 'csv') && (
                     action.type === 'javascript' ? (
                         <div className="space-y-1.5">
-                            <div className="flex items-center justify-between">
-                                <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Script</label>
-                                <button
-                                    onClick={() => { setShowAiPrompt(v => !v); setAiError(null); }}
-                                    className="flex items-center gap-1 text-xs font-bold tracking-widest text-white/60 hover:text-white transition-colors"
-                                    title="Generate with AI"
-                                >
-                                    <TablerIcon name="auto_awesome" className="text-sm" />
-                                    Generate
-                                </button>
-                            </div>
-                            {showAiPrompt && (
-                                <div className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/10">
-                                    <input
-                                        autoFocus
-                                        type="text"
-                                        value={aiDescription}
-                                        onChange={e => setAiDescription(e.target.value)}
-                                        onKeyDown={e => { if (e.key === 'Enter' && !aiLoading) handleGenerateScript(); }}
-                                        placeholder="e.g. extract all article titles and links"
-                                        className="bg-transparent text-xs text-white placeholder-gray-600 focus:outline-none"
-                                    />
-                                    {aiError && <p className="text-xs text-red-400">{aiError}</p>}
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={() => { setShowAiPrompt(false); setAiError(null); }} className="text-xs font-bold tracking-widest text-gray-500 hover:text-white transition-colors">Cancel</button>
-                                        <button
-                                            onClick={handleGenerateScript}
-                                            disabled={aiLoading || !aiDescription.trim()}
-                                            className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                                        >
-                                            {aiLoading && <TablerIcon name="autorenew" className="text-xs animate-spin" />}
-                                            {aiLoading ? 'Generating…' : 'Generate'}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Script</label>
                             {inputWrap(
                                 <CodeEditor
                                     value={action.value || ''}

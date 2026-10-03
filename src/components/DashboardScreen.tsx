@@ -4,19 +4,25 @@ import TablerIcon from './TablerIcon';
 import TaskCard from './TaskCard';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
 import CustomSelect from './common/CustomSelect';
+import CreateTaskSplitButton from './CreateTaskSplitButton';
+import type { MarketplaceTemplate } from './TemplateGallery';
+import FeaturedTemplates from './FeaturedTemplates';
 
 interface DashboardScreenProps {
     tasks: Task[];
+    tasksLoaded: boolean;
     onNewTask: () => void;
     onEditTask: (task: Task) => void;
     onDeleteTask: (id: string) => void;
     onExportTasks: (taskIds?: string[]) => void;
     onImportTasks: (file: File) => void;
+    onCreateFromTemplate: () => void;
+    onImportTemplate: (template: MarketplaceTemplate) => Promise<void>;
 }
 
 type TaskSort = 'recent' | 'name' | 'mode' | 'actions';
 
-const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onEditTask, onDeleteTask, onExportTasks, onImportTasks }) => {
+const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, onNewTask, onEditTask, onDeleteTask, onExportTasks, onImportTasks, onCreateFromTemplate, onImportTemplate }) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -65,7 +71,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
         let succeeded = 0;
         let failed = 0;
         let totalDuration = 0;
+        let finishedCount = 0;
         for (const execution of executions) {
+            if ((execution.phase || 'finished') !== 'finished') continue;
+            finishedCount += 1;
             const outcome = normalizeTaskOutcome(execution.outcome, execution.status);
             if (outcome === 'success') succeeded += 1;
             if (outcome === 'error' || outcome === 'crashed' || outcome === 'anti_bot') failed += 1;
@@ -75,8 +84,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
             { label: 'Tasks', value: String(tasks.length) },
             { label: 'Executions', value: String(executions.length) },
             { label: 'Failed executions', value: String(failed) },
-            { label: 'Success rate', value: executions.length ? `${Math.round((succeeded / executions.length) * 100)}%` : '0%' },
-            { label: 'Average runtime', value: executions.length ? `${Math.round(totalDuration / executions.length)}ms` : '0ms' },
+            { label: 'Success rate', value: finishedCount ? `${Math.round((succeeded / finishedCount) * 100)}%` : '0%' },
+            { label: 'Average runtime', value: finishedCount ? `${Math.round(totalDuration / finishedCount)}ms` : '0ms' },
         ];
     }, [executions, tasks.length]);
 
@@ -105,9 +114,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                             <button onClick={() => fileInputRef.current?.click()} className="app-button-secondary" title="Import Tasks">
                                 <TablerIcon name="upload" className="text-base" /> Import
                             </button>
-                            <button onClick={onNewTask} className="app-button-primary shine-effect" aria-label="Create new Task (Alt + N)" title="Create new Task (Alt + N)">
-                                <TablerIcon name="add" className="text-base" /> Create Task
-                            </button>
+                            <CreateTaskSplitButton onStartFromScratch={onNewTask} onCreateFromTemplate={onCreateFromTemplate} />
                             <input ref={fileInputRef} type="file" accept="application/json" multiple className="hidden" onChange={handleFileChange} />
                         </div>
                     </header>
@@ -152,6 +159,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                             <div>
                                 {visibleTasks.map((task) => <TaskCard key={task.id} task={task} onEditTask={onEditTask} onDeleteTask={onDeleteTask} />)}
                             </div>
+                        ) : !tasksLoaded && !tasks.length ? (
+                            <div className="app-empty-state"><div className="app-empty-icon"><TablerIcon name="progress_activity" className="text-2xl animate-spin" /></div><p className="text-xs theme-text-faint">Loading tasks…</p></div>
+                        ) : !tasks.length ? (
+                            <FeaturedTemplates onImport={onImportTemplate} onStartFromScratch={onNewTask} />
                         ) : (
                             <div className="app-empty-state">
                                 <div className="app-empty-icon"><TablerIcon name={tasks.length ? 'search_off' : 'account_tree'} className="text-2xl" /></div>
@@ -159,9 +170,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                                     <h3 className="text-sm font-bold theme-text">{tasks.length ? 'No matching Tasks' : 'Create your first Task'}</h3>
                                     <p className="mt-2 text-xs theme-text-faint">{tasks.length ? 'Try another search term.' : 'Build a Task in the visual editor and run it when you are ready.'}</p>
                                 </div>
-                                <button onClick={tasks.length ? () => setSearchQuery('') : onNewTask} className="app-button-primary">
-                                    <TablerIcon name={tasks.length ? 'close' : 'add'} className="text-base" /> {tasks.length ? 'Clear search' : 'Create Task'}
-                                </button>
+                                <button onClick={() => setSearchQuery('')} className="app-button-primary"><TablerIcon name="close" className="text-base" /> Clear search</button>
                             </div>
                         )}
                     </section>
@@ -172,18 +181,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, onNewTask, onE
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsExportModalOpen(false)} />
                     <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-full slide-up">
-                        <div className="p-6 sm:p-8 shrink-0"><h3 className="text-xl font-bold text-white tracking-tight">Export Tasks</h3><p className="text-xs text-white/50 mt-2 font-mono">Select the Tasks you want to export.</p></div>
+                        <div className="p-6 sm:p-8 shrink-0"><h3 className="text-xl font-bold text-white tracking-tight">Export Tasks</h3><p className="text-xs text-white/50 mt-2">Select the Tasks you want to export.</p></div>
                         <div className="px-6 sm:px-8 pb-4 flex items-center gap-3 shrink-0 border-b border-white/5">
                             <button onClick={() => setSelectedTaskIds(tasks.flatMap((task) => task.id ? [task.id] : []))} className="text-xs font-bold tracking-widest text-blue-400 hover:text-blue-300">Select All</button>
                             <span className="text-white/20">|</span>
                             <button onClick={() => setSelectedTaskIds([])} className="text-xs font-bold tracking-widest text-white/40 hover:text-white/80">Deselect All</button>
-                            <div className="flex-1" /><span className="text-xs font-mono text-white/30">{selectedTaskIds.length} selected</span>
+                            <div className="flex-1" /><span className="text-xs text-white/30">{selectedTaskIds.length} selected</span>
                         </div>
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-2">
                             {tasks.map((task) => task.id ? (
                                 <button key={task.id} onClick={() => toggleExportSelection(task.id!)} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedTaskIds.includes(task.id) ? 'bg-blue-500/10 border-blue-500/30' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
                                     <div className={`w-5 h-5 rounded flex items-center justify-center border ${selectedTaskIds.includes(task.id) ? 'bg-blue-500 border-blue-400 text-white' : 'border-white/20'}`}>{selectedTaskIds.includes(task.id) ? <TablerIcon name="check" className="text-[14px]" /> : null}</div>
-                                    <div className="flex-1 min-w-0"><div className="text-sm font-bold text-white truncate">{task.name || 'Untitled'}</div><div className="text-xs text-white/40 font-mono truncate">{task.url || 'No URL'}</div></div>
+                                    <div className="flex-1 min-w-0"><div className="text-sm font-bold text-white truncate">{task.name || 'Untitled'}</div><div className="text-xs text-white/40 truncate">{task.url || 'No URL'}</div></div>
                                 </button>
                             ) : null)}
                         </div>

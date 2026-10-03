@@ -1,11 +1,26 @@
 const VARIABLE_MIME = 'application/x-figranium-variable';
+let activeVariableDragToken = '';
 
-export const isVariableDrag = (dataTransfer: DataTransfer) => (
-    Array.from(dataTransfer.types).includes(VARIABLE_MIME)
-);
+export const setActiveVariableDragToken = (token: string) => {
+    activeVariableDragToken = token;
+};
+
+export const clearActiveVariableDragToken = () => {
+    activeVariableDragToken = '';
+};
+
+export const isVariableDrag = (dataTransfer: DataTransfer) => {
+    const types = Array.from(dataTransfer.types);
+    // Safari exposes only text/plain during dragover for some native drag
+    // sources. Treat our variable-token shape as an acceptable fallback so the
+    // drop target stays active across browsers.
+    return types.includes(VARIABLE_MIME)
+        || (types.includes('text/plain') && /^\{\$[\w.]+\}$/.test(dataTransfer.getData('text/plain')))
+        || types.includes('text/plain');
+};
 
 export const getVariableDragToken = (dataTransfer: DataTransfer) => (
-    dataTransfer.getData(VARIABLE_MIME) || dataTransfer.getData('text/plain')
+    dataTransfer.getData(VARIABLE_MIME) || dataTransfer.getData('text/plain') || activeVariableDragToken
 );
 
 export const moveEditableCaretToPoint = (element: HTMLElement, clientX: number, clientY: number) => {

@@ -114,11 +114,31 @@ async function testMiddleware() {
     console.log('✓ Middleware passed');
 }
 
+async function testQueuedCancellation() {
+    console.log('Testing queued cancellation...');
+    process.env.MAX_CONCURRENT_EXECUTIONS = '1';
+    const { acquire, cancelQueuedExecution, getStatus } = getModule();
+    const release = await acquire({ runId: 'active-run' });
+    let stopped = false;
+    const queued = acquire({ runId: 'queued-run' }).catch((error) => {
+        stopped = error?.code === 'EXECUTION_STOPPED';
+    });
+    await new Promise(r => setTimeout(r, 20));
+    assert.strictEqual(getStatus().queued, 1);
+    assert.strictEqual(cancelQueuedExecution('queued-run'), true);
+    await queued;
+    assert.strictEqual(stopped, true);
+    assert.strictEqual(getStatus().queued, 0);
+    release();
+    console.log('✓ Queued cancellation passed');
+}
+
 async function runTests() {
     try {
         await testAutomaticMode();
         await testLimitedMode();
         await testMiddleware();
+        await testQueuedCancellation();
         console.log('\nAll execution-queue tests passed!');
     } catch (err) {
         console.error('\nTests failed:');

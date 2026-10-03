@@ -69,50 +69,21 @@ async function initDB() {
                     );
                 `);
                 await client.query(`
+                    CREATE TABLE IF NOT EXISTS execution_results (
+                        execution_id VARCHAR(255) PRIMARY KEY,
+                        data JSONB NOT NULL
+                    );
+                `);
+                await client.query(`
                     CREATE TABLE IF NOT EXISTS api_key (
                         id INT PRIMARY KEY DEFAULT 1,
                         key TEXT NOT NULL
                     );
                 `);
-                await client.query(`
-                    CREATE TABLE IF NOT EXISTS gemini_api_key (
-                        id SERIAL PRIMARY KEY,
-                        key TEXT NOT NULL
-                    );
-                `);
-                await client.query(`
-                    CREATE TABLE IF NOT EXISTS openai_api_key (
-                        id SERIAL PRIMARY KEY,
-                        key TEXT NOT NULL
-                    );
-                `);
-                await client.query(`
-                    CREATE TABLE IF NOT EXISTS claude_api_key (
-                        id SERIAL PRIMARY KEY,
-                        key TEXT NOT NULL
-                    );
-                `);
-
                 await client.query('ALTER TABLE api_key ALTER COLUMN key TYPE TEXT');
-                await client.query('ALTER TABLE gemini_api_key ALTER COLUMN key TYPE TEXT');
-                await client.query('ALTER TABLE openai_api_key ALTER COLUMN key TYPE TEXT');
-                await client.query('ALTER TABLE claude_api_key ALTER COLUMN key TYPE TEXT');
-
-                await client.query(`
-                    CREATE TABLE IF NOT EXISTS ollama_api_key (
-                        id SERIAL PRIMARY KEY,
-                        key TEXT NOT NULL
-                    );
-                `);
                 await client.query(`
                     CREATE TABLE IF NOT EXISTS credentials (
                         id SERIAL PRIMARY KEY,
-                        data JSONB NOT NULL
-                    );
-                `);
-                await client.query(`
-                    CREATE TABLE IF NOT EXISTS ai_models (
-                        id INT PRIMARY KEY DEFAULT 1,
                         data JSONB NOT NULL
                     );
                 `);

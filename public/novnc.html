@@ -73,10 +73,13 @@
       const host = params.get('host') || window.location.hostname;
       const port = params.get('port') || window.location.port;
       const rawPath = params.get('path') || 'websockify';
-      const path = rawPath.replace(/^\/+/, '');
+      const rawLowPath = params.get('lowPath') || 'websockify-low';
       const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
       const hostPort = port ? `${host}:${port}` : host;
-      const wsUrl = `${proto}://${hostPort}/${path}`;
+      const makeWsUrl = (profile) => {
+        const rawPathForProfile = profile === 'severe' ? rawLowPath : rawPath;
+        return `${proto}://${hostPort}/${rawPathForProfile.replace(/^\/+/, '')}`;
+      };
 
       const statusEl = document.getElementById('status');
       const screen = document.getElementById('screen');
@@ -84,12 +87,28 @@
       const MAX_RETRIES = 3;
       const PASSWORD_TIMEOUT_MS = 10_000;
       const CONNECT_TIMEOUT_MS = 12_000;
+      const PROBE_INTERVAL_MS = 30_000;
+      const RECOVERY_WINDOW_MS = 120_000;
       let retryCount = 0;
       let connectedAt = null;
       let activeRfb = null;
       let connectTimer = null;
       let retryTimer = null;
       let terminalFailure = false;
+      let switchingProfile = false;
+      let profile = 'full';
+      let poorSamples = 0;
+      let healthySamples = 0;
+      let healthySince = null;
+      let probeTimer = null;
+      let severeFeedAvailable = false;
+
+      const profileSettings = {
+        full: { quality: 7, compression: 3 },
+        constrained: { quality: 4, compression: 6 },
+        severe: { quality: 3, compression: 8 }
+      };
+      const profileRank = { full: 0, constrained: 1, severe: 2 };
 
       const clearConnectTimer = () => {
         if (connectTimer !== null) {
@@ -104,6 +123,123 @@
         if (retryTimer !== null) clearTimeout(retryTimer);
         statusEl.textContent = message;
         window.parent?.postMessage({ type: 'figranium-headful-viewer-failed' }, window.location.origin);
+      };
+
+      const describeConnection = () => {
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        return connection ? {
+          effectiveType: connection.effectiveType || null,
+          downlink: Number.isFinite(connection.downlink) ? connection.downlink : null,
+          rtt: Number.isFinite(connection.rtt) ? connection.rtt : null
+        } : null;
+      };
+
+      async function measureConnection() {
+        const startedAt = performance.now();
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12_000);
+        try {
+          const response = await fetch(`/api/headful/connection-probe?sample=${Date.now()}`, {
+            cache: 'no-store', signal: controller.signal, credentials: 'same-origin'
+          });
+          if (!response.ok) throw new Error('Probe unavailable');
+          const body = await response.arrayBuffer();
+          const elapsed = Math.max(performance.now() - startedAt, 1);
+          return {
+            mbps: (body.byteLength * 8) / (elapsed * 1000),
+            latency: elapsed,
+            hint: describeConnection()
+          };
+        } catch {
+          return { mbps: null, latency: null, hint: describeConnection() };
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+
+      const profileForMeasurement = ({ mbps, latency, hint }) => {
+        const hintedSevere = ['slow-2g', '2g'].includes(hint?.effectiveType) || (hint?.downlink !== null && hint?.downlink < 1.5) || (hint?.rtt !== null && hint?.rtt > 450);
+        const measuredSevere = (mbps !== null && mbps < 1.5) || (latency !== null && latency > 450);
+        if (hintedSevere || measuredSevere) return severeFeedAvailable ? 'severe' : 'constrained';
+        const hintedConstrained = hint?.effectiveType === '3g' || (hint?.downlink !== null && hint?.downlink < 5) || (hint?.rtt !== null && hint?.rtt > 180);
+        const measuredConstrained = (mbps !== null && mbps < 5) || (latency !== null && latency > 180);
+        return hintedConstrained || measuredConstrained ? 'constrained' : 'full';
+      };
+
+      const notifyProfile = async () => {
+        try {
+          await fetch('/api/headful/viewer-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ profile })
+          });
+        } catch {
+          // The viewer can still optimize transport if the browser session ends mid-sample.
+        }
+      };
+
+      const applyRfbProfile = (rfb) => {
+        const settings = profileSettings[profile];
+        rfb.qualityLevel = settings.quality;
+        rfb.compressionLevel = settings.compression;
+        rfb.scaleViewport = true;
+        rfb.resizeSession = false;
+        rfb.showDotCursor = false;
+        rfb.clipViewport = false;
+      };
+
+      const switchProfile = async (nextProfile, reason) => {
+        if (nextProfile === profile || terminalFailure) return;
+        const wasSevere = profile === 'severe';
+        profile = nextProfile;
+        console.info('[HEADFUL VIEWER] Profile changed to', profile, reason);
+        await notifyProfile();
+        if (activeRfb && (wasSevere || profile === 'severe')) {
+          switchingProfile = true;
+          const previous = activeRfb;
+          activeRfb = null;
+          try { previous.disconnect(); } catch { /* ignore */ }
+          switchingProfile = false;
+          statusEl.textContent = profile === 'severe' ? 'Optimizing for connection...' : 'Restoring full resolution...';
+          statusEl.classList.remove('hidden');
+          setTimeout(initVNC, 50);
+          return;
+        }
+        if (activeRfb) applyRfbProfile(activeRfb);
+      };
+
+      const evaluateConnection = async () => {
+        const measurement = await measureConnection();
+        const target = profileForMeasurement(measurement);
+        console.info('[HEADFUL VIEWER] Connection sample', { ...measurement, target, profile });
+        if (profileRank[target] > profileRank[profile]) {
+          poorSamples += 1;
+          healthySamples = 0;
+          healthySince = null;
+          if (poorSamples >= 2) {
+            poorSamples = 0;
+            await switchProfile(target, 'sustained poor connection');
+          }
+        } else if (profileRank[target] < profileRank[profile]) {
+          poorSamples = 0;
+          healthySamples += 1;
+          healthySince = healthySince || Date.now();
+          if (healthySamples >= 3 && Date.now() - healthySince >= RECOVERY_WINDOW_MS) {
+            healthySamples = 0;
+            healthySince = null;
+            await switchProfile(target, 'sustained connection recovery');
+          }
+        } else {
+          poorSamples = 0;
+          healthySamples = 0;
+          healthySince = null;
+        }
+      };
+
+      const startProbing = () => {
+        if (probeTimer !== null) return;
+        probeTimer = setInterval(() => { evaluateConnection(); }, PROBE_INTERVAL_MS);
       };
 
       const retryConnection = (message) => {
@@ -147,7 +283,7 @@
 
         let rfb;
         try {
-          const viewerUrl = new URL(wsUrl);
+          const viewerUrl = new URL(makeWsUrl(profile));
           viewerUrl.searchParams.set('viewerTicket', credentials.viewerTicket);
           rfb = new RFB(screen, viewerUrl.toString(), { credentials: { password: credentials.password } });
         } catch (err) {
@@ -155,10 +291,7 @@
           return;
         }
         activeRfb = rfb;
-        rfb.scaleViewport = true;
-        rfb.resizeSession = true;
-        rfb.showDotCursor = false;
-        rfb.clipViewport = false;
+        applyRfbProfile(rfb);
 
         const sendKey = (keysym, code, down) => {
           if (typeof rfb.sendKey !== 'function') return;
@@ -183,11 +316,14 @@
           modifiers.forEach(([keysym, code]) => sendKey(keysym, code, false));
         };
 
+        const clearActiveModifiers = () => {
+          if (activeRfb === rfb) clearModifiers();
+        };
         window.addEventListener('focus', () => {
-          clearModifiers();
+          clearActiveModifiers();
         });
         window.addEventListener('blur', () => {
-          clearModifiers();
+          clearActiveModifiers();
         });
 
         rfb.addEventListener('connect', () => {
@@ -196,10 +332,12 @@
           connectedAt = Date.now();
           retryCount = 0;
           statusEl.classList.add('hidden');
+          startProbing();
         });
         rfb.addEventListener('disconnect', () => {
           if (rfb !== activeRfb) return;
           activeRfb = null;
+          if (switchingProfile) return;
           const droppedQuickly = connectedAt !== null && (Date.now() - connectedAt) < 4000;
           connectedAt = null;
           statusEl.classList.remove('hidden');
@@ -214,7 +352,29 @@
         }, CONNECT_TIMEOUT_MS);
       }
 
-      initVNC();
+      window.addEventListener('pagehide', () => {
+        terminalFailure = true;
+        if (probeTimer !== null) clearInterval(probeTimer);
+        try { activeRfb?.disconnect(); } catch { /* ignore */ }
+        fetch('/headful/stop', { method: 'POST', credentials: 'same-origin', keepalive: true }).catch(() => {});
+      });
+
+      const bootstrap = async () => {
+        try {
+          const response = await fetch('/api/headful/status', { cache: 'no-store', credentials: 'same-origin' });
+          const status = response.ok ? await response.json() : null;
+          severeFeedAvailable = Boolean(status?.adaptiveProfiles?.includes('severe'));
+        } catch {
+          severeFeedAvailable = false;
+        }
+        const initialHint = describeConnection();
+        if (severeFeedAvailable && ['slow-2g', '2g'].includes(initialHint?.effectiveType)) profile = 'severe';
+        notifyProfile();
+        initVNC();
+        evaluateConnection();
+      };
+
+      bootstrap();
 
     </script>
   </body>

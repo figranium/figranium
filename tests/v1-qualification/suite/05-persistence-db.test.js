@@ -131,10 +131,10 @@ const tests = [
                     SELECT table_name
                     FROM information_schema.tables
                     WHERE table_schema = 'public'
-                      AND table_name IN ('users','tasks','executions','api_key','credentials','ai_models','proxies_config','captcha_settings')
+                      AND table_name IN ('users','tasks','executions','execution_results','api_key','credentials','proxies_config','captcha_settings')
                 `);
                 const tableNames = new Set(tables.rows.map(r => r.table_name));
-                for (const table of ['users','tasks','executions','api_key','credentials','ai_models','proxies_config','captcha_settings']) {
+                for (const table of ['users','tasks','executions','execution_results','api_key','credentials','proxies_config','captcha_settings']) {
                     assert.ok(tableNames.has(table), `Expected PostgreSQL table ${table}`);
                 }
 
@@ -143,10 +143,10 @@ const tests = [
                     FROM information_schema.columns
                     WHERE table_schema = 'public'
                       AND column_name = 'key'
-                      AND table_name IN ('api_key','gemini_api_key','openai_api_key','claude_api_key')
+                      AND table_name = 'api_key'
                 `);
                 const types = new Map(columns.rows.map(r => [r.table_name, r.data_type]));
-                for (const table of ['api_key','gemini_api_key','openai_api_key','claude_api_key']) {
+                for (const table of ['api_key']) {
                     assert.strictEqual(types.get(table), 'text', `${table}.key must be migrated to TEXT`);
                 }
             } finally {

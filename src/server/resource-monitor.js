@@ -1,6 +1,7 @@
 const os = require('os');
 const fs = require('fs');
 const EventEmitter = require('events');
+const { execFileSync } = require('child_process');
 
 const MiB = 1024 * 1024;
 const numberEnv = (name, fallback) => {
@@ -15,6 +16,35 @@ function numericFile(file) {
         const value = Number(raw);
         return Number.isFinite(value) && value > 0 ? value : null;
     } catch { return null; }
+}
+
+function parseDarwinAvailableBytes(raw) {
+    if (typeof raw !== 'string') return null;
+    const pageSize = Number(raw.match(/page size of (\d+) bytes/i)?.[1]);
+    if (!Number.isFinite(pageSize) || pageSize <= 0) return null;
+
+    const pagesFor = (label) => {
+        const match = raw.match(new RegExp(`^${label}:\\s+(\\d+)\\.`, 'm'));
+        return match ? Number(match[1]) : 0;
+    };
+    const availablePages = pagesFor('Pages free')
+        + pagesFor('Pages inactive')
+        + pagesFor('Pages speculative');
+    return availablePages > 0 ? availablePages * pageSize : null;
+}
+
+function darwinAvailableMemory() {
+    if (process.platform !== 'darwin') return null;
+    try {
+        const output = execFileSync('/usr/bin/vm_stat', [], {
+            encoding: 'utf8',
+            timeout: 1000,
+            stdio: ['ignore', 'pipe', 'ignore']
+        });
+        return parseDarwinAvailableBytes(output);
+    } catch {
+        return null;
+    }
 }
 
 // Docker can place a process below the cgroup mount root. Reading only
@@ -46,7 +76,10 @@ function cgroupMemory() {
 
 function snapshot() {
     const hostTotal = os.totalmem();
-    const hostFree = os.freemem();
+    // On macOS, os.freemem() excludes inactive/speculative pages that the OS
+    // can reclaim immediately. Using it directly can permanently pause the
+    // execution queue even while the system reports healthy memory pressure.
+    const hostFree = darwinAvailableMemory() ?? os.freemem();
     const cgroup = cgroupMemory();
     const totalBytes = cgroup?.limitBytes && cgroup.limitBytes < hostTotal ? cgroup.limitBytes : hostTotal;
     const cgroupFree = cgroup?.limitBytes && cgroup.usedBytes != null ? Math.max(0, cgroup.limitBytes - cgroup.usedBytes) : null;
@@ -110,4 +143,4 @@ class ResourceMonitor extends EventEmitter {
 }
 
 const resourceMonitor = new ResourceMonitor();
-module.exports = { ResourceMonitor, resourceMonitor, snapshot, deriveConcurrency, cgroupMemory };
+module.exports = { ResourceMonitor, resourceMonitor, snapshot, deriveConcurrency, cgroupMemory, parseDarwinAvailableBytes };

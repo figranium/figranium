@@ -1,5 +1,5 @@
 const net = require('net');
-const { MAX_TASK_VERSIONS, NOVNC_PORT, WEBSOCKIFY_PATH } = require('./constants');
+const { MAX_TASK_VERSIONS, NOVNC_PORT, NOVNC_LOW_PORT, WEBSOCKIFY_PATH, WEBSOCKIFY_LOW_PATH } = require('./constants');
 
 class Mutex {
     constructor() {
@@ -105,8 +105,13 @@ const findAvailablePort = (startPort, maxAttempts = 20) => new Promise((resolve,
 
 const proxyWebsockify = (req, socket, head) => {
     if (!req || !req.url) return false;
-    if (!req.url.startsWith(WEBSOCKIFY_PATH)) return false;
-    const target = net.connect(NOVNC_PORT, '127.0.0.1');
+    const targetPort = req.url.startsWith(WEBSOCKIFY_LOW_PATH)
+        ? NOVNC_LOW_PORT
+        : req.url.startsWith(WEBSOCKIFY_PATH)
+            ? NOVNC_PORT
+            : null;
+    if (!targetPort) return false;
+    const target = net.connect(targetPort, '127.0.0.1');
     const cleanup = () => {
         try {
             socket.destroy();

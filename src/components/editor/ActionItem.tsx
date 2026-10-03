@@ -3,6 +3,7 @@ import { Action, BlockTestResult, Task, Variable } from '../../types';
 import TablerIcon from '../TablerIcon';
 import { ACTION_CATALOG } from './actionCatalog';
 import ActionConfigModal from './ActionConfigModal';
+import { formatLabel } from '../../utils/taskUtils';
 
 const getActionSummary = (action: Action) => {
     let summary = '';
@@ -209,7 +210,7 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
                 style={{ transform: transformStyle }}
             >
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="text-xs font-bold text-white/20 font-mono tracking-tighter shrink-0">{(index + 1).toString().padStart(2, '0')}</div>
+                    <div className="text-xs font-bold text-white/20 tracking-tighter shrink-0">{(index + 1).toString().padStart(2, '0')}</div>
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
                         {renderBlockMarker(action.type)}
                     </div>
@@ -228,7 +229,7 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
                         className="action-type-select text-xs font-bold tracking-[0.2em] text-white focus:outline-none cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-white/50 shrink-0"
                         aria-label={`Change action type: ${action.type}`}
                     >
-                        {ACTION_CATALOG.find((item) => item.type === action.type)?.label || action.type}
+                        {ACTION_CATALOG.find((item) => item.type === action.type)?.label || formatLabel(action.type)}
                     </button>
                     {summary && (
                         <span className="text-white/40 text-xs font-mono truncate min-w-0 pointer-events-none">

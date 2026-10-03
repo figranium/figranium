@@ -263,7 +263,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({ note, canvasScale, isSelected, 
                                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') commitEdit();
                                 e.stopPropagation();
                             }}
-                            className="sticky-note-textarea w-full min-h-[120px] resize-none overflow-hidden bg-transparent px-3 py-2 text-xs focus:outline-none font-mono leading-relaxed"
+                            className="sticky-note-textarea w-full min-h-[120px] resize-none overflow-hidden bg-transparent px-3 py-2 font-mono text-xs focus:outline-none leading-relaxed"
                             style={{ color: 'var(--app-sticky-text)' }}
                             placeholder="Write markdown here..."
                             onClick={(e) => e.stopPropagation()}

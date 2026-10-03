@@ -55,11 +55,18 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
 
         if (activeRunId) {
             try {
-                await fetch('/api/executions/stop', {
+                const response = await fetch('/api/executions/stop', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ runId: activeRunId })
                 });
+                if (response.ok) {
+                    setResults((current) => current ? {
+                        ...current,
+                        outcome: 'stopped',
+                        timestamp: new Date().toLocaleTimeString(),
+                    } : current);
+                }
             } catch (e) {
                 console.error('Failed to request stop', e);
             }
@@ -176,6 +183,11 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             if (data.outcome === 'stopped') showAlert('Execution stopped.', 'success');
         } catch (e: any) {
             if (e?.name === 'AbortError') {
+                setResults((current) => current ? {
+                    ...current,
+                    outcome: 'stopped',
+                    timestamp: new Date().toLocaleTimeString(),
+                } : current);
                 showAlert('Execution stopped.', 'success');
                 setIsExecuting(false);
                 return;

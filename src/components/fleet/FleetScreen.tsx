@@ -123,7 +123,7 @@ const FleetScreen: React.FC<FleetScreenProps> = ({ onNotify }) => {
                     <span className="text-xs text-white/40 font-mono">Task: {selectedTaskId}</span>
                 )}
                 {loading && (
-                    <span className="text-xs text-gray-500 font-mono">initializing…</span>
+                    <span className="text-xs text-gray-500">Initializing…</span>
                 )}
             </div>
 

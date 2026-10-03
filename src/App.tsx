@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Task, ViewMode, Results } from './types';
 
 import Sidebar from './components/Sidebar';
@@ -10,8 +10,8 @@ import SettingsScreen from './components/SettingsScreen';
 import LoadingScreen from './components/LoadingScreen';
 import ExecutionsScreen from './components/ExecutionsScreen';
 import ExecutionDetailScreen from './components/ExecutionDetailScreen';
-import CapturesScreen from './components/CapturesScreen';
 import CabinetsScreen from './components/CabinetsScreen';
+import TemplatesScreen, { MarketplaceTemplate } from './components/TemplatesScreen';
 import NotFoundScreen from './components/NotFoundScreen';
 import CenterAlert from './components/app/CenterAlert';
 import CenterConfirm from './components/app/CenterConfirm';
@@ -41,6 +41,7 @@ export default function App() {
     // Task Hook
     const {
         tasks,
+        tasksLoaded,
         currentTask,
         setCurrentTask,
         loadTasks,
@@ -50,7 +51,8 @@ export default function App() {
         deleteTask,
         saveTask,
         exportTasks,
-        importTasks
+        importTasks,
+        importTemplate
     } = useTasks(navigate, showAlert, requestConfirm);
 
     // Execution Hook
@@ -101,9 +103,9 @@ export default function App() {
             const taskName = currentTask?.name?.trim();
             title = `${taskName || (location.pathname === '/tasks/new' ? 'New Task' : 'Task Editor')} | Figranium`;
         } else if (location.pathname.startsWith('/settings')) title = 'Settings | Figranium';
+        else if (location.pathname === '/templates') title = 'Templates | Figranium';
         else if (location.pathname === '/executions') title = 'Executions | Figranium';
         else if (location.pathname.startsWith('/executions/')) title = 'Execution Detail | Figranium';
-        else if (location.pathname === '/captures') title = 'Captures | Figranium';
         else if (location.pathname.startsWith('/cabinets')) title = 'Cabinets | Figranium';
         else title = 'Not Found | Figranium';
 
@@ -187,20 +189,19 @@ export default function App() {
     const getCurrentScreen = () => {
         if (location.pathname.startsWith('/tasks')) return 'editor';
         if (location.pathname.startsWith('/settings')) return 'settings';
+        if (location.pathname === '/templates') return 'templates';
         if (location.pathname.startsWith('/executions')) return 'executions';
-        if (location.pathname === '/captures') return 'captures';
         if (location.pathname === '/cabinets') return 'cabinets';
         return 'dashboard';
     };
 
-    const handleNavigate = useCallback((s: 'dashboard' | 'editor' | 'settings' | 'executions' | 'captures' | 'cabinets') => {
+    const handleNavigate = useCallback((s: 'dashboard' | 'editor' | 'templates' | 'settings' | 'executions' | 'cabinets') => {
         if (s === 'dashboard') navigate('/dashboard');
+        else if (s === 'templates') navigate('/templates');
         else if (s === 'settings') {
             navigate('/settings');
         } else if (s === 'executions') {
             navigate('/executions');
-        } else if (s === 'captures') {
-            navigate('/captures');
         } else if (s === 'cabinets') {
             navigate('/cabinets');
         }
@@ -210,6 +211,21 @@ export default function App() {
         setTriggerExpanded(true);
         createNewTask(setResults, setHasUnsavedChanges);
     }, [createNewTask, setResults, setHasUnsavedChanges]);
+
+    const handleImportTemplate = useCallback(async (template: MarketplaceTemplate) => {
+        try {
+            const saved = await importTemplate(template.configuration);
+            setCurrentTask(saved);
+            setResults(null);
+            setTriggerExpanded(false);
+            markTaskAsSaved(saved);
+            showAlert(`Imported ${saved.name}.`, 'success');
+            navigate(`/tasks/${saved.id}`);
+        } catch (error: any) {
+            showAlert(`Failed to import template: ${error?.message || 'Unknown error'}`, 'error');
+            throw error;
+        }
+    }, [importTemplate, markTaskAsSaved, navigate, setCurrentTask, setResults, showAlert]);
 
     const handleEditTask = useCallback((task: Task) => {
         setTriggerExpanded(false);
@@ -245,7 +261,7 @@ export default function App() {
                         break;
                     case 'Digit2':
                         e.preventDefault();
-                        handleNavigate('settings');
+                        handleNavigate('templates');
                         break;
                     case 'Digit3':
                         e.preventDefault();
@@ -253,11 +269,11 @@ export default function App() {
                         break;
                     case 'Digit4':
                         e.preventDefault();
-                        handleNavigate('captures');
+                        handleNavigate('cabinets');
                         break;
                     case 'Digit5':
                         e.preventDefault();
-                        handleNavigate('cabinets');
+                        handleNavigate('settings');
                         break;
                     case 'KeyN':
                         e.preventDefault();
@@ -292,8 +308,11 @@ export default function App() {
                 />
 
                 <Routes>
-                    <Route path="/" element={<DashboardScreen tasks={tasks} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} />} />
-                    <Route path="/dashboard" element={<DashboardScreen tasks={tasks} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} />} />
+                    <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/signup" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
+                    <Route path="/dashboard" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
+                    <Route path="/templates" element={<TemplatesScreen onImport={handleImportTemplate} />} />
                     <Route path="/tasks/new" element={
                         currentTask ? (
                             <EditorScreen
@@ -372,7 +391,6 @@ export default function App() {
                     } />
                     <Route path="/executions" element={<ExecutionsScreen onConfirm={requestConfirm} onNotify={showAlert} />} />
                     <Route path="/executions/:id" element={<ExecutionDetailScreen onConfirm={requestConfirm} onNotify={showAlert} />} />
-                    <Route path="/captures" element={<CapturesScreen onConfirm={requestConfirm} onNotify={showAlert} />} />
                     <Route path="/cabinets" element={<CabinetsScreen onConfirm={requestConfirm} onNotify={showAlert} />} />
                     <Route path="/cabinets/:cabinetId" element={<CabinetsScreen onConfirm={requestConfirm} onNotify={showAlert} />} />
                     <Route path="*" element={<NotFoundScreen onBack={() => navigate('/dashboard')} />} />

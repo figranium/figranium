@@ -39,11 +39,7 @@ interface ExtractionScriptBlockProps {
 
 const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onUpdate, onAutoSave, onDelete, onStartInspect, onStartGroupContainerInspect, onStartGroupFieldInspect, selectorOptionsById }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [showAiPrompt, setShowAiPrompt] = useState(false);
-    const [aiDescription, setAiDescription] = useState('');
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-    const [aiLoading, setAiLoading] = useState(false);
-    const [aiError, setAiError] = useState<string | null>(null);
     const { canInsertVariable, captureInsertionSelection, insertVariable } = useVariableInsertion();
 
     const scriptPreview = (task.extractionScript || '').split('\n').find(l => l.trim()) || '';
@@ -96,32 +92,8 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
         updateGroup(groupId, { fields: group.fields.filter(f => f.id !== fieldId) });
     };
 
-    const handleGenerate = async () => {
-        if (!aiDescription.trim()) return;
-        setAiLoading(true);
-        setAiError(null);
-        try {
-            const res = await fetch('/api/tasks/generate-script', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ description: aiDescription.trim() })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.details ? `${data.error}: ${data.details}` : (data.error || 'Generation failed'));
-            onUpdate({ extractionScript: data.script });
-            setShowAiPrompt(false);
-            setAiDescription('');
-        } catch (e: any) {
-            setAiError(e.message);
-        } finally {
-            setAiLoading(false);
-        }
-    };
-
     const closeConfig = useCallback(() => {
         setIsOpen(false);
-        setShowAiPrompt(false);
-        setAiError(null);
         onAutoSave();
     }, [onAutoSave]);
 
@@ -406,41 +378,6 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                             </div>
                         ) : (
                             <>
-                                <div className="flex items-center justify-end">
-                                    <button
-                                        onClick={() => { setShowAiPrompt(v => !v); setAiError(null); }}
-                                        className="flex items-center gap-1 text-xs font-bold tracking-widest text-white/60 hover:text-white transition-colors"
-                                        title="Generate with AI"
-                                    >
-                                        <TablerIcon name="auto_awesome" className="text-sm" />
-                                        Generate
-                                    </button>
-                                </div>
-                                {showAiPrompt && (
-                                    <div className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/10">
-                                        <input
-                                            autoFocus
-                                            type="text"
-                                            value={aiDescription}
-                                            onChange={e => setAiDescription(e.target.value)}
-                                            onKeyDown={e => { if (e.key === 'Enter' && !aiLoading) handleGenerate(); }}
-                                            placeholder="e.g. extract all article titles and links"
-                                            className="bg-transparent text-xs text-white placeholder-gray-600 focus:outline-none"
-                                        />
-                                        {aiError && <p className="text-xs text-red-400">{aiError}</p>}
-                                        <div className="flex justify-end gap-2">
-                                            <button onClick={() => { setShowAiPrompt(false); setAiError(null); }} className="text-xs font-bold tracking-widest text-gray-500 hover:text-white transition-colors">Cancel</button>
-                                            <button
-                                                onClick={handleGenerate}
-                                                disabled={aiLoading || !aiDescription.trim()}
-                                                className="px-3 py-1 rounded-lg bg-white text-black text-xs font-bold tracking-widest hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                                            >
-                                                {aiLoading && <TablerIcon name="autorenew" className="text-xs animate-spin" />}
-                                                {aiLoading ? 'Generating…' : 'Generate'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
                                 <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 focus-within:border-white/20 transition-all">
                                     <CodeEditor
                                         value={task.extractionScript || ''}
@@ -1066,11 +1003,11 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                             <button
                                 type="button"
                                 onClick={() => onOpenCabinet('mode')}
-                                className="p-2 rounded-lg hover:bg-white/10 text-white/30 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                className="group rounded-lg bg-transparent p-2 text-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                 title="Open Task Settings"
                                 aria-label="Open Task Settings"
                             >
-                                <TablerIcon name="settings" className="text-lg" />
+                                <TablerIcon name="settings" className="text-lg transition-transform duration-200 ease-out group-hover:rotate-45" />
                             </button>
                         </div>
                         {currentTask.description && (
@@ -1110,10 +1047,10 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <button
                                     onClick={() => { const t = { ...currentTask, extractionScript: '' }; setCurrentTask(t); handleAutoSave(t); }}
                                     data-interactive-target="true"
-                                    className="canvas-add-action w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    className="canvas-add-action w-full border border-dashed rounded-2xl p-5 transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                 >
                                     <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
-                                    <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
+                                    <span className="canvas-add-action-text text-xs font-bold tracking-[0.2em] transition-colors">Add Extraction Script</span>
                                 </button>
                             )}
                         </div>
@@ -1127,14 +1064,14 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     <button
                                         data-action-drop-scope="root"
                                         onClick={() => openActionPalette()}
-                                        className="canvas-add-action w-[360px] bg-[#0a0a0a] border border-dashed border-white/15 rounded-2xl p-6 hover:border-white/30 hover:bg-white/[0.03] transition-all flex flex-col items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                        className="canvas-add-action w-[360px] border border-dashed rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         aria-label="Add action (Ctrl + K)"
                                         title="Add action (Ctrl + K)"
                                     >
-                                        <div className="w-10 h-10 rounded-xl bg-white/5 group-hover:bg-white/10 transition-all flex items-center justify-center">
-                                            <TablerIcon name="add" className="text-2xl text-gray-500 group-hover:text-white transition-colors" />
+                                        <div className="canvas-add-action-icon-box w-10 h-10 rounded-xl transition-colors flex items-center justify-center">
+                                            <TablerIcon name="add" className="canvas-insert-icon text-2xl transition-colors" />
                                         </div>
-                                        <span className="canvas-secondary-text text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Action</span>
+                                        <span className="canvas-add-action-text text-xs font-bold tracking-[0.2em] transition-colors">Add Action</span>
                                     </button>
                                 </div>
                                 <div className="canvas-connector w-px h-6 bg-white/25" />
@@ -1154,10 +1091,10 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         <button
                                             onClick={() => { const t = { ...currentTask, extractionScript: '' }; setCurrentTask(t); handleAutoSave(t); }}
                                             data-interactive-target="true"
-                                            className="canvas-add-action w-full border border-dashed border-white/15 rounded-2xl p-5 hover:border-white/30 hover:bg-white/[0.03] transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                            className="canvas-add-action w-full border border-dashed rounded-2xl p-5 transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         >
                                             <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
-                                            <span className="text-xs font-bold tracking-[0.2em] text-gray-500 group-hover:text-gray-300 transition-colors">Add Extraction Script</span>
+                                            <span className="canvas-add-action-text text-xs font-bold tracking-[0.2em] transition-colors">Add Extraction Script</span>
                                         </button>
                                     )}
                                 </div>

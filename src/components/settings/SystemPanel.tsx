@@ -97,13 +97,13 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
             <p className="mt-4 text-xs theme-text-faint">Last cleanup: {data?.cleanup?.lastRunAt ? new Date(data.cleanup.lastRunAt).toLocaleString() : 'not run yet'} · {data?.cleanup?.deletedCaptures ?? 0} captures and {data?.cleanup?.deletedExecutions ?? 0} executions removed.</p>
         </section>
         <section className="app-panel p-7">
+            <div><h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3><p className="text-xs theme-text-faint mt-1">Optional local help for supported CAPTCHA challenges. It is only used when a task reaches a CAPTCHA; normal browser and scrape tasks are unaffected.</p></div>
+            <div className="mt-5 text-xs theme-text-muted">Local solver: <span className="font-bold theme-text">{data?.captcha?.activeTier || 'Unavailable'}</span>{data?.captcha?.backend ? ` · ${data.captcha.backend}/${data.captcha.device || 'auto'}` : ''}<p className="mt-2 theme-text-faint">Running Figranium through npm does not require any extra CAPTCHA setup. “Unavailable” means local solving is disabled; remote solver services or human handoff can still be used when configured.</p></div>
+        </section>
+        <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Maintenance</h3><p className="text-xs theme-text-faint mt-1">Manually remove saved run data when you need to free disk space immediately.</p>
             <div className="mt-5 flex flex-wrap gap-3"><button type="button" disabled={saving} onClick={() => clearData('captures')} className="app-button-secondary disabled:opacity-50">Clear captures</button><button type="button" disabled={saving} onClick={() => clearData('executions')} className="app-button-secondary disabled:opacity-50">Clear execution history</button></div>
             <div className="mt-7 border-t theme-border pt-5 max-w-xl"><h4 className="text-sm font-bold text-red-500">Clear all workspace data</h4><p className="mt-1 text-xs theme-text-faint">Keeps your account and current sign-in, but permanently removes everything else stored by Figranium.</p><div className="mt-3 flex flex-wrap gap-3"><input type="password" value={resetPassword} onChange={(event) => setResetPassword(event.target.value)} placeholder="Current password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><button type="button" disabled={saving} onClick={clearEverything} className="app-button-danger disabled:opacity-50">Clear all</button></div></div>
-        </section>
-        <section className="app-panel p-7">
-            <div><h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3><p className="text-xs theme-text-faint mt-1">Optional local help for supported CAPTCHA challenges. It is only used when a task reaches a CAPTCHA; normal browser and scrape tasks are unaffected.</p></div>
-            <div className="mt-5 text-xs theme-text-muted">Local solver: <span className="font-bold theme-text">{data?.captcha?.activeTier || 'Unavailable'}</span>{data?.captcha?.backend ? ` · ${data.captcha.backend}/${data.captcha.device || 'auto'}` : ''}<p className="mt-2 theme-text-faint">Running Figranium through npm does not require any extra CAPTCHA setup. “Unavailable” means local solving is disabled; remote solver services or human handoff can still be used when configured.</p></div>
         </section>
     </div>;
 }

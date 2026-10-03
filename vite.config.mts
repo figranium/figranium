@@ -17,10 +17,13 @@ export default defineConfig({
             '/scraper': `http://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
             '/agent': `http://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
             '/headful': `http://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
-            '/tasks': `http://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
             '/screenshots': `http://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
             '/novnc': `http://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
             '/websockify': {
+                target: `ws://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
+                ws: true,
+            },
+            '/websockify-low': {
                 target: `ws://localhost:${process.env.VITE_BACKEND_PORT || 11345}`,
                 ws: true,
             },
