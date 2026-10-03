@@ -198,6 +198,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                             }}
                             isExecuting={phase === 'queued' || phase === 'running'}
                             mode={execution.mode}
+                            runId={id}
                             onConfirm={onConfirm}
                             onNotify={onNotify}
                             fullWidth
