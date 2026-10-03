@@ -93,7 +93,7 @@ const tests = [
                 originalUsers = await authenticateThroughUi(page);
                 assert.strictEqual(await page.locator('h1:has-text("Overview")').count(), 1);
                 assert.strictEqual(await page.locator('input[aria-label="Search Tasks"]').count(), 1);
-                assert.ok(await page.locator('button[aria-label="Create new Task (Alt + N)"]').count() > 0);
+                assert.ok(await page.locator('button[aria-label="Create new Task (Alt + N)"], button.create-task-split-main').count() > 0);
             } finally {
                 await closeAndRestore(browser, originalUsers);
             }
@@ -118,7 +118,7 @@ const tests = [
                 const page = await browser.newPage();
                 originalUsers = await authenticateThroughUi(page);
 
-                await page.click('button[aria-label="Create new Task (Alt + N)"]');
+                await page.click('button[aria-label="Create new Task (Alt + N)"], button.create-task-split-main');
                 const nameInput = page.locator('input[placeholder="Task name"]');
                 await nameInput.waitFor({ state: 'visible', timeout: 10000 });
                 await nameInput.fill('V1 Qualification UI Task');
