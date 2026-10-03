@@ -183,6 +183,7 @@ Visible browser sessions are a debugging/runtime capability, not a third task mo
 # UI Walkthrough
 
 - **Dashboard** — view metrics, search and sort Tasks, explore featured Templates, and create Tasks from scratch or a Template.
+- **Templates** — browse the embedded community catalog, search and filter ready-made workflows, preview their details and expected output, and import them into your workspace.
 - **Task Editor** — build Agent or Scrape Tasks, configure actions and extraction, test blocks, manage variables, choose a Cabinet, schedule runs, add resizable canvas notes, and trigger executions.
 - **Executions** — browse queued, running, and completed runs; inspect outcomes, complete results, screenshots, and recordings; and cancel queued executions.
 - **Cabinets** — manage durable file queues used by Task downloads and Upload blocks, including files, ZIPs, folders, and upload status.
