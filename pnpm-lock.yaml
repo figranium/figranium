@@ -15,7 +15,7 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@tabler/icons-react':
-        specifier: ^3.48.0
+        specifier: ^3.46.0
         version: 3.48.0(react@19.2.4)
       bcryptjs:
         specifier: ^3.0.3
@@ -24,8 +24,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       cloakbrowser:
-        specifier: ^0.5.8
-        version: 0.5.11(playwright-core@1.63.0)
+        specifier: ^0.5.12
+        version: 0.5.12(playwright-core@1.63.0)
       cookie:
         specifier: ^1.0.2
         version: 1.1.1
@@ -1111,8 +1111,8 @@ packages:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
 
-  cloakbrowser@0.5.11:
-    resolution: {integrity: sha512-fyNjE+w6oGAOuUe4JeHRfzbGZMe3lLCvdpJ1dLRHFT/RkD5FWvP7MHvwVgmnCY8lVUcKWuVxHfJgfGafg3IgQg==}
+  cloakbrowser@0.5.12:
+    resolution: {integrity: sha512-UmGCQX3Gy/WSo7zS3tsY3kddPXyaNlFVZYOs19d1Xl1/kTG+POt+1vc5F7MJefVFnHy+OenL/5CTttA2+WXYDQ==}
     engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
@@ -3760,7 +3760,7 @@ snapshots:
 
   chownr@3.0.0: {}
 
-  cloakbrowser@0.5.11(playwright-core@1.63.0):
+  cloakbrowser@0.5.12(playwright-core@1.63.0):
     dependencies:
       tar: 7.5.11
     optionalDependencies:
