@@ -24,7 +24,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       cloakbrowser:
-        specifier: ^0.5.8
+        specifier: ^0.5.11
         version: 0.5.11(playwright-core@1.63.0)
       cookie:
         specifier: ^1.0.2
