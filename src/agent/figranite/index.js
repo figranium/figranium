@@ -329,7 +329,7 @@ async function runFigranite(data, options = {}) {
 
         while (index < actions.length) {
             if (stopAfterTargetReached) break;
-            if (isStopRequested(runId)) {
+            if (consumeStopRequest(runId)) {
                 logs.push('Execution stopped by user.');
                 userStopped = true;
                 break;
@@ -676,7 +676,7 @@ async function runFigranite(data, options = {}) {
             }
         }
 
-        if (!userStopped && isStopRequested(runId)) {
+        if (!userStopped && consumeStopRequest(runId)) {
             logs.push('Execution stopped by user.');
             userStopped = true;
         }
