@@ -15,7 +15,6 @@ const EventEmitter = require('events');
 const headfulEventEmitter = new EventEmitter();
 
 let activeSession = null;
-const INSPECT_SYNC_TIMEOUT_MS = 1000;
 
 const withTimeout = (promise, timeoutMs, message) => {
     let timeoutId;
@@ -618,45 +617,6 @@ async function runHeadful(data, options = {}) {
     }
 }
 
-async function applyViewerPerformanceProfile(profile) {
-    if (!activeSession?.page || activeSession.page.isClosed()) return false;
-    const severe = profile === 'severe';
-    try {
-        await activeSession.page.evaluate(({ id, severeMode }) => {
-            document.getElementById(id)?.remove();
-            if (!severeMode) return;
-            const style = document.createElement('style');
-            style.id = id;
-            style.textContent = `
-                *, *::before, *::after {
-                    animation-duration: 0.001ms !important;
-                    animation-iteration-count: 1 !important;
-                    transition-duration: 0.001ms !important;
-                    scroll-behavior: auto !important;
-                }
-            `;
-            (document.head || document.documentElement).appendChild(style);
-            document.querySelectorAll('video, audio').forEach((media) => {
-                try { media.pause(); } catch { /* ignore */ }
-            });
-        }, { id: SEVERE_PERFORMANCE_STYLE_ID, severeMode: severe });
-        return true;
-    } catch {
-        return false;
-    }
-}
-
-async function setHeadfulViewerProfile(req, res) {
-    if (!activeSession) return res.status(409).json({ error: 'NO_ACTIVE_HEADFUL_SESSION' });
-    const requested = String(req.body?.profile || '').toLowerCase();
-    const profile = ['full', 'constrained', 'severe'].includes(requested) ? requested : 'full';
-    const changed = activeSession.viewerProfile !== profile;
-    activeSession.viewerProfile = profile;
-    const applied = await applyViewerPerformanceProfile(profile);
-    console.info(`[HEADFUL] Viewer profile ${profile}${changed ? ' selected' : ' reaffirmed'}.`);
-    return res.json({ profile, applied });
-}
-
 function isDisplayUnavailableError(err) {
     const message = String(err && err.message ? err.message : err).toLowerCase();
     return message.includes('missing x server')
@@ -696,45 +656,13 @@ async function stopHeadful(req, res) {
     if (res) res.json({ message: 'Headful session stopped.' });
 }
 
-async function toggleInspectMode(req, res) {
-    if (!activeSession || !activeSession.context) {
-        return res.status(400).json({ error: 'No active headful session.' });
-    }
-    const session = activeSession;
-    const enabled = req.body.enabled === true || req.body.enabled === 'true';
-    const scopeSelector = typeof req.body.scopeSelector === 'string' && req.body.scopeSelector.trim()
-        ? req.body.scopeSelector.trim()
-        : null;
-    session.inspectModeEnabled = enabled;
-    session.inspectScopeSelector = scopeSelector;
-    session.inspectRevision = (Number(session.inspectRevision) || 0) + 1;
-
-    let applied = false;
-    const page = session.page;
-
-    if (page && !page.isClosed()) {
-        try {
-            applied = await withTimeout(page.evaluate(async () => {
-                if (!window.__figraniumGetInspectState || !window.__figraniumApplyInspectState) return false;
-                const latestState = await window.__figraniumGetInspectState();
-                return window.__figraniumApplyInspectState(latestState);
-            }), INSPECT_SYNC_TIMEOUT_MS, 'Inspect overlay synchronization timed out');
-        } catch (error) {
-            console.warn('[HEADFUL] Inspect state accepted but overlay synchronization was deferred:', error && error.message ? error.message : error);
-        }
-    }
-
-    res.json({
-        message: `Inspect mode ${enabled ? 'enabled' : 'disabled'}`,
-        enabled,
-        revision: session.inspectRevision,
-        applied: !!applied
-    });
-}
-
 function getActiveSession() {
     return activeSession;
 }
+
+const { setHeadfulViewerProfile, toggleInspectMode } = require('./src/server/headful-control-handlers')({
+    getActiveSession, withTimeout, severePerformanceStyleId: SEVERE_PERFORMANCE_STYLE_ID
+});
 
 /**
  * Launch (or reattach) a managed headful browser session for API/MCP use.

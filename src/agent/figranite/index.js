@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const { selectUserAgent } = require('../../../user-agent-settings');
 const { safeFormatHTML } = require('../../../html-utils');
-const { validateUrl } = require('../../../url-utils');
 const { parseBooleanFlag, sanitizeRunId, toCsvString } = require('../../../common-utils');
 const { runExtractionScript } = require('../sandbox');
 const { cleanHtml } = require('../dom-utils');
@@ -14,112 +13,19 @@ const { saveSharedBrowserState } = require('../../../browser-storage-state');
 const { buildBlockMap, randomBetween, getForeachItems } = require('./helpers');
 const { evalStructuredCondition, evalCondition } = require('./logic-handler');
 const { executeAction } = require('./action-handler');
-const { solveCaptcha } = require('./captcha-client');
 const { resolveTaskOutcome, inspectPageForAntiBot } = require('../outcomes');
 const { installPageTranslation } = require('../translate');
 const { setStopChecker, setStopCleaner, consumeStopRequest, clearStopRequest, registerActiveRun, unregisterActiveRun } = require('../execution-control');
 
-// Action types after which an auto-solve pass (task-level `autoSolveCaptcha`) checks for
-// a challenge — the points where navigation or a form interaction commonly triggers one.
-const AUTO_CAPTCHA_TRIGGER_TYPES = new Set(['navigate', 'goto', 'click', 'type', 'fill']);
-
-async function maybeAutoSolveCaptcha({ enabled, actionType, page, logs, identity }) {
-    if (!enabled || !AUTO_CAPTCHA_TRIGGER_TYPES.has(actionType)) return;
-    try {
-        const detectionTimeout = Math.max(1, Number(process.env.CAPTCHA_AUTO_DETECT_TIMEOUT_MS) || 5000);
-        const result = await solveCaptcha(page, { timeout: 120000, detectionTimeout, logs, identity });
-        logs.push(`Auto-solved captcha: ${result.challenge} (${result.duration}ms)`);
-    } catch (err) {
-        if (err && err.noChallengeFound) return;
-        logs.push(`[CAPTCHA ERROR] Auto-solve attempt failed: ${err.message}`);
-    }
-}
-
-let progressReporter = null;
-const setProgressReporter = (reporter) => {
-    progressReporter = reporter;
-};
-
-const reportProgress = (runId, payload) => {
-    if (!runId || typeof progressReporter !== 'function') return;
-    try {
-        progressReporter(runId, payload);
-    } catch {
-        // ignore
-    }
-};
-
-const TEST_INPUT_FIELDS = [
-    'selector', 'value', 'key', 'conditionVar', 'conditionVarType', 'conditionOp',
-    'conditionValue', 'typeMode', 'method', 'headers', 'body', 'timeout', 'captchaType',
-    'cabinetId', 'markAsUploaded', 'clickType', 'targetSelector',
-];
-
-const buildResolvedActionInputs = (action, resolveTemplate) => {
-    const inputs = {};
-    for (const key of TEST_INPUT_FIELDS) {
-        const value = action?.[key];
-        if (value === undefined || value === null || value === '') continue;
-        inputs[key] = typeof value === 'string' ? resolveTemplate(value) : value;
-    }
-    return inputs;
-};
-
-const snapshotTestVariables = (runtimeVars) => Object.fromEntries(
-    Object.entries(runtimeVars || {}).filter(([name]) => name !== 'html')
-);
-
-const isStopRequested = (runId) => {
-    return consumeStopRequest(runId);
-};
-
-class TaskInputError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = 'TaskInputError';
-        this.code = 'INVALID_TASK_INPUT';
-        this.isTaskInputError = true;
-    }
-}
+const { maybeAutoSolveCaptcha, setProgressReporter, reportProgress, buildResolvedActionInputs, snapshotTestVariables, TaskInputError } = require('./run-utils');
+const { createRuntimeContext, normalizeActions } = require('./run-context');
 
 async function runFigranite(data, options = {}) {
-    let { url, actions, wait: globalWait, rotateUserAgents, rotateProxies, humanTyping, stealth = {}, sessionId } = data;
+    const url = data.url;
+    let { actions, wait: globalWait, rotateUserAgents, rotateProxies, humanTyping, stealth = {}, sessionId } = data;
     const autoSolveCaptcha = parseBooleanFlag(data.autoSolveCaptcha);
 
-    const runtimeVars = { ...(data.taskVariables || data.variables || {}) };
-    let lastBlockOutput = null;
-    runtimeVars['block.output'] = lastBlockOutput;
-
-    const setBlockOutput = (value) => {
-        lastBlockOutput = value;
-        runtimeVars['block.output'] = value;
-    };
-
-    const resolveTemplate = (input) => {
-        if (typeof input !== 'string' || !input.includes('{$')) return input;
-        return input.replace(/\{\$([\w.]+)\}/g, (_match, name) => {
-            if (name === 'now') return new Date().toISOString();
-            const value = runtimeVars[name];
-            if (value === undefined || value === null) return '';
-            if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-                return String(value);
-            }
-            try {
-                return JSON.stringify(value);
-            } catch {
-                return String(value);
-            }
-        });
-    };
-
-    if (!url || typeof url !== 'string') {
-        throw new TaskInputError('URL is required.');
-    }
-    try {
-        await validateUrl(resolveTemplate(url));
-    } catch (error) {
-        throw new TaskInputError(error.message || 'Invalid or restricted URL.');
-    }
+    const { runtimeVars, setBlockOutput, resolveTemplate } = await createRuntimeContext(data);
 
     const runId = data.runId ? String(data.runId) : null;
     const captureRunId = sanitizeRunId(runId) || `run_${Date.now()}_unknown`;
@@ -146,12 +52,10 @@ async function runFigranite(data, options = {}) {
     const reportActionProgress = (action, status, output, error) => {
         reportProgress(runId, { actionId: action.id, status });
         if (!testTargetActionId || String(action.id) !== testTargetActionId) return;
-
         if (!testTargetStartedAt) {
             testTargetStartedAt = Date.now();
             testTargetInputs = buildResolvedActionInputs(action, resolveTemplate);
         }
-
         if (status === 'running') return;
         testTargetStatus = status;
         testTargetOutput = output;
@@ -170,19 +74,7 @@ async function runFigranite(data, options = {}) {
         cursorGlide = false,
         randomizeClicks = false
     } = stealth;
-
-    if (typeof actions === 'string') {
-        try {
-            actions = JSON.parse(actions);
-        } catch (e) {
-            throw new TaskInputError('Invalid actions JSON format.');
-        }
-    }
-
-    if (!actions || !Array.isArray(actions)) {
-        throw new TaskInputError('Actions array is required.');
-    }
-
+    actions = normalizeActions(actions);
     reportProgress(data.runId, { status: 'started' });
 
     const hasCaptchaSolver = autoSolveCaptcha || actions.some((action) => action?.type === 'solve_captcha');
@@ -892,30 +784,7 @@ async function runFigranite(data, options = {}) {
     }
 }
 
-async function handleAgent(req, res) {
-    const data = (req.method === 'POST') ? req.body : req.query;
-    const options = {
-        localPort: req.socket && req.socket.localPort,
-        protocol: req.protocol
-    };
-
-    try {
-        const result = await runFigranite(data, options);
-        reportProgress(data.runId, { status: 'finished', outcome: result.outcome });
-        res.json(result);
-    } catch (error) {
-        if (error.isTaskInputError) {
-            return res.status(400).json({ error: error.code, details: error.message });
-        }
-        const outcome = resolveTaskOutcome({ antiBot: Boolean(error.antiBotReason), crashed: true });
-        const logs = Array.isArray(error.executionLogs) ? error.executionLogs : [];
-        if (outcome === 'crashed') logs.push(`[OUTCOME] Execution crashed: ${error.message}.`);
-        reportProgress(data.runId, { status: 'finished', outcome });
-        res.json({ outcome, error: 'Figranite Engine failed', details: error.message, logs });
-    } finally {
-        clearStopRequest(data.runId);
-    }
-}
+const handleAgent = require('./http-handler')({ runFigranite, reportProgress, resolveTaskOutcome, clearStopRequest });
 
 module.exports = {
     runFigranite,

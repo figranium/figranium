@@ -1,0 +1,419 @@
+/* ── DARK THEME overrides ─────────────────────────────────────────────────── */
+
+/* Plain bg-black → theme surface (action blocks, etc.) */
+[data-theme='dark'] .bg-black,
+[data-theme='solarized-dark'] .bg-black {
+    background-color: var(--app-surface-2);
+}
+
+[data-theme='dark'] .bg-\[\#050505\],
+[data-theme='dark'] .bg-\[\#080808\],
+[data-theme='dark'] .bg-\[\#0a0a0a\],
+[data-theme='dark'] .bg-\[\#0b0b0b\],
+[data-theme='dark'] .bg-\[\#111\],
+[data-theme='dark'] .bg-\[\#111111\],
+[data-theme='dark'] .bg-\[\#1a1a1a\],
+[data-theme='solarized-dark'] .bg-\[\#050505\],
+[data-theme='solarized-dark'] .bg-\[\#080808\],
+[data-theme='solarized-dark'] .bg-\[\#0a0a0a\],
+[data-theme='solarized-dark'] .bg-\[\#0b0b0b\],
+[data-theme='solarized-dark'] .bg-\[\#111\],
+[data-theme='solarized-dark'] .bg-\[\#111111\],
+[data-theme='solarized-dark'] .bg-\[\#1a1a1a\] {
+    background-color: var(--app-surface-3);
+}
+
+[data-theme='dark'] .bg-white\/5,
+[data-theme='dark'] .bg-white\/10,
+[data-theme='dark'] .bg-white\/15,
+[data-theme='dark'] .bg-white\/20,
+[data-theme='dark'] .bg-white\/30,
+[data-theme='dark'] .bg-white\/40,
+[data-theme='dark'] .bg-white\/50,
+[data-theme='dark'] .bg-white\/60,
+[data-theme='dark'] .bg-white\/70,
+[data-theme='dark'] .bg-white\/80,
+[data-theme='dark'] .bg-white\/\[0\.02\],
+[data-theme='dark'] .bg-white\/\[0\.03\],
+[data-theme='dark'] .bg-white\/\[0\.05\],
+[data-theme='solarized-dark'] .bg-white\/5,
+[data-theme='solarized-dark'] .bg-white\/10,
+[data-theme='solarized-dark'] .bg-white\/15,
+[data-theme='solarized-dark'] .bg-white\/20,
+[data-theme='solarized-dark'] .bg-white\/30,
+[data-theme='solarized-dark'] .bg-white\/40,
+[data-theme='solarized-dark'] .bg-white\/50,
+[data-theme='solarized-dark'] .bg-white\/60,
+[data-theme='solarized-dark'] .bg-white\/70,
+[data-theme='solarized-dark'] .bg-white\/80,
+[data-theme='solarized-dark'] .bg-white\/\[0\.02\],
+[data-theme='solarized-dark'] .bg-white\/\[0\.03\],
+[data-theme='solarized-dark'] .bg-white\/\[0\.05\] {
+    background-color: var(--app-glass-card);
+}
+
+[data-theme='dark'] .border-white\/5,
+[data-theme='dark'] .border-white\/10,
+[data-theme='dark'] .border-white\/15,
+[data-theme='dark'] .border-white\/20,
+[data-theme='dark'] .border-white\/30,
+[data-theme='dark'] .border-white\/40,
+[data-theme='dark'] .border-white\/50,
+[data-theme='solarized-dark'] .border-white\/5,
+[data-theme='solarized-dark'] .border-white\/10,
+[data-theme='solarized-dark'] .border-white\/15,
+[data-theme='solarized-dark'] .border-white\/20,
+[data-theme='solarized-dark'] .border-white\/30,
+[data-theme='solarized-dark'] .border-white\/40,
+[data-theme='solarized-dark'] .border-white\/50 {
+    border-color: var(--app-border);
+}
+
+[data-theme='dark'] .text-white,
+[data-theme='dark'] .text-white\/10,
+[data-theme='dark'] .text-white\/20,
+[data-theme='dark'] .text-white\/30,
+[data-theme='dark'] .text-white\/40,
+[data-theme='dark'] .text-white\/50,
+[data-theme='dark'] .text-white\/60,
+[data-theme='dark'] .text-white\/70,
+[data-theme='dark'] .text-white\/80,
+[data-theme='solarized-dark'] .text-white,
+[data-theme='solarized-dark'] .text-white\/10,
+[data-theme='solarized-dark'] .text-white\/20,
+[data-theme='solarized-dark'] .text-white\/30,
+[data-theme='solarized-dark'] .text-white\/40,
+[data-theme='solarized-dark'] .text-white\/50,
+[data-theme='solarized-dark'] .text-white\/60,
+[data-theme='solarized-dark'] .text-white\/70,
+[data-theme='solarized-dark'] .text-white\/80 {
+    color: var(--app-text);
+}
+
+[data-theme='dark'] .text-gray-400,
+[data-theme='dark'] .text-gray-500,
+[data-theme='solarized-dark'] .text-gray-400,
+[data-theme='solarized-dark'] .text-gray-500 {
+    color: var(--app-text-muted);
+}
+
+[data-theme='dark'] .text-gray-600,
+[data-theme='dark'] .text-gray-700,
+[data-theme='solarized-dark'] .text-gray-600,
+[data-theme='solarized-dark'] .text-gray-700 {
+    color: var(--app-text-faint);
+}
+
+/* ── LIGHT THEME overrides ────────────────────────────────────────────────── */
+
+/* Plain bg-black → theme surface (action blocks, etc.) */
+[data-theme='light'] .bg-black,
+[data-theme='solarized-light'] .bg-black {
+    background-color: var(--app-surface-2);
+}
+
+[data-theme='light'] .glass-card,
+[data-theme='solarized-light'] .glass-card {
+        background: rgba(0, 0, 0, 0.04);
+        border-color: var(--app-border);
+    }
+[data-theme='solarized-light'] .glass {
+        background: rgba(255, 255, 255, 0.8);
+    }
+[data-theme='solarized-light'] aside {
+        background-color: var(--app-surface-2);
+    }
+[data-theme='light'] .action-connector,
+[data-theme='solarized-light'] .action-connector {
+        stroke: var(--app-border-strong);
+        stroke-width: 1;
+    }
+[data-theme='light'] .action-dot,
+[data-theme='solarized-light'] .action-dot {
+        fill: var(--app-border-strong);
+        stroke: var(--app-border-strong);
+        stroke-width: 0.5;
+    }
+[data-theme='light'] .glass-card:hover,
+[data-theme='solarized-light'] .glass-card:hover {
+    background: rgba(0, 0, 0, 0.07);
+    border-color: var(--app-border-strong);
+}
+[data-theme='light'] .glass,
+[data-theme='solarized-light'] .glass {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme='light'] .bg-\[\#050505\],
+[data-theme='light'] .bg-\[\#080808\],
+[data-theme='light'] .bg-\[\#0a0a0a\],
+[data-theme='light'] .bg-\[\#0b0b0b\],
+[data-theme='light'] .bg-\[\#111\],
+[data-theme='light'] .bg-\[\#111111\],
+[data-theme='light'] .bg-\[\#1a1a1a\],
+[data-theme='solarized-light'] .bg-\[\#050505\],
+[data-theme='solarized-light'] .bg-\[\#080808\],
+[data-theme='solarized-light'] .bg-\[\#0a0a0a\],
+[data-theme='solarized-light'] .bg-\[\#0b0b0b\],
+[data-theme='solarized-light'] .bg-\[\#111\],
+[data-theme='solarized-light'] .bg-\[\#111111\],
+[data-theme='solarized-light'] .bg-\[\#1a1a1a\] {
+    background-color: var(--app-surface-2);
+}
+
+[data-theme='light'] .bg-black\/40,
+[data-theme='light'] .bg-black\/60,
+[data-theme='light'] .bg-black\/70,
+[data-theme='light'] .bg-black\/80,
+[data-theme='light'] .bg-black\/90,
+[data-theme='solarized-light'] .bg-black\/40,
+[data-theme='solarized-light'] .bg-black\/60,
+[data-theme='solarized-light'] .bg-black\/70,
+[data-theme='solarized-light'] .bg-black\/80,
+[data-theme='solarized-light'] .bg-black\/90 {
+    background-color: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='light'] .bg-white\/5,
+[data-theme='light'] .bg-white\/10,
+[data-theme='light'] .bg-white\/15,
+[data-theme='light'] .bg-white\/20,
+[data-theme='light'] .bg-white\/30,
+[data-theme='light'] .bg-white\/40,
+[data-theme='light'] .bg-white\/50,
+[data-theme='light'] .bg-white\/60,
+[data-theme='light'] .bg-white\/70,
+[data-theme='light'] .bg-white\/80,
+[data-theme='light'] .bg-white\/\[0\.02\],
+[data-theme='light'] .bg-white\/\[0\.03\],
+[data-theme='light'] .bg-white\/\[0\.05\],
+[data-theme='solarized-light'] .bg-white\/5,
+[data-theme='solarized-light'] .bg-white\/10,
+[data-theme='solarized-light'] .bg-white\/15,
+[data-theme='solarized-light'] .bg-white\/20,
+[data-theme='solarized-light'] .bg-white\/30,
+[data-theme='solarized-light'] .bg-white\/40,
+[data-theme='solarized-light'] .bg-white\/50,
+[data-theme='solarized-light'] .bg-white\/60,
+[data-theme='solarized-light'] .bg-white\/70,
+[data-theme='solarized-light'] .bg-white\/80,
+[data-theme='solarized-light'] .bg-white\/\[0\.02\],
+[data-theme='solarized-light'] .bg-white\/\[0\.03\],
+[data-theme='solarized-light'] .bg-white\/\[0\.05\] {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='light'] .border-white\/5,
+[data-theme='light'] .border-white\/10,
+[data-theme='light'] .border-white\/15,
+[data-theme='light'] .border-white\/20,
+[data-theme='light'] .border-white\/30,
+[data-theme='light'] .border-white\/40,
+[data-theme='light'] .border-white\/50,
+[data-theme='solarized-light'] .border-white\/5,
+[data-theme='solarized-light'] .border-white\/10,
+[data-theme='solarized-light'] .border-white\/15,
+[data-theme='solarized-light'] .border-white\/20,
+[data-theme='solarized-light'] .border-white\/30,
+[data-theme='solarized-light'] .border-white\/40,
+[data-theme='solarized-light'] .border-white\/50 {
+    border-color: var(--app-border);
+}
+
+[data-theme='light'] .text-white,
+[data-theme='light'] .text-white\/10,
+[data-theme='light'] .text-white\/20,
+[data-theme='light'] .text-white\/30,
+[data-theme='light'] .text-white\/40,
+[data-theme='light'] .text-white\/50,
+[data-theme='light'] .text-white\/60,
+[data-theme='light'] .text-white\/70,
+[data-theme='light'] .text-white\/80,
+[data-theme='solarized-light'] .text-white,
+[data-theme='solarized-light'] .text-white\/10,
+[data-theme='solarized-light'] .text-white\/20,
+[data-theme='solarized-light'] .text-white\/30,
+[data-theme='solarized-light'] .text-white\/40,
+[data-theme='solarized-light'] .text-white\/50,
+[data-theme='solarized-light'] .text-white\/60,
+[data-theme='solarized-light'] .text-white\/70,
+[data-theme='solarized-light'] .text-white\/80 {
+    color: var(--app-text);
+}
+
+[data-theme='light'] .text-gray-400,
+[data-theme='light'] .text-gray-500,
+[data-theme='solarized-light'] .text-gray-400,
+[data-theme='solarized-light'] .text-gray-500 {
+    color: var(--app-text-muted);
+}
+
+[data-theme='light'] .text-gray-600,
+[data-theme='light'] .text-gray-700,
+[data-theme='solarized-light'] .text-gray-600,
+[data-theme='solarized-light'] .text-gray-700 {
+    color: var(--app-text-faint);
+}
+
+/* text-blue-400/200 are too pale to read against light-theme surfaces at their default lightness */
+[data-theme='light'] .text-blue-200\/80,
+[data-theme='light'] .text-blue-400 {
+    color: #1d4ed8;
+}
+
+[data-theme='solarized-light'] .text-blue-200\/80,
+[data-theme='solarized-light'] .text-blue-400 {
+    color: #1c6498;
+}
+
+/* Light surfaces use restrained elevation so menus and dialogs do not retain
+   the heavy shadows intended for the dark canvas. */
+[data-theme='light'] .shadow-sm,
+[data-theme='light'] .shadow-lg,
+[data-theme='light'] .shadow-xl,
+[data-theme='solarized-dark'] .shadow-sm,
+[data-theme='solarized-dark'] .shadow-lg,
+[data-theme='solarized-dark'] .shadow-xl,
+[data-theme='solarized-light'] .shadow-sm,
+[data-theme='solarized-light'] .shadow-lg,
+[data-theme='solarized-light'] .shadow-xl {
+    box-shadow: var(--app-shadow-raised);
+}
+
+[data-theme='light'] .shadow-2xl,
+[data-theme='solarized-dark'] .shadow-2xl,
+[data-theme='solarized-light'] .shadow-2xl {
+    box-shadow: var(--app-shadow-overlay);
+}
+
+/* The workflow canvas is intentionally flat in alternate themes. Its flow
+   lines and dashed affordances use semantic contrast rather than white-alpha
+   utilities, which become too faint on pale surfaces. */
+[data-theme='light'] .canvas-workflow .canvas-execution-card,
+[data-theme='solarized-light'] .canvas-workflow .canvas-execution-card,
+[data-theme='solarized-dark'] .canvas-workflow .canvas-execution-card,
+[data-theme='light'] .editor-action-bar,
+[data-theme='solarized-light'] .editor-action-bar,
+[data-theme='solarized-dark'] .editor-action-bar,
+[data-theme='light'] .editor-results-drawer,
+[data-theme='solarized-light'] .editor-results-drawer,
+[data-theme='solarized-dark'] .editor-results-drawer,
+[data-theme='light'] .editor-results-grip,
+[data-theme='solarized-light'] .editor-results-grip,
+[data-theme='solarized-dark'] .editor-results-grip {
+    box-shadow: none;
+}
+
+.canvas-workflow .canvas-connector {
+    background-color: var(--app-border-strong);
+}
+
+[data-theme='light'] .canvas-workflow .canvas-loop-connector,
+[data-theme='solarized-light'] .canvas-workflow .canvas-loop-connector {
+    color: var(--app-border-strong);
+}
+
+.canvas-workflow .w-px.bg-white\/10,
+.canvas-workflow .w-px.bg-white\/20,
+.canvas-workflow .w-px.bg-white\/25 {
+    background-color: var(--app-border-strong);
+}
+
+.canvas-workflow .border-l.border-white\/20,
+.canvas-workflow .border-l.border-white\/25,
+.canvas-workflow .border-dashed.border-white\/10,
+.canvas-workflow .border-dashed.border-white\/15 {
+    border-color: var(--app-border-strong);
+}
+
+.canvas-workflow .canvas-add-action {
+    border-color: var(--app-border-strong);
+    background: var(--app-glass-card);
+    color: var(--app-text-muted);
+}
+
+.canvas-workflow .canvas-add-action:hover {
+    border-color: var(--app-text-faint);
+    background: var(--app-glass-card-hover);
+    color: var(--app-text);
+}
+
+.canvas-workflow .canvas-add-action-text {
+    color: var(--app-text-muted);
+}
+
+.canvas-workflow .canvas-add-action:hover .canvas-add-action-text {
+    color: var(--app-text);
+}
+
+.canvas-workflow .canvas-add-action-icon-box {
+    background: var(--app-input);
+}
+
+.canvas-workflow .canvas-add-action:hover .canvas-add-action-icon-box {
+    background: var(--app-surface-3);
+}
+
+.canvas-workflow .canvas-add-action:hover .canvas-insert-icon {
+    color: var(--app-text);
+}
+
+.results-skeleton-line {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--app-text) 7%, transparent);
+}
+
+.results-skeleton-shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-110%);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--app-text) 12%, transparent), transparent);
+    animation: results-skeleton-shine 1.5s ease-in-out infinite;
+}
+
+@keyframes results-skeleton-shine {
+    to { transform: translateX(110%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .results-skeleton-shine::after { animation: none; }
+}
+
+.canvas-workflow .canvas-secondary-text {
+    color: var(--app-text-muted);
+}
+
+/* ── Universal overrides (all themes) ────────────────────────────────────── */
+.text-white { color: var(--app-text); }
+.text-gray-500 { color: var(--app-text-muted); }
+.text-gray-600 { color: var(--app-text-muted); }
+
+.border-white\/10 { border-color: var(--app-border); }
+.border-white\/20 { border-color: var(--app-border-strong); }
+
+.hover\:bg-white\/5:hover { background-color: var(--app-glass-card-hover); }
+.hover\:bg-white\/10:hover { background-color: var(--app-glass-card-hover); }
+
+.focus-visible\:ring-white\/50 { --tw-ring-color: rgba(128, 128, 128, 0.5); }
+.focus-visible\:ring-blue-500 { --tw-ring-color: var(--app-accent); }
+
+::placeholder { color: var(--app-text-faint); }
+.placeholder\:text-gray-600::placeholder { color: var(--app-text-faint); }
+
+.bg-gradient-to-b {
+    background-image: linear-gradient(to bottom, var(--app-surface-3), transparent);
+}
+
+/* Keep template identity and the import action visible while long READMEs scroll. */
+.template-preview-modal > footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: var(--app-surface);
+    box-shadow: 0 -8px 18px color-mix(in srgb, var(--app-bg) 12%, transparent);
+}
+
+.template-preview-creator { margin-top: 8px; }

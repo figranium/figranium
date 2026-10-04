@@ -8,17 +8,7 @@ const cookie = require('cookie');
 const signature = require('cookie-signature');
 const SERVER_BOOTED_AT = Date.now();
 
-// Catch unhandled promise rejections from playwright-extra stealth plugin.
-// When pages close before the plugin finishes async CDP initialization,
-// benign rejections bubble up and would otherwise crash the process.
-process.on('unhandledRejection', (reason) => {
-    const msg = reason && reason.message ? reason.message : String(reason);
-    if (/Target page, context or browser has been closed/i.test(msg)) {
-        console.warn('[STEALTH] Suppressed benign rejection:', msg);
-        return;
-    }
-    console.error('Unhandled rejection:', reason);
-});
+require('./src/server/stealth-rejections');
 
 // Constants
 const {
@@ -96,29 +86,8 @@ const { recordActivity } = require('./src/server/telemetry');
 const app = express();
 app.disable('x-powered-by');
 
-// A short-lived, one-time ticket proves the upgrade originated from the signed-in
-// application session, without relying on a proxy to preserve the public Host.
-const VNC_TICKET_TTL_MS = 60_000;
-const HEADFUL_PROBE_BYTES = 192 * 1024;
-const headfulProbePayload = Buffer.alloc(HEADFUL_PROBE_BYTES, 0x61);
-const vncViewerTickets = new Map();
+const { createVncViewerTicket, consumeVncViewerTicket } = require('./src/server/vnc-viewer-tickets');
 
-const createVncViewerTicket = (sessionId) => {
-    const now = Date.now();
-    for (const [token, ticket] of vncViewerTickets) {
-        if (ticket.expiresAt <= now) vncViewerTickets.delete(token);
-    }
-    const token = crypto.randomBytes(32).toString('base64url');
-    vncViewerTickets.set(token, { sessionId, expiresAt: now + VNC_TICKET_TTL_MS });
-    return token;
-};
-
-const consumeVncViewerTicket = (token, sessionId) => {
-    if (!token || !sessionId) return false;
-    const ticket = vncViewerTickets.get(token);
-    vncViewerTickets.delete(token);
-    return !!ticket && ticket.expiresAt > Date.now() && ticket.sessionId === sessionId;
-};
 const port = Number(process.env.PORT) || DEFAULT_PORT;
 
 // Session Secret Setup
@@ -577,18 +546,7 @@ app.get('/api/headful/status', requireAuth, async (req, res) => {
     });
 });
 
-// Fixed-size, authenticated payload used by the embedded viewer to estimate
-// transport throughput. Deliberately cache-proof so each sample is meaningful.
-app.get('/api/headful/connection-probe', requireAuth, (req, res) => {
-    res.set({
-        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
-        Pragma: 'no-cache',
-        Expires: '0',
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': String(HEADFUL_PROBE_BYTES)
-    });
-    res.end(headfulProbePayload);
-});
+require('./src/server/routes/headful-probe')(app, requireAuth);
 
 app.get('/api/headful/selector_stream', requireAuth, (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');

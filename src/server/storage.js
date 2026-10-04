@@ -5,20 +5,10 @@ const {
     TASKS_FILE,
     EXECUTIONS_FILE,
     EXECUTION_RESULTS_DIR,
-    CREDENTIALS_FILE,
-    API_KEY_FILE,
-    THEME_FILE,
-    DEFAULT_THEME_ID,
-    CAPTCHA_SETTINGS_FILE,
-    SYSTEM_SETTINGS_FILE,
-    ALLOWED_IPS_FILE,
-    STORAGE_STATE_PATH,
     MAX_EXECUTIONS,
-    ALLOWED_IPS_TTL_MS
 } = require('./constants');
 
 const STORAGE_CACHE_TTL = 5000; // 5 seconds
-const { parseIpList, normalizeIp } = require('./utils');
 const { initDB, getPool } = require('./db');
 
 let dbInitPromise = null;
@@ -682,166 +672,7 @@ async function reconcileInFlightExecutions(startupCutoff = Date.now()) {
     return changed;
 }
 
-// API Key Storage
-let apiKeyCache = undefined;
-let apiKeyLoadPromise = null;
-
-// Deployments that do not expose Figranium's web UI (for example a native host
-// application) may provide a one-time bootstrap key as a mounted secret file.
-// A persisted API key always wins, so changing or removing the file never
-// rotates an already configured instance.
-async function loadBootstrapApiKey() {
-    const secretPath = process.env.FIGRANIUM_BOOTSTRAP_API_KEY_FILE;
-    if (!secretPath) return null;
-
-    try {
-        const key = (await fs.promises.readFile(secretPath, 'utf8')).trim();
-        return key.length >= 32 && key.length <= 512 ? key : null;
-    } catch {
-        return null;
-    }
-}
-
-async function loadApiKey() {
-    if (apiKeyCache !== undefined) return apiKeyCache;
-    if (apiKeyLoadPromise) return apiKeyLoadPromise;
-
-    apiKeyLoadPromise = (async () => {
-        let apiKey = null;
-
-        const useDB = await ensureDB();
-        if (useDB) {
-            try {
-                const pool = getPool();
-                if (!pool) throw new Error('Database pool not available');
-                const res = await pool.query('SELECT key FROM api_key WHERE id = 1');
-                if (res.rows.length > 0) apiKey = res.rows[0].key;
-            } catch (e) {
-                console.error('[STORAGE] loadApiKey DB error:', e.message);
-            }
-        } else {
-            try {
-                const raw = await fs.promises.readFile(API_KEY_FILE, 'utf8');
-                const data = JSON.parse(raw);
-                apiKey = data && data.apiKey ? data.apiKey : null;
-            } catch (e) {
-                apiKey = null;
-            }
-        }
-
-        if (apiKeyCache !== undefined) {
-            apiKeyLoadPromise = null;
-            return apiKeyCache;
-        }
-
-        if (!apiKey) {
-            apiKey = await loadBootstrapApiKey();
-        }
-
-        if (!apiKey) {
-            try {
-                // Now loadUsers is async
-                const users = await loadUsers();
-                if (Array.isArray(users) && users.length > 0 && users[0].apiKey) {
-                    apiKey = users[0].apiKey;
-                    await saveApiKey(apiKey);
-                }
-            } catch (e) {
-                // ignore
-            }
-        }
-
-        if (apiKeyCache !== undefined) {
-            apiKeyLoadPromise = null;
-            return apiKeyCache;
-        }
-
-        apiKeyCache = apiKey;
-        apiKeyLoadPromise = null;
-        return apiKey;
-    })();
-
-    return apiKeyLoadPromise;
-}
-
-async function saveApiKey(apiKeyArg) {
-    const apiKey = typeof apiKeyArg === 'string' ? apiKeyArg.trim() : apiKeyArg;
-    apiKeyCache = apiKey;
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        try {
-            await pool.query('INSERT INTO api_key (id, key) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET key = EXCLUDED.key', [apiKey]);
-        } catch (e) {
-            console.error('[STORAGE] Failed to save API key to DB:', e.message);
-        }
-    } else {
-        try {
-            fs.writeFileSync(API_KEY_FILE, JSON.stringify({ apiKey }, null, 2));
-        } catch (e) {
-            console.error('[STORAGE] Failed to save API key to file:', e.message);
-        }
-    }
-
-    // Try to update user with the new API key too
-    try {
-        const users = await loadUsers();
-        if (Array.isArray(users) && users.length > 0) {
-            users[0].apiKey = apiKey;
-            await saveUsers(users);
-        }
-    } catch (e) { }
-}
-
-// Credentials Storage
-let credentialsCache = null;
-
-async function loadCredentials() {
-    if (credentialsCache) return credentialsCache;
-    const useDB = await ensureDB();
-    if (useDB) {
-        try {
-            const pool = getPool();
-            if (!pool) throw new Error('Database pool not available');
-            const res = await pool.query('SELECT data FROM credentials ORDER BY id ASC');
-            credentialsCache = res.rows.map(r => r.data);
-        } catch (e) {
-            console.error('[STORAGE] Failed to load credentials from DB:', e.message);
-            credentialsCache = [];
-        }
-        return credentialsCache;
-    }
-    try {
-        const raw = await fs.promises.readFile(CREDENTIALS_FILE, 'utf8');
-        credentialsCache = JSON.parse(raw);
-    } catch {
-        credentialsCache = [];
-    }
-    return credentialsCache;
-}
-
-async function saveCredentials(credentials) {
-    credentialsCache = credentials;
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
-            await client.query('TRUNCATE credentials');
-            const rows = credentials.map((data, i) => ({ id: i + 1, data }));
-            await bulkInsert(client, 'credentials', ['id', 'data'], rows);
-            await client.query('COMMIT');
-        } catch (e) {
-            await client.query('ROLLBACK');
-            console.error('[STORAGE] Failed to save credentials to DB:', e.message);
-        } finally {
-            client.release();
-        }
-        return;
-    }
-    await fs.promises.writeFile(CREDENTIALS_FILE, JSON.stringify(credentials, null, 2));
-}
+const identityStorage = require('./storage-identity')({ ensureDB, getPool, bulkInsert, loadUsers, saveUsers });
 
 // Session Helper
 const saveSession = (req) => new Promise((resolve, reject) => {
@@ -851,77 +682,7 @@ const saveSession = (req) => new Promise((resolve, reject) => {
     req.session.save((err) => err ? reject(err) : resolve());
 });
 
-// Allowed IPs Storage
-let allowedIpsCache = { env: null, file: null, mtimeMs: 0, set: null, lastCheck: 0 };
-
-const loadAllowedIps = async () => {
-    const envRaw = String(process.env.ALLOWED_IPS || '').trim();
-    const now = Date.now();
-
-    if (allowedIpsCache.set && (now - allowedIpsCache.lastCheck < ALLOWED_IPS_TTL_MS)) {
-        return allowedIpsCache.set;
-    }
-
-    let filePath = null;
-    let fileMtime = 0;
-    let fileEntries = [];
-
-    try {
-        const stat = await fs.promises.stat(ALLOWED_IPS_FILE);
-        filePath = ALLOWED_IPS_FILE;
-        fileMtime = stat.mtimeMs || 0;
-    } catch {
-        filePath = null;
-    }
-
-    if (
-        allowedIpsCache.set &&
-        allowedIpsCache.env === envRaw &&
-        allowedIpsCache.file === filePath &&
-        allowedIpsCache.mtimeMs === fileMtime
-    ) {
-        allowedIpsCache.lastCheck = now;
-        return allowedIpsCache.set;
-    }
-
-    if (filePath) {
-        try {
-            const raw = await fs.promises.readFile(filePath, 'utf8');
-            const parsed = JSON.parse(raw);
-            fileEntries = Array.isArray(parsed)
-                ? parsed
-                : Array.isArray(parsed.allowedIps)
-                    ? parsed.allowedIps
-                    : [];
-        } catch {
-            fileEntries = [];
-        }
-    }
-
-    const combined = [
-        ...parseIpList(envRaw),
-        ...parseIpList(fileEntries)
-    ]
-        .map(normalizeIp)
-        .filter(Boolean);
-
-    const set = new Set(combined);
-    allowedIpsCache = { env: envRaw, file: filePath, mtimeMs: fileMtime, set, lastCheck: now };
-    return set;
-};
-
-// Storage State
-const getStorageStateFile = () => {
-    try {
-        if (fs.existsSync(STORAGE_STATE_PATH)) {
-            const stat = fs.statSync(STORAGE_STATE_PATH);
-            if (stat.isDirectory()) {
-                return path.join(STORAGE_STATE_PATH, 'storage_state.json');
-            }
-        }
-    } catch { }
-    return STORAGE_STATE_PATH;
-};
+const networkStorage = require('./storage-network')();
 
 /**
  * Flush any pending debounced execution writes to disk immediately.
@@ -956,181 +717,7 @@ async function pruneExecutionsBefore(cutoffMs) {
     return { deleted: expiredIds.length, ids: expiredIds };
 }
 
-// Theme Config Storage
-let themeCache = null;
-const THEME_PREFERENCE_VERSION = 2;
-
-function migrateThemePreference(payload) {
-    const theme = payload && typeof payload.theme === 'string' ? payload.theme : null;
-    if (!theme || payload.preferenceVersion === THEME_PREFERENCE_VERSION) {
-        return { theme, payload, migrated: false };
-    }
-    return {
-        theme: 'auto',
-        payload: { ...payload, theme: 'auto', preferenceVersion: THEME_PREFERENCE_VERSION },
-        migrated: true,
-    };
-}
-
-async function loadThemeConfig() {
-    if (themeCache !== null) return themeCache;
-    const useDB = await ensureDB();
-    if (useDB) {
-        try {
-            const pool = getPool();
-            if (!pool) throw new Error('Database pool not available');
-            const res = await pool.query('SELECT data FROM theme_config WHERE id = 1');
-            if (res.rows.length > 0 && res.rows[0].data && res.rows[0].data.theme) {
-                const migration = migrateThemePreference(res.rows[0].data);
-                themeCache = migration.theme;
-                if (migration.migrated) {
-                    await pool.query('UPDATE theme_config SET data = $1 WHERE id = 1', [migration.payload]);
-                }
-            } else {
-                themeCache = null;
-            }
-        } catch (e) {
-            console.error('[STORAGE] Failed to load theme from DB:', e.message);
-            themeCache = null;
-        }
-        return themeCache;
-    }
-    try {
-        const raw = await fs.promises.readFile(THEME_FILE, 'utf8');
-        const parsed = JSON.parse(raw);
-        const migration = migrateThemePreference(parsed);
-        themeCache = migration.theme;
-        if (migration.migrated) {
-            await fs.promises.writeFile(THEME_FILE, JSON.stringify(migration.payload, null, 2));
-        }
-    } catch {
-        themeCache = null;
-    }
-    return themeCache;
-}
-
-async function saveThemeConfig(themeId) {
-    const validTheme = typeof themeId === 'string' && themeId.trim() ? themeId.trim() : DEFAULT_THEME_ID;
-    themeCache = validTheme;
-    const payload = { theme: validTheme, preferenceVersion: THEME_PREFERENCE_VERSION };
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        try {
-            await pool.query('INSERT INTO theme_config (id, data) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [payload]);
-        } catch (e) {
-            console.error('[STORAGE] Failed to save theme to DB:', e.message);
-        }
-        return validTheme;
-    }
-    try {
-        const dir = path.dirname(THEME_FILE);
-        if (!fs.existsSync(dir)) {
-            await fs.promises.mkdir(dir, { recursive: true });
-        }
-        await fs.promises.writeFile(THEME_FILE, JSON.stringify(payload, null, 2));
-    } catch (e) {
-        console.error('[STORAGE] Failed to save theme to file:', e.message);
-    }
-    return validTheme;
-}
-
-// Captcha Solver Settings Storage
-let captchaSettingsCache = null;
-
-async function loadCaptchaSettings() {
-    if (captchaSettingsCache !== null) return captchaSettingsCache;
-    const useDB = await ensureDB();
-    if (useDB) {
-        try {
-            const pool = getPool();
-            if (!pool) throw new Error('Database pool not available');
-            const res = await pool.query('SELECT data FROM captcha_settings WHERE id = 1');
-            captchaSettingsCache = res.rows.length > 0 && res.rows[0].data ? res.rows[0].data : {};
-        } catch (e) {
-            console.error('[STORAGE] Failed to load captcha settings from DB:', e.message);
-            captchaSettingsCache = {};
-        }
-        return captchaSettingsCache;
-    }
-    try {
-        const raw = await fs.promises.readFile(CAPTCHA_SETTINGS_FILE, 'utf8');
-        const parsed = JSON.parse(raw);
-        captchaSettingsCache = parsed && typeof parsed === 'object' ? parsed : {};
-    } catch {
-        captchaSettingsCache = {};
-    }
-    return captchaSettingsCache;
-}
-
-async function saveCaptchaSettings(settings) {
-    const baseUrl = settings && typeof settings.baseUrl === 'string' ? settings.baseUrl.trim() : '';
-    const clientKey = settings && typeof settings.clientKey === 'string' ? settings.clientKey.trim() : '';
-    const payload = { baseUrl, clientKey };
-    captchaSettingsCache = payload;
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        try {
-            await pool.query('INSERT INTO captcha_settings (id, data) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [payload]);
-        } catch (e) {
-            console.error('[STORAGE] Failed to save captcha settings to DB:', e.message);
-        }
-        return payload;
-    }
-    try {
-        const dir = path.dirname(CAPTCHA_SETTINGS_FILE);
-        if (!fs.existsSync(dir)) {
-            await fs.promises.mkdir(dir, { recursive: true });
-        }
-        await fs.promises.writeFile(CAPTCHA_SETTINGS_FILE, JSON.stringify(payload, null, 2));
-    } catch (e) {
-        console.error('[STORAGE] Failed to save captcha settings to file:', e.message);
-    }
-    return payload;
-}
-
-let systemSettingsCache = null;
-const DEFAULT_SYSTEM_SETTINGS = { retentionDays: 7 };
-
-async function loadSystemSettings() {
-    if (systemSettingsCache) return systemSettingsCache;
-    const useDB = await ensureDB();
-    if (useDB) {
-        try {
-            const pool = getPool();
-            const res = await pool.query('SELECT data FROM system_settings WHERE id = 1');
-            systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS, ...(res.rows[0]?.data || {}) };
-        } catch (error) {
-            console.error('[STORAGE] Failed to load system settings:', error.message);
-            systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS };
-        }
-        return systemSettingsCache;
-    }
-    try {
-        const parsed = JSON.parse(await fs.promises.readFile(SYSTEM_SETTINGS_FILE, 'utf8'));
-        systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS, ...(parsed && typeof parsed === 'object' ? parsed : {}) };
-    } catch { systemSettingsCache = { ...DEFAULT_SYSTEM_SETTINGS }; }
-    return systemSettingsCache;
-}
-
-async function saveSystemSettings(settings) {
-    const retentionDays = settings?.retentionDays === null ? null : Number(settings?.retentionDays);
-    if (retentionDays !== null && (!Number.isInteger(retentionDays) || retentionDays < 1 || retentionDays > 365)) {
-        throw new Error('retentionDays must be null or an integer from 1 to 365');
-    }
-    const payload = { retentionDays };
-    systemSettingsCache = payload;
-    const useDB = await ensureDB();
-    if (useDB) {
-        const pool = getPool();
-        await pool.query('INSERT INTO system_settings (id, data) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [payload]);
-        return payload;
-    }
-    await fs.promises.mkdir(path.dirname(SYSTEM_SETTINGS_FILE), { recursive: true });
-    await fs.promises.writeFile(SYSTEM_SETTINGS_FILE, JSON.stringify(payload, null, 2));
-    return payload;
-}
+const settingsStorage = require('./storage-settings')({ ensureDB, getPool });
 
 module.exports = {
     loadUsers,
@@ -1149,17 +736,17 @@ module.exports = {
     reconcileInFlightExecutions,
     flushExecutions,
     pruneExecutionsBefore,
-    loadApiKey,
-    saveApiKey,
-    loadCredentials,
-    saveCredentials,
+    loadApiKey: identityStorage.loadApiKey,
+    saveApiKey: identityStorage.saveApiKey,
+    loadCredentials: identityStorage.loadCredentials,
+    saveCredentials: identityStorage.saveCredentials,
     saveSession,
-    loadAllowedIps,
-    getStorageStateFile,
-    loadThemeConfig,
-    saveThemeConfig,
-    loadCaptchaSettings,
-    saveCaptchaSettings,
-    loadSystemSettings,
-    saveSystemSettings
+    loadAllowedIps: networkStorage.loadAllowedIps,
+    getStorageStateFile: networkStorage.getStorageStateFile,
+    loadThemeConfig: settingsStorage.loadThemeConfig,
+    saveThemeConfig: settingsStorage.saveThemeConfig,
+    loadCaptchaSettings: settingsStorage.loadCaptchaSettings,
+    saveCaptchaSettings: settingsStorage.saveCaptchaSettings,
+    loadSystemSettings: settingsStorage.loadSystemSettings,
+    saveSystemSettings: settingsStorage.saveSystemSettings
 };
