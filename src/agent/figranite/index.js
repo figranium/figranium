@@ -310,7 +310,7 @@ async function runFigranite(data, options = {}) {
                 timezone: 'America/New_York',
                 viewport: page.viewportSize?.() || null
             },
-            get lastBlockOutput() { return lastBlockOutput; },
+            get lastBlockOutput() { return runtimeVars['block.output']; },
             get lastMouse() { return lastMouse; },
             set lastMouse(val) { lastMouse = val; },
             setStopOutcome: (out) => { stopOutcome = out; },
@@ -385,7 +385,7 @@ async function runFigranite(data, options = {}) {
                     const hasStructured = act.conditionVarType || act.conditionOp || act.conditionVar || act.conditionValue;
                     const condition = hasStructured
                         ? await evalStructuredCondition(act, page, runtimeVars, resolveTemplate)
-                        : await evalCondition(act.value, page, runtimeVars, lastBlockOutput, resolveTemplate);
+                        : await evalCondition(act.value, page, runtimeVars, runtimeVars['block.output'], resolveTemplate);
                     setBlockOutput(condition);
                     logs.push(`If condition: ${condition ? 'true' : 'false'}`);
                     reportActionProgress(act, 'success', condition);
@@ -423,7 +423,7 @@ async function runFigranite(data, options = {}) {
                     const hasStructured = act.conditionVarType || act.conditionOp || act.conditionVar || act.conditionValue;
                     const condition = hasStructured
                         ? await evalStructuredCondition(act, page, runtimeVars, resolveTemplate)
-                        : await evalCondition(act.value, page, runtimeVars, lastBlockOutput, resolveTemplate);
+                        : await evalCondition(act.value, page, runtimeVars, runtimeVars['block.output'], resolveTemplate);
                     setBlockOutput(condition);
                     logs.push(`While condition: ${condition ? 'true' : 'false'}`);
                     reportActionProgress(act, 'success', condition);
