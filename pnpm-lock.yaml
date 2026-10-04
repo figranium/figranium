@@ -24,7 +24,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       cloakbrowser:
-        specifier: ^0.5.8
+        specifier: ^0.5.11
         version: 0.5.11(playwright-core@1.63.0)
       cookie:
         specifier: ^1.0.2
@@ -112,7 +112,7 @@ importers:
         specifier: ^5.1.2
         version: 5.2.0(supports-color@7.2.0)(vite@7.3.2(@types/node@25.5.0)(jiti@1.21.7)(lightningcss@1.31.1))
       autoprefixer:
-        specifier: ^10.6.1
+        specifier: ^10.4.23
         version: 10.6.1(postcss@8.5.8)
       cross-env:
         specifier: ^10.1.0
