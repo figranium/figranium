@@ -19,7 +19,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:18
         env:
           POSTGRES_USER: figranium
           POSTGRES_PASSWORD: figranium_qualification
