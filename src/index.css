@@ -1,14 +1,15 @@
-@import '@fontsource/questrial/400.css';
-@import '@fontsource/space-mono/400.css';
-@import '@fontsource/space-mono/700.css';
-@import '@fontsource/space-mono/400-italic.css';
-@import '@fontsource/space-mono/700-italic.css';
 @import './styles/pages.css';
 @import './styles/theme-overrides.css';
+@import 'tailwindcss';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+    --color-bg: #020202;
+    --color-panel: rgba(10, 10, 10, 0.85);
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-accent: #ffffff;
+    --font-sans: 'Questrial', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+}
 
 :root {
     --app-bg: #020202;
