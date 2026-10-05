@@ -40,7 +40,7 @@ jobs:
             echo "value=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: EndBug/add-and-commit@v9
+      - uses: EndBug/add-and-commit@v11
         if: steps.changed.outputs.value == 'true'
         with:
           add: ghcr-stats.json
