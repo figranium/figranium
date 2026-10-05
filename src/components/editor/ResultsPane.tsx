@@ -399,11 +399,11 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
             )}
 
             <div className={`glass-card flex flex-col relative ${fullWidth ? 'rounded-2xl p-4' : 'rounded-[32px] p-8'}`}>
-                <div className={`flex items-center justify-between border-b border-white/5 ${fullWidth ? 'flex-wrap gap-2 pb-4 mb-4' : 'pb-4 mb-6'}`}>
-                    <span className="text-xs font-bold text-gray-500 tracking-widest">
+                <div className={`flex items-center justify-between gap-2 border-b border-white/5 ${fullWidth ? 'flex-wrap pb-4 mb-4' : 'pb-4 mb-6'}`}>
+                    <span className="shrink-0 text-xs font-bold text-gray-500 tracking-widest">
                         {mainView === 'downloads' ? 'Downloads' : 'Data'}
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
                         {activeResults?.downloads && activeResults.downloads.length > 0 && (
                             <div role="tablist" className="flex bg-white/5 rounded-lg p-0.5 border border-white/10">
                                 {(['data', 'downloads'] as const).map((mode) => (
@@ -455,7 +455,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                     onUnpin?.();
                                     setResultView('latest');
                                 }}
-                                className="px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 bg-white/5 border-white/10 text-amber-200 hover:bg-white/10"
+                                className="px-3 py-2 border text-xs font-bold rounded-xl transition-all flex items-center gap-2 bg-white/5 border-white/10 text-amber-700 dark:text-amber-200 hover:bg-white/10"
                                 title="Unpin data"
                             >
                                 Unpin
