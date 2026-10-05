@@ -1,6 +1,6 @@
 # This Dockerfile supports multi-arch builds (linux/amd64, linux/arm64)
 # relying on multi-arch base images from Node and Playwright.
-FROM node:22-bullseye AS build
+FROM node:24-bullseye AS build
 
 WORKDIR /app
 
