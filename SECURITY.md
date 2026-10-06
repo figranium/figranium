@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Reporting a Vulnerability
-If you discover a security issue, send an email to `admin@figranium.dev` with:
+If you discover a security issue, send an email to `security@figranium.dev` with:
 - the npm or container version and tag you were using
 - a description of the issue and how to reproduce it
 - any relevant logs or screenshots
