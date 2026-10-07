@@ -24,6 +24,10 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
     const [newPassword, setNewPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [resetPassword, setResetPassword] = useState('');
+    const [exporting, setExporting] = useState(false);
+    const [exportSelection, setExportSelection] = useState<Record<string, boolean>>({
+        tasks: true, executions: true, captures: true, apiKeys: true, cookies: true
+    });
     const load = useCallback(async () => {
         try {
             const response = await fetch('/api/settings/system', { credentials: 'include' });
@@ -75,6 +79,26 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
             await load();
         } catch { onNotify(`Failed to clear ${label}.`, 'error'); } finally { setSaving(false); }
     };
+    const exportData = async () => {
+        const selected = Object.entries(exportSelection).filter(([, enabled]) => enabled).map(([key]) => key);
+        if (!selected.length) return onNotify('Select at least one data type to export.', 'error');
+        setExporting(true);
+        try {
+            const response = await fetch('/api/settings/export', {
+                method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ include: selected })
+            });
+            if (!response.ok) throw new Error('Export failed');
+            const blob = await response.blob();
+            const disposition = response.headers.get('Content-Disposition') || '';
+            const fileName = disposition.match(/filename="([^"]+)"/)?.[1] || 'figranium-export.zip';
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url; anchor.download = fileName; document.body.appendChild(anchor); anchor.click(); anchor.remove();
+            URL.revokeObjectURL(url);
+            onNotify('Data export downloaded.', 'success');
+        } catch { onNotify('Failed to export data.', 'error'); } finally { setExporting(false); }
+    };
     const clearEverything = async () => {
         if (!resetPassword) return onNotify('Enter your current password to clear all workspace data.', 'error');
         if (!await onConfirm({ title: 'Clear all workspace data', message: 'This permanently removes tasks, captures, execution history, browser state, API keys, credentials, proxies, preferences, downloads, and local CAPTCHA files. Your account stays signed in.', confirmLabel: 'Clear everything' })) return;
@@ -99,6 +123,23 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
         <section className="app-panel p-7">
             <div><h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3><p className="text-xs theme-text-faint mt-1">Optional local help for supported CAPTCHA challenges. It is only used when a task reaches a CAPTCHA; normal browser and scrape tasks are unaffected.</p></div>
             <div className="mt-5 text-xs theme-text-muted">Local solver: <span className="font-bold theme-text">{data?.captcha?.activeTier || 'Unavailable'}</span>{data?.captcha?.backend ? ` · ${data.captcha.backend}/${data.captcha.device || 'auto'}` : ''}<p className="mt-2 theme-text-faint">Running Figranium through npm does not require any extra CAPTCHA setup. “Unavailable” means local solving is disabled; remote solver services or human handoff can still be used when configured.</p></div>
+        </section>
+        <section className="app-panel p-7">
+            <h3 className="text-sm font-bold theme-text">Export data</h3>
+            <p className="text-xs theme-text-faint mt-1">Download a portable ZIP containing only the Figranium data you select.</p>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
+                {[
+                    ['tasks', 'Tasks'], ['executions', 'Executions'], ['captures', 'Captures'],
+                    ['apiKeys', 'API Keys'], ['cookies', 'Cookies']
+                ].map(([key, label]) => (
+                    <label key={key} className="flex items-center gap-3 rounded-xl border theme-border px-4 py-3 text-sm theme-text cursor-pointer">
+                        <input type="checkbox" checked={!!exportSelection[key]} onChange={(event) => setExportSelection((current) => ({ ...current, [key]: event.target.checked }))} className="size-4 accent-blue-600" />
+                        <span>{label}</span>
+                    </label>
+                ))}
+            </div>
+            <p className="mt-4 text-xs theme-text-faint">API Keys and cookies are sensitive and are exported in readable form when selected.</p>
+            <button type="button" disabled={saving || exporting} onClick={exportData} className="app-button-primary mt-4 disabled:opacity-50">{exporting ? 'Exporting…' : 'Export selected'}</button>
         </section>
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Maintenance</h3><p className="text-xs theme-text-faint mt-1">Manually remove saved run data when you need to free disk space immediately.</p>
