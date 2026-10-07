@@ -15,7 +15,7 @@ RUN npm ci --include=dev
 COPY . .
 RUN npm run build
 
-FROM mcr.microsoft.com/playwright:v1.64.0-noble AS runtime
+FROM mcr.microsoft.com/playwright:v1.63.0-noble AS runtime
 
 WORKDIR /app
 
@@ -44,7 +44,8 @@ COPY package*.json ./
 COPY scripts ./scripts
 ENV FIGRANIUM_SKIP_PLAYWRIGHT_INSTALL=1 \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev \
+    && npx playwright install --with-deps chromium firefox webkit
 
 # Copy server and built assets
 COPY --from=build /app/dist /app/dist
