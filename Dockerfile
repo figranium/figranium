@@ -15,7 +15,7 @@ RUN npm ci --include=dev
 COPY . .
 RUN npm run build
 
-FROM mcr.microsoft.com/playwright:v1.64.0-jammy AS runtime
+FROM mcr.microsoft.com/playwright:v1.64.0-noble AS runtime
 
 WORKDIR /app
 
