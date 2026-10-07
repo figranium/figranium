@@ -120,6 +120,68 @@ router.post('/login', authRateLimiter, async (req, res) => {
     }
 });
 
+// Optional Figranium Cloud SSO handoff. Cloud gives the browser a short-lived,
+// single-use opaque code; this instance exchanges it server-to-server and creates
+// its normal local session. Self-hosted installations remain unchanged unless both
+// Cloud environment variables are configured.
+router.get('/cloud-handoff', authRateLimiter, async (req, res) => {
+    const exchangeUrl = process.env.FIGRANIUM_CLOUD_AUTH_EXCHANGE_URL;
+    const instanceSecret = process.env.FIGRANIUM_CLOUD_INSTANCE_SECRET;
+    if (!exchangeUrl || !instanceSecret) return res.status(404).json({ error: 'CLOUD_AUTH_DISABLED' });
+
+    const code = typeof req.query.code === 'string' ? req.query.code : '';
+    if (!code || code.length > 512) return res.status(400).json({ error: 'INVALID_HANDOFF_CODE' });
+
+    let url;
+    try {
+        url = new URL(exchangeUrl);
+        if (url.protocol !== 'https:' && !(process.env.NODE_ENV === 'test' && ['localhost', '127.0.0.1', '::1'].includes(url.hostname))) {
+            throw new Error('Cloud auth exchange URL must use HTTPS');
+        }
+    } catch (error) {
+        console.error('[AUTH] Invalid Cloud auth exchange URL:', error.message);
+        return res.status(503).json({ error: 'CLOUD_AUTH_MISCONFIGURED' });
+    }
+
+    try {
+        const exchange = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${instanceSecret}`
+            },
+            body: JSON.stringify({ code }),
+            signal: AbortSignal.timeout(5000),
+            redirect: 'error'
+        });
+        if (!exchange.ok) return res.status(401).json({ error: 'INVALID_HANDOFF_CODE' });
+
+        const identity = await exchange.json();
+        const email = typeof identity?.email === 'string' ? identity.email.trim().toLowerCase() : '';
+        if (!email || email.length > 255) return res.status(401).json({ error: 'INVALID_CLOUD_IDENTITY' });
+
+        const users = await loadUsers();
+        const user = users.find((candidate) => String(candidate.email || '').toLowerCase() === email);
+        if (!user) return res.status(403).json({ error: 'CLOUD_USER_NOT_PROVISIONED' });
+
+        req.session.regenerate(async (err) => {
+            if (err) return res.status(500).json({ error: 'SESSION_REGENERATE_FAILED' });
+            req.session.user = { id: user.id, name: user.name, email: user.email };
+            try {
+                await saveSession(req);
+                // Never reflect the handoff code into the redirect URL.
+                return res.redirect(303, '/');
+            } catch (saveErr) {
+                console.error('[AUTH] Cloud handoff session save failed:', saveErr);
+                return res.status(500).json({ error: 'SESSION_SAVE_FAILED' });
+            }
+        });
+    } catch (error) {
+        console.error('[AUTH] Cloud handoff exchange failed:', error.message);
+        return res.status(502).json({ error: 'CLOUD_AUTH_UNAVAILABLE' });
+    }
+});
+
 router.post('/logout', (req, res) => {
     req.session.destroy(() => {
         res.clearCookie('connect.sid');
