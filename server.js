@@ -38,7 +38,8 @@ const {
 const {
     findAvailablePort,
     proxyWebsockify,
-    isPortAvailable
+    isPortAvailable,
+    websocketCspSources
 } = require('./src/server/utils');
 const { isValidWebSocketOrigin, fetchWithRedirectValidation } = require('./url-utils');
 
@@ -149,13 +150,16 @@ app.use((req, res, next) => {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
     // Content Security Policy
+    const publicHost = TRUST_PROXY && typeof req.headers['x-forwarded-host'] === 'string'
+        ? req.headers['x-forwarded-host'].split(',')[0].trim()
+        : req.headers.host;
     const csp = [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https://www.google.com https://*.gstatic.com https://cdn.jsdelivr.net https://raw.githubusercontent.com https://avatars.githubusercontent.com",
-        "connect-src 'self' https://api.github.com https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.baserow.io",
+        `connect-src 'self' ${websocketCspSources(publicHost)} https://api.github.com https://generativelanguage.googleapis.com https://api.openai.com https://api.anthropic.com https://api.baserow.io`,
         "media-src 'self' blob:",
         "frame-src 'self'"
     ].join('; ');

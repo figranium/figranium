@@ -65,7 +65,7 @@
     <div id="status">Connecting...</div>
     <div id="screen"></div>
     <script type="module">
-      import RFB from '/novnc/core/rfb.js';
+      let RFB;
 
       const params = new URLSearchParams(window.location.search);
       const theme = params.get('theme');
@@ -121,8 +121,9 @@
         terminalFailure = true;
         clearConnectTimer();
         if (retryTimer !== null) clearTimeout(retryTimer);
+        statusEl.classList.remove('hidden');
         statusEl.textContent = message;
-        window.parent?.postMessage({ type: 'figranium-headful-viewer-failed' }, window.location.origin);
+        window.parent?.postMessage({ type: 'figranium-headful-viewer-failed', message }, window.location.origin);
       };
 
       const describeConnection = () => {
@@ -354,12 +355,22 @@
 
       window.addEventListener('pagehide', () => {
         terminalFailure = true;
+        clearConnectTimer();
+        if (retryTimer !== null) clearTimeout(retryTimer);
         if (probeTimer !== null) clearInterval(probeTimer);
         try { activeRfb?.disconnect(); } catch { /* ignore */ }
-        fetch('/headful/stop', { method: 'POST', credentials: 'same-origin', keepalive: true }).catch(() => {});
+        // The parent owns browser lifetime. An unload request from an old iframe
+        // can otherwise arrive late and stop the next browser session.
       });
 
       const bootstrap = async () => {
+        try {
+          ({ default: RFB } = await import('/novnc/core/rfb.js'));
+        } catch (err) {
+          console.error('[HEADFUL VIEWER] Could not load noVNC', err);
+          stopWithFailure('Could not load browser viewer. Check that noVNC is installed and reload.');
+          return;
+        }
         try {
           const response = await fetch('/api/headful/status', { cache: 'no-store', credentials: 'same-origin' });
           const status = response.ok ? await response.json() : null;

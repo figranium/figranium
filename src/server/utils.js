@@ -1,6 +1,17 @@
 const net = require('net');
 const { MAX_TASK_VERSIONS, NOVNC_PORT, NOVNC_LOW_PORT, WEBSOCKIFY_PATH, WEBSOCKIFY_LOW_PATH } = require('./constants');
 
+// Safari does not consistently include WebSocket schemes in CSP 'self'. Keep
+// these sources scoped to the app's host, including nonstandard ports and IPv6.
+function websocketCspSources(host) {
+    if (typeof host !== 'string' || !/^(?:[a-z0-9.-]+|\[[a-f0-9:]+\])(?::\d+)?$/i.test(host)) return '';
+    try {
+        return ['ws:', 'wss:'].map(protocol => new URL(`${protocol}//${host}`).origin).join(' ');
+    } catch {
+        return '';
+    }
+}
+
 class Mutex {
     constructor() {
         this._locked = false;
@@ -167,6 +178,7 @@ const parseIpList = (input) => {
 };
 
 module.exports = {
+    websocketCspSources,
     Mutex,
     cloneTaskForVersion,
     appendTaskVersion,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TablerIcon from '../TablerIcon';
 
 interface HeadfulModalProps {
@@ -21,15 +21,21 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
     onStopHeadful,
 }) => {
     const headfulFrameRef = useRef<HTMLDivElement | null>(null);
+    const viewerRef = useRef<HTMLIFrameElement | null>(null);
+    const [viewerError, setViewerError] = useState<string | null>(null);
+
+    useEffect(() => { setViewerError(null); }, [isHeadfulOpen]);
 
     useEffect(() => {
         const handleViewerFailure = (event: MessageEvent) => {
-            if (event.origin !== window.location.origin) return;
-            if (event.data?.type === 'figranium-headful-viewer-failed') onStopHeadful();
+            if (event.origin !== window.location.origin || event.source !== viewerRef.current?.contentWindow) return;
+            if (event.data?.type === 'figranium-headful-viewer-failed') {
+                setViewerError(typeof event.data.message === 'string' ? event.data.message : 'Browser viewer unavailable');
+            }
         };
         window.addEventListener('message', handleViewerFailure);
         return () => window.removeEventListener('message', handleViewerFailure);
-    }, [onStopHeadful]);
+    }, []);
 
     if (!isHeadfulOpen) return null;
 
@@ -112,10 +118,16 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                         </div>
                     ) : (
                         <iframe
+                            ref={viewerRef}
                             src={headfulUrl}
                             className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-300"
                             title="Headful Browser"
                         />
+                    )}
+                    {viewerError && (
+                        <div role="alert" className="absolute inset-0 theme-surface flex items-center justify-center p-8 text-center theme-text">
+                            {viewerError}
+                        </div>
                     )}
                 </div>
             </div>
