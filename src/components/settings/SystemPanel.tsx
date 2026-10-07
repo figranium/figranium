@@ -28,6 +28,10 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
     const [exportSelection, setExportSelection] = useState<Record<string, boolean>>({
         tasks: true, executions: true, captures: true, apiKeys: true, cookies: true
     });
+    const [importFile, setImportFile] = useState<File | null>(null);
+    const [importAvailable, setImportAvailable] = useState<string[]>([]);
+    const [importSelection, setImportSelection] = useState<Record<string, boolean>>({});
+    const [importing, setImporting] = useState(false);
     const load = useCallback(async () => {
         try {
             const response = await fetch('/api/settings/system', { credentials: 'include' });
@@ -99,6 +103,30 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
             onNotify('Data export downloaded.', 'success');
         } catch { onNotify('Failed to export data.', 'error'); } finally { setExporting(false); }
     };
+    const inspectImport = async (file: File | null) => {
+        setImportFile(file); setImportAvailable([]); setImportSelection({});
+        if (!file) return;
+        try {
+            const response = await fetch('/api/settings/import/inspect', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/zip' }, body: file });
+            if (!response.ok) throw new Error('Invalid export');
+            const result = await response.json();
+            setImportAvailable(result.available || []);
+            setImportSelection(Object.fromEntries((result.available || []).map((key: string) => [key, true])));
+        } catch { setImportFile(null); onNotify('Choose a valid Figranium export ZIP.', 'error'); }
+    };
+    const importData = async () => {
+        if (!importFile) return onNotify('Choose a Figranium export ZIP first.', 'error');
+        const selected = importAvailable.filter((key) => importSelection[key]);
+        if (!selected.length) return onNotify('Select at least one data type to import.', 'error');
+        if (!await onConfirm({ title: 'Import selected data', message: 'Selected imported data will replace matching workspace data. Existing data in unselected categories will stay unchanged.', confirmLabel: 'Import data' })) return;
+        setImporting(true);
+        try {
+            const response = await fetch(`/api/settings/import?include=${encodeURIComponent(selected.join(','))}`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/zip' }, body: importFile });
+            if (!response.ok) throw new Error('Import failed');
+            onNotify('Selected data imported.', 'success');
+            setImportFile(null); setImportAvailable([]); setImportSelection({});
+        } catch { onNotify('Failed to import data.', 'error'); } finally { setImporting(false); }
+    };
     const clearEverything = async () => {
         if (!resetPassword) return onNotify('Enter your current password to clear all workspace data.', 'error');
         if (!await onConfirm({ title: 'Clear all workspace data', message: 'This permanently removes tasks, captures, execution history, browser state, API keys, credentials, proxies, preferences, downloads, and local CAPTCHA files. Your account stays signed in.', confirmLabel: 'Clear everything' })) return;
@@ -140,6 +168,26 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
             </div>
             <p className="mt-4 text-xs theme-text-faint">API Keys and cookies are sensitive and are exported in readable form when selected.</p>
             <button type="button" disabled={saving || exporting} onClick={exportData} className="app-button-primary mt-4 disabled:opacity-50">{exporting ? 'Exporting…' : 'Export selected'}</button>
+        </section>
+        <section className="app-panel p-7">
+            <h3 className="text-sm font-bold theme-text">Import data</h3>
+            <p className="text-xs theme-text-faint mt-1">Restore selected data from a Figranium export ZIP. Imported categories replace their matching workspace data.</p>
+            <input type="file" accept=".zip,application/zip" onChange={(event) => void inspectImport(event.target.files?.[0] || null)} className="mt-5 block max-w-xl text-sm theme-text file:mr-4 file:rounded-lg file:border-0 file:px-4 file:py-2 file:font-semibold file:cursor-pointer" />
+            {importFile && importAvailable.length > 0 && <div className="mt-4">
+                <p className="text-xs theme-text-faint mb-2">Choose what to import from <span className="font-bold theme-text">{importFile.name}</span>.</p>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
+                    {[
+                        ['tasks', 'Tasks'], ['executions', 'Executions'], ['captures', 'Captures'],
+                        ['apiKeys', 'API Keys'], ['cookies', 'Cookies']
+                    ].filter(([key]) => importAvailable.includes(key)).map(([key, label]) => (
+                        <label key={key} className="flex items-center gap-3 rounded-xl border theme-border px-4 py-3 text-sm theme-text cursor-pointer">
+                            <input type="checkbox" checked={!!importSelection[key]} onChange={(event) => setImportSelection((current) => ({ ...current, [key]: event.target.checked }))} className="size-4 accent-blue-600" />
+                            <span>{label}</span>
+                        </label>
+                    ))}
+                </div>
+                <button type="button" disabled={saving || importing} onClick={importData} className="app-button-primary mt-4 disabled:opacity-50">{importing ? 'Importing…' : 'Import selected'}</button>
+            </div>}
         </section>
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Maintenance</h3><p className="text-xs theme-text-faint mt-1">Manually remove saved run data when you need to free disk space immediately.</p>
