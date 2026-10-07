@@ -527,7 +527,22 @@ app.get('/captures/:legacyName', requireAuthOrApiKey, dataRateLimiter, async (re
 });
 app.use('/captures', requireAuthOrApiKey, express.static(capturesDir), express.static(srcCapturesDir));
 app.use('/screenshots', requireAuthOrApiKey, express.static(capturesDir), express.static(srcCapturesDir));
-app.use(express.static(DIST_DIR));
+// The SPA shell and unhashed bootstrap files must always be revalidated. Safari can
+// otherwise restore a stale app shell after the browser is closed and reopened,
+// leaving it pointing at assets from a different build. Hashed Vite assets are
+// content-addressed and can be cached indefinitely.
+app.use(express.static(DIST_DIR, {
+    setHeaders: (res, filePath) => {
+        const relativePath = path.relative(DIST_DIR, filePath).replace(/\\/g, '/');
+        if (relativePath.startsWith('assets/')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            return;
+        }
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+    }
+}));
 
 // Headful Status Endpoint
 app.get('/api/headful/status', requireAuth, async (req, res) => {
