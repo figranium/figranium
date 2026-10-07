@@ -213,3 +213,26 @@ body {
 .editor-floating-panel, .editor-context-menu { background: var(--app-surface-2); border: 1px solid var(--app-border-strong); color: var(--app-text); box-shadow: var(--app-shadow-overlay); }
 .editor-floating-button { color: var(--app-text-muted); --tw-ring-color: color-mix(in srgb, var(--app-text) 28%, transparent); }
 .editor-floating-button:hover { color: var(--app-text); background: var(--app-glass-card-hover); }
+
+/* ── Consistent interactive cursors ──────────────────────────────────────── */
+
+/* Make clickability visible across native controls and custom button surfaces. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+summary,
+select:not(:disabled),
+label[for],
+input[type='checkbox']:not(:disabled),
+input[type='radio']:not(:disabled),
+input[type='file']:not(:disabled) {
+    cursor: pointer;
+}
+
+/* Disabled controls should never advertise an action on hover. */
+button:disabled,
+[role='button'][aria-disabled='true'],
+select:disabled,
+input:disabled {
+    cursor: not-allowed;
+}
+
