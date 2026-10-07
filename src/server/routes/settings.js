@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
+const JSZip = require('jszip');
 const { requireAuthForSettings, csrfProtection, dataRateLimiter } = require('../middleware');
 const { validateUrl } = require('../../../url-utils');
 const {
@@ -10,7 +11,7 @@ const {
     loadThemeConfig, saveThemeConfig,
     loadCaptchaSettings, saveCaptchaSettings,
     loadSystemSettings, saveSystemSettings,
-    loadUsers, saveTasks, saveExecutions, saveCredentials
+    loadUsers, loadTasks, loadExecutions, saveTasks, saveExecutions, saveCredentials
 } = require('../storage');
 const { DATA_DIR, STORAGE_STATE_PATH } = require('../constants');
 const { getStatus: getExecutionQueueStatus } = require('../execution-queue');
@@ -72,6 +73,133 @@ router.post('/system', csrfProtection, dataRateLimiter, requireAuthForSettings, 
         res.json({ ...saved, cleanup });
     } catch (error) {
         res.status(400).json({ error: 'INVALID_SYSTEM_SETTINGS', message: error.message });
+    }
+});
+
+router.post('/export', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
+    const allowed = new Set(['tasks', 'executions', 'captures', 'apiKeys', 'cookies']);
+    const include = [...new Set(Array.isArray(req.body?.include) ? req.body.include.filter((item) => allowed.has(item)) : [])];
+    if (!include.length) return res.status(400).json({ error: 'EXPORT_SELECTION_REQUIRED' });
+
+    try {
+        const zip = new JSZip();
+        const addJson = (name, value) => zip.file(name, JSON.stringify(value, null, 2));
+
+        if (include.includes('tasks')) addJson('tasks.json', await loadTasks());
+        if (include.includes('executions')) addJson('executions.json', await loadExecutions());
+        if (include.includes('apiKeys')) addJson('api-keys.json', { apiKey: await loadApiKey() });
+
+        if (include.includes('cookies')) {
+            let state = { cookies: [], origins: [] };
+            try {
+                if (fs.existsSync(STORAGE_STATE_PATH)) state = JSON.parse(await fs.promises.readFile(STORAGE_STATE_PATH, 'utf8'));
+            } catch { }
+            addJson('cookies.json', { cookies: Array.isArray(state?.cookies) ? state.cookies : [] });
+        }
+
+        if (include.includes('captures')) {
+            const captureDirs = [
+                path.join(__dirname, '../../../public/captures'),
+                path.join(__dirname, '../../../src/public/captures'),
+                path.join(DATA_DIR, 'recordings')
+            ];
+            const captures = zip.folder('captures');
+            const seen = new Set();
+            for (const dir of captureDirs) {
+                let entries = [];
+                try { entries = await fs.promises.readdir(dir, { withFileTypes: true }); } catch { continue; }
+                for (const entry of entries) {
+                    if (!entry.isFile()) continue;
+                    let name = entry.name;
+                    if (seen.has(name)) name = `${path.basename(dir)}-${name}`;
+                    seen.add(name);
+                    captures.file(name, await fs.promises.readFile(path.join(dir, entry.name)));
+                }
+            }
+        }
+
+        addJson('manifest.json', { exportedAt: new Date().toISOString(), included: include });
+        const archive = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+        const date = new Date().toISOString().slice(0, 10);
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="figranium-export-${date}.zip"`);
+        res.setHeader('Cache-Control', 'no-store');
+        res.send(archive);
+    } catch (error) {
+        console.error('[SETTINGS] Data export failed:', error);
+        res.status(500).json({ error: 'DATA_EXPORT_FAILED' });
+    }
+});
+
+router.post('/import', csrfProtection, dataRateLimiter, requireAuthForSettings, express.raw({ type: 'application/zip', limit: '100mb' }), async (req, res) => {
+    try {
+        if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'IMPORT_FILE_REQUIRED' });
+        const zip = await JSZip.loadAsync(req.body);
+        const manifestFile = zip.file('manifest.json');
+        if (!manifestFile) return res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
+        const manifest = JSON.parse(await manifestFile.async('string'));
+        const available = Array.isArray(manifest?.included) ? manifest.included.filter((item) => ['tasks', 'executions', 'captures', 'apiKeys', 'cookies'].includes(item)) : [];
+        const requested = String(req.query.include || '').split(',').filter(Boolean);
+        const include = requested.length ? requested.filter((item) => available.includes(item)) : available;
+        if (!include.length) return res.status(400).json({ error: 'IMPORT_SELECTION_REQUIRED', available });
+
+        const readJson = async (name) => {
+            const file = zip.file(name);
+            if (!file) throw new Error(`Missing ${name}`);
+            return JSON.parse(await file.async('string'));
+        };
+
+        if (include.includes('tasks')) {
+            const tasks = await readJson('tasks.json');
+            if (!Array.isArray(tasks)) throw new Error('Invalid tasks.json');
+            await saveTasks(tasks);
+        }
+        if (include.includes('executions')) {
+            const executions = await readJson('executions.json');
+            if (!Array.isArray(executions)) throw new Error('Invalid executions.json');
+            await saveExecutions(executions);
+        }
+        if (include.includes('apiKeys')) {
+            const keys = await readJson('api-keys.json');
+            await saveApiKey(typeof keys?.apiKey === 'string' ? keys.apiKey : null);
+        }
+        if (include.includes('cookies')) {
+            const imported = await readJson('cookies.json');
+            const current = await fs.promises.readFile(STORAGE_STATE_PATH, 'utf8').then(JSON.parse).catch(() => ({ origins: [] }));
+            await fs.promises.writeFile(STORAGE_STATE_PATH, JSON.stringify({
+                cookies: Array.isArray(imported?.cookies) ? imported.cookies : [],
+                origins: Array.isArray(current?.origins) ? current.origins : []
+            }, null, 2));
+        }
+        if (include.includes('captures')) {
+            const captureDir = path.join(__dirname, '../../../public/captures');
+            await fs.promises.mkdir(captureDir, { recursive: true });
+            const files = Object.values(zip.files).filter((entry) => !entry.dir && entry.name.startsWith('captures/'));
+            for (const entry of files) {
+                const name = path.basename(entry.name);
+                if (!name) continue;
+                await fs.promises.writeFile(path.join(captureDir, name), await entry.async('nodebuffer'));
+            }
+        }
+
+        res.json({ success: true, imported: include, available });
+    } catch (error) {
+        console.error('[SETTINGS] Data import failed:', error);
+        res.status(400).json({ error: 'DATA_IMPORT_FAILED', message: error.message });
+    }
+});
+
+router.post('/import/inspect', csrfProtection, dataRateLimiter, requireAuthForSettings, express.raw({ type: 'application/zip', limit: '100mb' }), async (req, res) => {
+    try {
+        if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'IMPORT_FILE_REQUIRED' });
+        const zip = await JSZip.loadAsync(req.body);
+        const manifestFile = zip.file('manifest.json');
+        if (!manifestFile) return res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
+        const manifest = JSON.parse(await manifestFile.async('string'));
+        const allowed = ['tasks', 'executions', 'captures', 'apiKeys', 'cookies'];
+        res.json({ available: Array.isArray(manifest?.included) ? manifest.included.filter((item) => allowed.includes(item)) : [], exportedAt: manifest?.exportedAt || null });
+    } catch {
+        res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
     }
 });
 
