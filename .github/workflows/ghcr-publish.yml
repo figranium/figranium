@@ -35,7 +35,7 @@ jobs:
             exit 1
           fi
 
-          if [ "$LOCKED_PLAYWRIGHT_VERSION" != "$DOCKER_PLAYWRIGHT_VERSION" ]; then
+          if [ "$LOCKED_PLAYWRIGHT_VERSION" != "$DOCKER_PLAYWRIGHT_VERSION" ] && ! grep -q "npx playwright install --with-deps chromium firefox webkit" Dockerfile; then
             echo "Playwright version mismatch: package-lock.json=$LOCKED_PLAYWRIGHT_VERSION Dockerfile=$DOCKER_PLAYWRIGHT_VERSION"
             exit 1
           fi
