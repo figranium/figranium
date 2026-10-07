@@ -131,6 +131,78 @@ router.post('/export', csrfProtection, dataRateLimiter, requireAuthForSettings, 
     }
 });
 
+router.post('/import', csrfProtection, dataRateLimiter, requireAuthForSettings, express.raw({ type: 'application/zip', limit: '100mb' }), async (req, res) => {
+    try {
+        if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'IMPORT_FILE_REQUIRED' });
+        const zip = await JSZip.loadAsync(req.body);
+        const manifestFile = zip.file('manifest.json');
+        if (!manifestFile) return res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
+        const manifest = JSON.parse(await manifestFile.async('string'));
+        const available = Array.isArray(manifest?.included) ? manifest.included.filter((item) => ['tasks', 'executions', 'captures', 'apiKeys', 'cookies'].includes(item)) : [];
+        const requested = String(req.query.include || '').split(',').filter(Boolean);
+        const include = requested.length ? requested.filter((item) => available.includes(item)) : available;
+        if (!include.length) return res.status(400).json({ error: 'IMPORT_SELECTION_REQUIRED', available });
+
+        const readJson = async (name) => {
+            const file = zip.file(name);
+            if (!file) throw new Error(`Missing ${name}`);
+            return JSON.parse(await file.async('string'));
+        };
+
+        if (include.includes('tasks')) {
+            const tasks = await readJson('tasks.json');
+            if (!Array.isArray(tasks)) throw new Error('Invalid tasks.json');
+            await saveTasks(tasks);
+        }
+        if (include.includes('executions')) {
+            const executions = await readJson('executions.json');
+            if (!Array.isArray(executions)) throw new Error('Invalid executions.json');
+            await saveExecutions(executions);
+        }
+        if (include.includes('apiKeys')) {
+            const keys = await readJson('api-keys.json');
+            await saveApiKey(typeof keys?.apiKey === 'string' ? keys.apiKey : null);
+        }
+        if (include.includes('cookies')) {
+            const imported = await readJson('cookies.json');
+            const current = await fs.promises.readFile(STORAGE_STATE_PATH, 'utf8').then(JSON.parse).catch(() => ({ origins: [] }));
+            await fs.promises.writeFile(STORAGE_STATE_PATH, JSON.stringify({
+                cookies: Array.isArray(imported?.cookies) ? imported.cookies : [],
+                origins: Array.isArray(current?.origins) ? current.origins : []
+            }, null, 2));
+        }
+        if (include.includes('captures')) {
+            const captureDir = path.join(__dirname, '../../../public/captures');
+            await fs.promises.mkdir(captureDir, { recursive: true });
+            const files = Object.values(zip.files).filter((entry) => !entry.dir && entry.name.startsWith('captures/'));
+            for (const entry of files) {
+                const name = path.basename(entry.name);
+                if (!name) continue;
+                await fs.promises.writeFile(path.join(captureDir, name), await entry.async('nodebuffer'));
+            }
+        }
+
+        res.json({ success: true, imported: include, available });
+    } catch (error) {
+        console.error('[SETTINGS] Data import failed:', error);
+        res.status(400).json({ error: 'DATA_IMPORT_FAILED', message: error.message });
+    }
+});
+
+router.post('/import/inspect', csrfProtection, dataRateLimiter, requireAuthForSettings, express.raw({ type: 'application/zip', limit: '100mb' }), async (req, res) => {
+    try {
+        if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: 'IMPORT_FILE_REQUIRED' });
+        const zip = await JSZip.loadAsync(req.body);
+        const manifestFile = zip.file('manifest.json');
+        if (!manifestFile) return res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
+        const manifest = JSON.parse(await manifestFile.async('string'));
+        const allowed = ['tasks', 'executions', 'captures', 'apiKeys', 'cookies'];
+        res.json({ available: Array.isArray(manifest?.included) ? manifest.included.filter((item) => allowed.includes(item)) : [], exportedAt: manifest?.exportedAt || null });
+    } catch {
+        res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
+    }
+});
+
 router.get('/database', requireAuthForSettings, async (_req, res) => {
     const environmentConfig = getEnvironmentDatabaseConfig();
     const savedConfig = environmentConfig ? null : await loadDatabaseConfig();
