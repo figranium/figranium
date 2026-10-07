@@ -126,17 +126,14 @@ Caddy forwards WebSocket upgrades automatically. The viewer receives a short-liv
 
 ## Session Secret
 
-Set `SESSION_SECRET` before any run. A quick generator:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
+Figranium automatically generates a cryptographically random session secret on first startup and stores it in the persistent data directory (`session_secret.txt`). Subsequent starts reuse the saved secret. You can optionally set `SESSION_SECRET` to provide your own; keep the data directory persistent so existing sessions remain valid.
 
 # Configuration
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `SESSION_SECRET` | Signs session cookies. Required. | — |
+| `SESSION_SECRET` | Optional override for the automatically generated, persisted session-cookie signing secret. | Auto-generated |
+| `FIGRANIUM_TELEMETRY_ENABLED` | Send anonymous installation environment details and daily UI/API usage flags to Figranium telemetry. Set to `false` to disable. | `true` |
 | `ALLOWED_IPS` | Comma list for basic IP allowlisting. | none (open) |
 | `TRUST_PROXY` | Honor `X-Forwarded-*` for application-level proxy behavior. Not required for the embedded browser viewer. | `0` |
 | `ALLOW_PRIVATE_NETWORKS` | Allow scraping local/private IPs (SSRF risk). | `false` |
