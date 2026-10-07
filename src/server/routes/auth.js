@@ -135,8 +135,15 @@ router.get('/cloud-handoff', authRateLimiter, async (req, res) => {
     let url;
     try {
         url = new URL(exchangeUrl);
-        if (url.protocol !== 'https:' && !(process.env.NODE_ENV === 'test' && ['localhost', '127.0.0.1', '::1'].includes(url.hostname))) {
-            throw new Error('Cloud auth exchange URL must use HTTPS');
+        if (url.username || url.password) throw new Error('Cloud auth exchange URL must not contain credentials');
+        const isTestLoopback = process.env.NODE_ENV === 'test' && ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
+        if (url.protocol !== 'https:' && !isTestLoopback) throw new Error('Cloud auth exchange URL must use HTTPS');
+
+        // Production handoffs must exchange only with the Figranium Cloud control
+        // plane. This prevents a deployment/configuration mistake from sending the
+        // per-instance bearer secret to an arbitrary HTTPS endpoint.
+        if (process.env.NODE_ENV !== 'test' && url.hostname !== 'cloud.figranium.dev') {
+            throw new Error('Cloud auth exchange URL must use cloud.figranium.dev');
         }
     } catch (error) {
         console.error('[AUTH] Invalid Cloud auth exchange URL:', error.message);
@@ -156,9 +163,15 @@ router.get('/cloud-handoff', authRateLimiter, async (req, res) => {
         });
         if (!exchange.ok) return res.status(401).json({ error: 'INVALID_HANDOFF_CODE' });
 
+        const contentType = exchange.headers.get('content-type') || '';
+        if (!contentType.toLowerCase().includes('application/json')) {
+            return res.status(502).json({ error: 'INVALID_CLOUD_RESPONSE' });
+        }
         const identity = await exchange.json();
         const email = typeof identity?.email === 'string' ? identity.email.trim().toLowerCase() : '';
-        if (!email || email.length > 255) return res.status(401).json({ error: 'INVALID_CLOUD_IDENTITY' });
+        if (!email || email.length > 255 || !/^[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+$/.test(email)) {
+            return res.status(401).json({ error: 'INVALID_CLOUD_IDENTITY' });
+        }
 
         const users = await loadUsers();
         const user = users.find((candidate) => String(candidate.email || '').toLowerCase() === email);
