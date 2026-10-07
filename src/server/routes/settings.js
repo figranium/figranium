@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
+const JSZip = require('jszip');
 const { requireAuthForSettings, csrfProtection, dataRateLimiter } = require('../middleware');
 const { validateUrl } = require('../../../url-utils');
 const {
@@ -10,7 +11,7 @@ const {
     loadThemeConfig, saveThemeConfig,
     loadCaptchaSettings, saveCaptchaSettings,
     loadSystemSettings, saveSystemSettings,
-    loadUsers, saveTasks, saveExecutions, saveCredentials
+    loadUsers, loadTasks, loadExecutions, saveTasks, saveExecutions, saveCredentials
 } = require('../storage');
 const { DATA_DIR, STORAGE_STATE_PATH } = require('../constants');
 const { getStatus: getExecutionQueueStatus } = require('../execution-queue');
@@ -72,6 +73,61 @@ router.post('/system', csrfProtection, dataRateLimiter, requireAuthForSettings, 
         res.json({ ...saved, cleanup });
     } catch (error) {
         res.status(400).json({ error: 'INVALID_SYSTEM_SETTINGS', message: error.message });
+    }
+});
+
+router.post('/export', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
+    const allowed = new Set(['tasks', 'executions', 'captures', 'apiKeys', 'cookies']);
+    const include = [...new Set(Array.isArray(req.body?.include) ? req.body.include.filter((item) => allowed.has(item)) : [])];
+    if (!include.length) return res.status(400).json({ error: 'EXPORT_SELECTION_REQUIRED' });
+
+    try {
+        const zip = new JSZip();
+        const addJson = (name, value) => zip.file(name, JSON.stringify(value, null, 2));
+
+        if (include.includes('tasks')) addJson('tasks.json', await loadTasks());
+        if (include.includes('executions')) addJson('executions.json', await loadExecutions());
+        if (include.includes('apiKeys')) addJson('api-keys.json', { apiKey: await loadApiKey() });
+
+        if (include.includes('cookies')) {
+            let state = { cookies: [], origins: [] };
+            try {
+                if (fs.existsSync(STORAGE_STATE_PATH)) state = JSON.parse(await fs.promises.readFile(STORAGE_STATE_PATH, 'utf8'));
+            } catch { }
+            addJson('cookies.json', { cookies: Array.isArray(state?.cookies) ? state.cookies : [] });
+        }
+
+        if (include.includes('captures')) {
+            const captureDirs = [
+                path.join(__dirname, '../../../public/captures'),
+                path.join(__dirname, '../../../src/public/captures'),
+                path.join(DATA_DIR, 'recordings')
+            ];
+            const captures = zip.folder('captures');
+            const seen = new Set();
+            for (const dir of captureDirs) {
+                let entries = [];
+                try { entries = await fs.promises.readdir(dir, { withFileTypes: true }); } catch { continue; }
+                for (const entry of entries) {
+                    if (!entry.isFile()) continue;
+                    let name = entry.name;
+                    if (seen.has(name)) name = `${path.basename(dir)}-${name}`;
+                    seen.add(name);
+                    captures.file(name, await fs.promises.readFile(path.join(dir, entry.name)));
+                }
+            }
+        }
+
+        addJson('manifest.json', { exportedAt: new Date().toISOString(), included: include });
+        const archive = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+        const date = new Date().toISOString().slice(0, 10);
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="figranium-export-${date}.zip"`);
+        res.setHeader('Cache-Control', 'no-store');
+        res.send(archive);
+    } catch (error) {
+        console.error('[SETTINGS] Data export failed:', error);
+        res.status(500).json({ error: 'DATA_EXPORT_FAILED' });
     }
 });
 
