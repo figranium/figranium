@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, requireAuthOrApiKey, requireApiKey } = require('../middleware');
+const { requireAuth, requireAuthOrApiKey, requireApiKey, requireScopedPermission } = require('../middleware');
 const { loadExecutions, saveExecutions, getExecutionById, loadFullExecutionResult } = require('../storage');
 const { cancelQueuedExecution } = require('../execution-queue');
 const { executionStreams, executionListStreams, stopRequests, sendExecutionUpdate, sendExecutionListUpdate } = require('../state');
@@ -59,8 +59,8 @@ router.get('/live', requireAuth, (req, res) => {
     });
 });
 
-router.get('/list', requireApiKey, async (req, res) => {
-    const executions = (await loadExecutions()).filter(isExecutionListEntry);
+router.get('/list', requireApiKey, requireScopedPermission('results:read'), async (req, res) => {
+    const executions = (await loadExecutions()).filter(exec => isExecutionListEntry(exec) && (!req.apiKey?.taskIds?.length || req.apiKey.taskIds.includes(String(exec.taskId))));
     res.json({ executions: executions.map(summarizeExecution) });
 });
 
@@ -95,17 +95,19 @@ router.get('/stream', requireAuth, (req, res) => {
     });
 });
 
-router.get('/:id', requireAuthOrApiKey, async (req, res) => {
+router.get('/:id', requireAuthOrApiKey, requireScopedPermission('results:read'), async (req, res) => {
     await loadExecutions();
     const exec = getExecutionById(req.params.id);
     if (!exec) return res.status(404).json({ error: 'EXECUTION_NOT_FOUND' });
+    if (req.apiKey?.taskIds?.length && !req.apiKey.taskIds.includes(String(exec.taskId))) return res.status(403).json({ error: 'TASK_NOT_ALLOWED' });
     res.json({ execution: { ...exec, source: normalizeExecutionSource(exec.source), outcome: (exec.phase || 'finished') === 'finished' ? getExecutionOutcome(exec) : undefined } });
 });
 
-router.get('/:id/result', requireAuthOrApiKey, async (req, res) => {
+router.get('/:id/result', requireAuthOrApiKey, requireScopedPermission('results:read'), async (req, res) => {
     await loadExecutions();
     const exec = getExecutionById(req.params.id);
     if (!exec) return res.status(404).json({ error: 'EXECUTION_NOT_FOUND' });
+    if (req.apiKey?.taskIds?.length && !req.apiKey.taskIds.includes(String(exec.taskId))) return res.status(403).json({ error: 'TASK_NOT_ALLOWED' });
     if (!exec.result?.hasFullResult) return res.status(404).json({ error: 'FULL_RESULT_NOT_AVAILABLE' });
     const result = await loadFullExecutionResult(req.params.id);
     if (!result) return res.status(404).json({ error: 'FULL_RESULT_NOT_AVAILABLE' });

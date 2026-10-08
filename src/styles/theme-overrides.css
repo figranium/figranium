@@ -139,6 +139,18 @@
     background: rgba(0, 0, 0, 0.07);
     border-color: var(--app-border-strong);
 }
+.glass-card.editor-top-bar:hover {
+    background: var(--app-glass-card);
+    border-color: var(--app-border);
+}
+[data-theme='dark'] .editor-top-bar .editor-top-bar-control:hover,
+[data-theme='light'] .editor-top-bar .editor-top-bar-control:hover {
+    color: #2563eb;
+}
+[data-theme='solarized-light'] .editor-top-bar .editor-top-bar-control:hover,
+[data-theme='solarized-dark'] .editor-top-bar .editor-top-bar-control:hover {
+    color: var(--app-accent);
+}
 [data-theme='light'] .glass,
 [data-theme='solarized-light'] .glass {
     background: rgba(255, 255, 255, 0.8);
@@ -266,20 +278,27 @@
     color: #1c6498;
 }
 
-/* Light surfaces use restrained elevation so menus and dialogs do not retain
-   the heavy shadows intended for the dark canvas. */
+/* Raised surfaces stay flat; overlays retain their separate elevation tokens. */
+[data-theme='dark'] .shadow-sm,
+[data-theme='dark'] .shadow-md,
+[data-theme='dark'] .shadow-lg,
+[data-theme='dark'] .shadow-xl,
 [data-theme='light'] .shadow-sm,
+[data-theme='light'] .shadow-md,
 [data-theme='light'] .shadow-lg,
 [data-theme='light'] .shadow-xl,
 [data-theme='solarized-dark'] .shadow-sm,
+[data-theme='solarized-dark'] .shadow-md,
 [data-theme='solarized-dark'] .shadow-lg,
 [data-theme='solarized-dark'] .shadow-xl,
 [data-theme='solarized-light'] .shadow-sm,
+[data-theme='solarized-light'] .shadow-md,
 [data-theme='solarized-light'] .shadow-lg,
 [data-theme='solarized-light'] .shadow-xl {
     box-shadow: var(--app-shadow-raised);
 }
 
+[data-theme='dark'] .shadow-2xl,
 [data-theme='light'] .shadow-2xl,
 [data-theme='solarized-dark'] .shadow-2xl,
 [data-theme='solarized-light'] .shadow-2xl {

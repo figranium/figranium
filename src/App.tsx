@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import CookiesScreen from './components/CookiesScreen';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Task, ViewMode, Results } from './types';
 
@@ -104,6 +105,7 @@ export default function App() {
             title = `${taskName || (location.pathname === '/tasks/new' ? 'New Task' : 'Task Editor')} | Figranium`;
         } else if (location.pathname.startsWith('/settings')) title = 'Settings | Figranium';
         else if (location.pathname === '/templates') title = 'Templates | Figranium';
+        else if (location.pathname === '/vault') title = 'Vault | Figranium';
         else if (location.pathname === '/executions') title = 'Executions | Figranium';
         else if (location.pathname.startsWith('/executions/')) title = 'Execution Detail | Figranium';
         else if (location.pathname.startsWith('/cabinets')) title = 'Cabinets | Figranium';
@@ -190,14 +192,16 @@ export default function App() {
         if (location.pathname.startsWith('/tasks')) return 'editor';
         if (location.pathname.startsWith('/settings')) return 'settings';
         if (location.pathname === '/templates') return 'templates';
+        if (location.pathname === '/vault') return 'vault';
         if (location.pathname.startsWith('/executions')) return 'executions';
         if (location.pathname === '/cabinets') return 'cabinets';
         return 'dashboard';
     };
 
-    const handleNavigate = useCallback((s: 'dashboard' | 'editor' | 'templates' | 'settings' | 'executions' | 'cabinets') => {
+    const handleNavigate = useCallback((s: 'dashboard' | 'editor' | 'vault' | 'templates' | 'settings' | 'executions' | 'cabinets') => {
         if (s === 'dashboard') navigate('/dashboard');
         else if (s === 'templates') navigate('/templates');
+        else if (s === 'vault') navigate('/vault');
         else if (s === 'settings') {
             navigate('/settings');
         } else if (s === 'executions') {
@@ -318,6 +322,9 @@ export default function App() {
                     <Route path="/" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
                     <Route path="/dashboard" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
                     <Route path="/templates" element={<TemplatesScreen onImport={handleImportTemplate} />} />
+                    <Route path="/vault" element={<CookiesScreen onNotify={showAlert} />} />
+                    <Route path="/cookies" element={<Navigate to="/vault" replace />} />
+                    <Route path="/passwords" element={<Navigate to="/vault" replace />} />
                     <Route path="/tasks/new" element={
                         currentTask ? (
                             <EditorScreen
@@ -386,12 +393,14 @@ export default function App() {
                         <SettingsScreen
                             onConfirm={requestConfirm}
                             onNotify={showAlert}
+                            onLogout={handleLogout}
                         />
                     } />
                     <Route path="/settings/:section" element={
                         <SettingsScreen
                             onConfirm={requestConfirm}
                             onNotify={showAlert}
+                            onLogout={handleLogout}
                         />
                     } />
                     <Route path="/executions" element={<ExecutionsScreen onConfirm={requestConfirm} onNotify={showAlert} />} />

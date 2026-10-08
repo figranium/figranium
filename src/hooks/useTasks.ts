@@ -51,7 +51,9 @@ export function useTasks(
     }, [navigate]);
 
     const editTask = useCallback((task: Task, markTaskAsSaved: (task: Task | null) => void, setResults: (val: any) => void) => {
-        const migratedTask = { ...task };
+        const { statelessExecution, ...taskFields } = task as Task & { statelessExecution?: boolean };
+        const migratedTask = { ...taskFields };
+        if (parseBooleanFlag(statelessExecution)) migratedTask.cookieStateId = null;
         if (!migratedTask.variables || Array.isArray(migratedTask.variables)) migratedTask.variables = {};
         if (!migratedTask.stealth) {
             migratedTask.stealth = {
@@ -75,8 +77,6 @@ export function useTasks(
         if (migratedTask.includeShadowDom === undefined) migratedTask.includeShadowDom = true;
         if (migratedTask.disableRecording === undefined) migratedTask.disableRecording = false;
         migratedTask.disableRecording = parseBooleanFlag(migratedTask.disableRecording);
-        if (migratedTask.statelessExecution === undefined) migratedTask.statelessExecution = false;
-        migratedTask.statelessExecution = parseBooleanFlag(migratedTask.statelessExecution);
         const normalized = ensureActionIds(migratedTask);
         setCurrentTask(normalized);
         markTaskAsSaved(normalized);

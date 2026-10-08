@@ -224,6 +224,8 @@
 .featured-templates-message { display: flex; align-items: center; justify-content: center; gap: 10px; }
 .featured-templates-actions { display: flex; justify-content: center; margin-top: 22px; }
 .templates-load-more { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 0 18px 22px; color: var(--app-text-muted); font-size: 12px; }
+.templates-pagination { display: flex; justify-content: center; align-items: center; gap: 14px; padding: 0 18px 22px; color: var(--app-text-muted); font-size: 12px; }
+.templates-pagination button:disabled { opacity: .45; cursor: not-allowed; }
 .template-skeleton-card { min-height: 258px; pointer-events: none; }
 .template-skeleton-line { height: 12px; width: 100%; border-radius: 6px; background: var(--app-input); overflow: hidden; }
 .template-skeleton-shine { position: relative; }
@@ -637,4 +639,3 @@
 [data-theme='solarized-dark'] .theme-logo {
     filter: invert(1) hue-rotate(180deg);
 }
-

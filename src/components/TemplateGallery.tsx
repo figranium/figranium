@@ -67,7 +67,7 @@ const fetchTemplateDetail = async (id: string): Promise<MarketplaceTemplate> => 
     return data;
 };
 
-export function TemplateSkeletonGrid({ count = 6, featured = false }: { count?: number; featured?: boolean }) {
+export function TemplateSkeletonGrid({ count = 8, featured = false }: { count?: number; featured?: boolean }) {
     return <div className={`templates-grid ${featured ? 'templates-grid-featured' : ''}`} role="status" aria-label="Loading templates">
         {Array.from({ length: count }, (_, index) => <div className="template-card template-skeleton-card" key={index} aria-hidden="true">
             <div className="template-skeleton-line template-skeleton-shine template-skeleton-icon" />

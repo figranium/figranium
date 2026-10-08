@@ -1,5 +1,6 @@
 const fs = require('fs');
-const { API_KEY_FILE, CREDENTIALS_FILE } = require('./constants');
+const crypto = require('crypto');
+const { API_KEY_FILE, API_KEYS_FILE, API_KEY_ARCHIVE_SECRET_FILE, CREDENTIALS_FILE } = require('./constants');
 
 module.exports = function createIdentityStorage({ ensureDB, getPool, bulkInsert, loadUsers, saveUsers }) {
 // API Key Storage
@@ -163,6 +164,173 @@ async function saveCredentials(credentials) {
     await fs.promises.writeFile(CREDENTIALS_FILE, JSON.stringify(credentials, null, 2));
 }
 
+// Named API keys are stored as salted hashes. The clear-text key only exists at
+// creation time, and the pre-scoped key is migrated once as a full-access key.
+let apiKeysCache = null;
+const API_KEY_PERMISSIONS = ['tasks:read', 'tasks:run', 'results:read', 'tasks:manage'];
+let archiveKeyPromise = null;
 
-return { loadApiKey, saveApiKey, loadCredentials, saveCredentials };
+async function getArchiveKey() {
+    if (!archiveKeyPromise) archiveKeyPromise = (async () => {
+        let value = '';
+        try { value = (await fs.promises.readFile(API_KEY_ARCHIVE_SECRET_FILE, 'utf8')).trim(); } catch { }
+        if (!value) {
+            value = crypto.randomBytes(32).toString('base64url');
+            await fs.promises.mkdir(require('path').dirname(API_KEY_ARCHIVE_SECRET_FILE), { recursive: true });
+            await fs.promises.writeFile(API_KEY_ARCHIVE_SECRET_FILE, value, { mode: 0o600 });
+        }
+        return crypto.createHash('sha256').update(value).digest();
+    })();
+    return archiveKeyPromise;
+}
+
+async function encryptExportSecret(secret) {
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', await getArchiveKey(), iv);
+    const ciphertext = Buffer.concat([cipher.update(secret, 'utf8'), cipher.final()]);
+    return { iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), ciphertext: ciphertext.toString('base64') };
+}
+
+async function decryptExportSecret(value) {
+    if (!value?.iv || !value?.tag || !value?.ciphertext) return null;
+    try {
+        const decipher = crypto.createDecipheriv('aes-256-gcm', await getArchiveKey(), Buffer.from(value.iv, 'base64'));
+        decipher.setAuthTag(Buffer.from(value.tag, 'base64'));
+        return Buffer.concat([decipher.update(Buffer.from(value.ciphertext, 'base64')), decipher.final()]).toString('utf8');
+    } catch { return null; }
+}
+
+function hashApiKey(value, salt = crypto.randomBytes(16).toString('hex')) {
+    return new Promise((resolve, reject) => crypto.scrypt(value, salt, 64, (err, derived) => {
+        if (err) reject(err); else resolve({ salt, hash: derived.toString('hex') });
+    }));
+}
+
+async function readApiKeys() {
+    const useDB = await ensureDB();
+    if (useDB) {
+        const pool = getPool();
+        const result = await pool.query('SELECT data FROM api_keys ORDER BY created_at ASC');
+        return result.rows.map(row => row.data);
+    }
+    try { return JSON.parse(await fs.promises.readFile(API_KEYS_FILE, 'utf8')); } catch { return []; }
+}
+
+async function persistApiKeys(keys) {
+    apiKeysCache = keys;
+    const useDB = await ensureDB();
+    if (useDB) {
+        const pool = getPool();
+        await pool.query('DELETE FROM api_keys');
+        for (const key of keys) await pool.query('INSERT INTO api_keys (id, data, created_at) VALUES ($1, $2, $3)', [key.id, key, key.createdAt]);
+        return;
+    }
+    await fs.promises.writeFile(API_KEYS_FILE, JSON.stringify(keys, null, 2));
+}
+
+async function loadApiKeys() {
+    if (apiKeysCache) return apiKeysCache;
+    const keys = await readApiKeys();
+    if (keys.length) return (apiKeysCache = keys);
+    const legacy = await loadApiKey();
+    if (!legacy) return (apiKeysCache = []);
+    const hashed = await hashApiKey(legacy);
+    const migrated = [{ id: `key_${crypto.randomBytes(8).toString('hex')}`, name: 'Legacy full access key', ...hashed, exportSecret: await encryptExportSecret(legacy),
+        permissions: API_KEY_PERMISSIONS, taskIds: [], createdAt: new Date().toISOString(), legacy: true }];
+    await persistApiKeys(migrated);
+    return migrated;
+}
+
+async function createApiKey({ name, permissions, taskIds }) {
+    const secret = crypto.randomBytes(32).toString('base64url');
+    const hashed = await hashApiKey(secret);
+    const key = { id: `key_${crypto.randomBytes(8).toString('hex')}`, name: String(name || 'API key').trim().slice(0, 120) || 'API key', ...hashed, exportSecret: await encryptExportSecret(secret),
+        permissions: [...new Set((permissions || []).filter(p => API_KEY_PERMISSIONS.includes(p)))],
+        taskIds: [...new Set((taskIds || []).map(String))], createdAt: new Date().toISOString() };
+    const keys = await loadApiKeys();
+    await persistApiKeys([...keys, key]);
+    return { key, secret };
+}
+
+async function revokeApiKey(id) {
+    const keys = await loadApiKeys();
+    const next = keys.filter(key => key.id !== id);
+    if (next.length === keys.length) return false;
+    await persistApiKeys(next);
+    return true;
+}
+
+async function clearApiKeys() { await persistApiKeys([]); }
+
+function publicApiKeyMetadata(key) {
+    return {
+        id: key.id,
+        name: key.name,
+        permissions: Array.isArray(key.permissions) ? key.permissions.filter(permission => API_KEY_PERMISSIONS.includes(permission)) : [],
+        taskIds: Array.isArray(key.taskIds) ? key.taskIds.map(String) : [],
+        createdAt: key.createdAt,
+        legacy: !!key.legacy
+    };
+}
+
+async function importApiKeyMetadata(records) {
+    if (!Array.isArray(records)) return;
+    const existing = await loadApiKeys();
+    const existingIds = new Set(existing.map(key => key.id));
+    const imported = records
+        .filter(record => record && typeof record === 'object' && typeof record.id === 'string')
+        .filter(record => !existingIds.has(record.id))
+        .map(record => ({
+            ...publicApiKeyMetadata(record),
+            // There is deliberately no verifier or secret in an archive. These
+            // records remain visible as integration inventory only.
+            imported: true,
+            disabled: true
+        }));
+    if (imported.length) await persistApiKeys([...existing, ...imported]);
+}
+
+async function exportApiKeys() {
+    const legacySecret = await loadApiKey();
+    return Promise.all((await loadApiKeys()).map(async key => ({
+        ...publicApiKeyMetadata(key),
+        secret: key.legacy ? legacySecret : await decryptExportSecret(key.exportSecret)
+    })));
+}
+
+async function importApiKeys(records) {
+    if (!Array.isArray(records)) throw new Error('Invalid API keys');
+    const keys = [];
+    let legacySecret = null;
+    for (const record of records) {
+        if (!record || typeof record !== 'object' || typeof record.id !== 'string') continue;
+        const metadata = publicApiKeyMetadata(record);
+        const secret = typeof record.secret === 'string' ? record.secret : null;
+        if (!secret) {
+            keys.push({ ...metadata, imported: true, disabled: true });
+            continue;
+        }
+        const hashed = await hashApiKey(secret);
+        const key = { ...metadata, ...hashed, exportSecret: await encryptExportSecret(secret) };
+        keys.push(key);
+        if (key.legacy) legacySecret = secret;
+    }
+    await persistApiKeys(keys);
+    await saveApiKey(legacySecret);
+}
+
+async function verifyApiKey(secret) {
+    if (!secret || typeof secret !== 'string') return null;
+    const keys = await loadApiKeys();
+    for (const key of keys) {
+        if (!key.hash || !key.salt || key.disabled) continue;
+        const { hash } = await hashApiKey(secret, key.salt);
+        const a = Buffer.from(hash, 'hex'); const b = Buffer.from(key.hash, 'hex');
+        if (a.length === b.length && crypto.timingSafeEqual(a, b)) return key;
+    }
+    return null;
+}
+
+
+return { loadApiKey, saveApiKey, loadApiKeys, createApiKey, revokeApiKey, clearApiKeys, importApiKeyMetadata, importApiKeys, exportApiKeys, publicApiKeyMetadata, verifyApiKey, loadCredentials, saveCredentials, API_KEY_PERMISSIONS };
 };

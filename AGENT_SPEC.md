@@ -56,6 +56,7 @@ This document is a concise, implementation-focused reference for AI agents that 
     "targetLanguage": "english"
   },
   "downloadCabinetId": "cab_basic",
+  "cookieStateId": "cookies_abc123",
   "actions": [],
   "variables": {},
   "schedule": {
@@ -72,6 +73,8 @@ This document is a concise, implementation-focused reference for AI agents that 
   }
 }
 ```
+
+`cookieStateId` attaches a named cookie state to a task. When omitted, new tasks use `cookies_default`; browser runs begin from that state and save changed cookies back to it. Set it to `null` to start with an empty, isolated cookie context that is not saved back to any state. Legacy tasks with `statelessExecution: true` migrate to `cookieStateId: null`.
 
 ## 2) Action types
 Supported action `type` values:
@@ -145,6 +148,7 @@ Task-level `variables` are user/caller inputs and configuration defaults. Runtim
 
 Reserved:
 - `{$now}` resolves to ISO timestamp
+- `{$passwords.example^com}` resolves to the password from the 1Password Login item whose website hostname is exactly `example.com`. Replace dots in the hostname with `^`; for example, `{$passwords.login^example^com}` targets `login.example.com`. Passwords are resolved server-side from the Figranium vault. A missing or ambiguous website match fails the run rather than silently substituting an empty value.
 - `block.output` contains last block output
 - `loop.index`, `loop.count`, `loop.item`, `loop.text`, `loop.html` during foreach
 

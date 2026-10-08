@@ -11,6 +11,7 @@ const { resolveTaskOutcome, findAntiBotReason } = require('./src/agent/outcomes'
 const { consumeStopRequest, clearStopRequest, registerActiveRun, unregisterActiveRun } = require('./src/agent/execution-control');
 const { sendExecutionUpdate } = require('./src/server/state');
 const { loadSharedBrowserState } = require('./browser-storage-state');
+const { resolveCookieStateId, getCookieState } = require('./src/server/cookie-states');
 
 const USELESS_SELECTOR = 'script, style, svg, link, noscript';
 
@@ -31,9 +32,10 @@ function buildProxyUrl(proxy) {
     return serverUrl.toString();
 }
 
-async function buildCookieHeader(targetUrl) {
+async function buildCookieHeader(targetUrl, cookieStateId) {
     try {
-        const state = await loadSharedBrowserState();
+        const attached = cookieStateId ? await getCookieState(String(cookieStateId)) : null;
+        const state = attached?.state || null;
         const now = Date.now() / 1000;
         const hostname = new URL(targetUrl).hostname;
         const cookies = (state?.cookies || []).filter(c => {
@@ -167,7 +169,8 @@ async function runScrape(data) {
     const selectedUA = await selectUserAgent(rotateUserAgents);
     const selection = getProxySelection(rotateProxies);
     const proxyUrl = buildProxyUrl(selection.proxy);
-    const cookieHeader = await buildCookieHeader(url);
+    const requestedCookieStateId = resolveCookieStateId(data);
+    const cookieHeader = await buildCookieHeader(url, requestedCookieStateId);
 
     const { gotScraping } = await import('got-scraping');
     let response;

@@ -360,7 +360,10 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 onOpenApi={() => handleOpenCabinet('api')}
                 onOpenSchedule={() => handleOpenCabinet('schedule')}
                 onOpenVariables={() => handleOpenCabinet('variables')}
+                onOpenBehavior={() => handleOpenCabinet('behavior')}
                 onOpenHistory={() => handleOpenCabinet('history')}
+                onOpenStates={() => handleOpenCabinet('cabinets')}
+                onOpenOutput={() => handleOpenCabinet('output')}
             />
 
             <CanvasView

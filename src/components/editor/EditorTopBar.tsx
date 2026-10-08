@@ -9,7 +9,10 @@ interface EditorTopBarProps {
     onOpenApi: () => void;
     onOpenSchedule: () => void;
     onOpenVariables: () => void;
+    onOpenBehavior: () => void;
     onOpenHistory: () => void;
+    onOpenStates: () => void;
+    onOpenOutput: () => void;
 }
 
 const EditorTopBar: React.FC<EditorTopBarProps> = ({
@@ -19,11 +22,14 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
     onOpenApi,
     onOpenSchedule,
     onOpenVariables,
+    onOpenBehavior,
     onOpenHistory,
+    onOpenStates,
+    onOpenOutput,
 }) => {
     return (
         <div className="fixed top-0 left-0 right-0 z-40 w-full pointer-events-none">
-            <div className="glass-card flex items-center justify-between p-1 px-6 border-b border-white/10 backdrop-blur-xl pointer-events-auto">
+            <div className="glass-card editor-top-bar flex items-center justify-between p-1 px-6 border-b border-white/10 backdrop-blur-xl pointer-events-auto">
                 <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-[400px] px-6">
                     <input
                         type="text"
@@ -37,7 +43,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                 <div className="ml-auto flex items-center gap-1">
                     <button
                         onClick={onOpenApi}
-                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
+                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
                         title="API"
                         aria-label="API"
                     >
@@ -45,7 +51,7 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     </button>
                     <button
                         onClick={onOpenSchedule}
-                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
+                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
                         title="Schedule"
                         aria-label="Schedule"
                     >
@@ -53,15 +59,39 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                     </button>
                     <button
                         onClick={onOpenVariables}
-                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
+                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
                         title="Variables"
                         aria-label="Variables"
                     >
                         <TablerIcon name="variables" className="text-base" />
                     </button>
                     <button
+                        onClick={onOpenBehavior}
+                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
+                        title="Behavior"
+                        aria-label="Behavior"
+                    >
+                        <TablerIcon name="device_gamepad_3" className="text-base" />
+                    </button>
+                    <button
+                        onClick={onOpenStates}
+                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
+                        title="States"
+                        aria-label="States"
+                    >
+                        <TablerIcon name="polygon" className="text-base" />
+                    </button>
+                    <button
+                        onClick={onOpenOutput}
+                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
+                        title="Output"
+                        aria-label="Output"
+                    >
+                        <TablerIcon name="outbound" className="text-base" />
+                    </button>
+                    <button
                         onClick={onOpenHistory}
-                        className="w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:text-white hover:bg-transparent transition-colors focus:outline-none"
+                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
                         title="Version History"
                         aria-label="Version History"
                     >

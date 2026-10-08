@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ConfirmRequest, Credential } from '../types';
-import ApiKeysPanel, { ApiKeyConfig, DbProviderConfig } from './settings/ApiKeysPanel';
+import type { ApiKeyConfig, DbProviderConfig } from './settings/ApiKeysPanel';
+import ScopedApiKeysPanel from './settings/ScopedApiKeysPanel';
+import ConnectionsPanel from './settings/ConnectionsPanel';
 import ProxiesPanel from './settings/ProxiesPanel';
 import UserAgentPanel from './settings/UserAgentPanel';
 import VersionPanel from './settings/VersionPanel';
@@ -12,10 +14,11 @@ import { useTheme } from '../hooks/useTheme';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatLabel } from '../utils/taskUtils';
 
-type SettingsSection = 'api-keys' | 'user-agent' | 'proxies' | 'advanced' | 'appearance' | 'about';
+type SettingsSection = 'api-keys' | 'connections' | 'user-agent' | 'proxies' | 'advanced' | 'appearance' | 'about';
 
 const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
     { id: 'api-keys', label: 'API Keys', icon: 'key' },
+    { id: 'connections', label: 'Connections', icon: 'link' },
     { id: 'user-agent', label: 'User Agent', icon: 'language' },
     { id: 'proxies', label: 'Proxies', icon: 'security' },
     { id: 'appearance', label: 'Appearance', icon: 'palette' },
@@ -23,14 +26,26 @@ const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] 
     { id: 'advanced', label: 'Advanced', icon: 'settings-cog' },
 ];
 
+const SETTINGS_DESCRIPTIONS: Record<SettingsSection, string> = {
+    'api-keys': 'Create and manage access for your integrations.',
+    connections: 'Connect the services your automations use.',
+    'user-agent': 'Choose how your browser identifies itself to websites.',
+    proxies: 'Route task traffic through managed proxy servers.',
+    appearance: 'Set the look and theme of your workspace.',
+    about: 'Version and product information for Figranium.',
+    advanced: 'Manage data, account controls, and workspace maintenance.'
+};
+
 interface SettingsScreenProps {
     onConfirm: (request: string | ConfirmRequest) => Promise<boolean>;
     onNotify: (message: string, tone?: 'success' | 'error') => void;
+    onLogout: () => void;
 }
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({
     onConfirm,
-    onNotify
+    onNotify,
+    onLogout
 }) => {
     const navigate = useNavigate();
     const { section: sectionParam } = useParams<{ section?: string }>();
@@ -47,7 +62,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
     const [credentials, setCredentials] = useState<Credential[]>([]);
     const [credentialsLoading, setCredentialsLoading] = useState(false);
     const [apiKey, setApiKey] = useState<string | null>(null);
-    const [apiKeyLoading, setApiKeyLoading] = useState(true);
+    const [apiKeyLoading] = useState(true);
     const [apiKeySaving, setApiKeySaving] = useState(false);
     const [proxies, setProxies] = useState<{ id: string; server: string; username?: string; password?: string; label?: string; isRotatingPool?: boolean; estimatedPoolSize?: number }[]>([]);
     const [defaultProxyId, setDefaultProxyId] = useState<string | null>(null);
@@ -76,26 +91,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
         await fetch(`/api/credentials/${id}`, { method: 'DELETE' });
         setCredentials(prev => prev.filter(c => c.id !== id));
     }, []);
-
-    const loadApiKey = async () => {
-        setApiKeyLoading(true);
-        try {
-            const res = await fetch('/api/settings/api-key', { credentials: 'include' });
-            if (!res.ok) {
-                if (res.status === 401) {
-                    onNotify('Session expired. Please log in again.', 'error');
-                }
-                setApiKey(null);
-                return;
-            }
-            const data = await res.json();
-            setApiKey(data.apiKey || null);
-        } catch {
-            setApiKey(null);
-        } finally {
-            setApiKeyLoading(false);
-        }
-    };
 
     const loadProxies = async () => {
         setProxiesLoading(true);
@@ -444,10 +439,6 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
     };
 
     useEffect(() => {
-        if (section === 'api-keys') {
-            loadApiKey();
-            loadCredentials();
-        }
         if (section === 'user-agent') loadUserAgent();
         if (section === 'proxies') loadProxies();
     }, [section, loadCredentials]);
@@ -518,6 +509,11 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
             }
         });
     });
+    // Keep the existing output-credential loader alive while the scoped-key UI
+    // owns this Settings section; the panel is shared by other settings flows.
+    void dbProviders;
+    void handleAddDbCredential;
+    void apiKeysConfig;
 
     return (
         <div className="settings-shell animate-in fade-in duration-500">
@@ -539,18 +535,12 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                         <div>
                             <div className="app-page-kicker">Settings</div>
                             <h1 className="app-page-title">{SETTINGS_SECTIONS.find((item) => item.id === section)?.label}</h1>
-                            <p className="app-page-subtitle">Configure Figranium for your workspace</p>
+                            <p className="app-page-subtitle">{SETTINGS_DESCRIPTIONS[section]}</p>
                         </div>
                     </header>
 
-                    {section === 'api-keys' && (
-                        <ApiKeysPanel
-                            keys={apiKeysConfig}
-                            dbProviders={dbProviders}
-                            onAddDbCredential={handleAddDbCredential}
-                            onConfirm={onConfirm}
-                        />
-                    )}
+                    {section === 'api-keys' && <ScopedApiKeysPanel onNotify={onNotify} />}
+                    {section === 'connections' && <ConnectionsPanel onNotify={onNotify} />}
                     {section === 'user-agent' && (
                         <UserAgentPanel
                             selection={userAgentSelection}
@@ -565,7 +555,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                             onSelect={setTheme}
                         />
                     )}
-                    {section === 'advanced' && <SystemPanel onConfirm={onConfirm} onNotify={onNotify} />}
+                    {section === 'advanced' && <SystemPanel onConfirm={onConfirm} onNotify={onNotify} onLogout={onLogout} />}
                     {section === 'about' && (
                         <VersionPanel version={APP_VERSION} />
                     )}

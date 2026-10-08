@@ -52,6 +52,7 @@ const {
     requireAuth,
     isIpAllowed,
     requireApiKey,
+    requireApiPermission,
     requireAuthOrApiKey
 } = require('./src/server/middleware');
 
@@ -75,6 +76,9 @@ const browserRoutes = require('./src/server/routes/browser');
 const capabilitiesRoutes = require('./src/server/routes/capabilities');
 const cabinetRoutes = require('./src/server/routes/cabinets');
 const templateRoutes = require('./src/server/routes/templates');
+const apiKeyRoutes = require('./src/server/routes/api-keys');
+const cookieStateRoutes = require('./src/server/routes/cookie-states');
+const passwordRoutes = require('./src/server/routes/passwords');
 const { pushOutput } = require('./src/server/outputProviders');
 const { migrateStorageState } = require('./src/server/migrate-storage');
 const { concurrencyGate, closeQueue } = require('./src/server/execution-queue');
@@ -227,6 +231,9 @@ app.use('/api/schedules', scheduleRoutes);
 app.use('/api/credentials', credentialRoutes);
 app.use('/api/cabinets', cabinetRoutes);
 app.use('/api', templateRoutes);
+app.use('/api/api-keys', apiKeyRoutes);
+app.use('/api/cookie-states', cookieStateRoutes);
+app.use('/api/passwords', passwordRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/capabilities', capabilitiesRoutes);
 app.use('/api', browserRoutes);
@@ -447,8 +454,8 @@ const executeTaskById = async (req, res) => {
     }
 };
 
-app.post('/tasks/:id/api', requireApiKey, dataRateLimiter, prepareExecution({ source: 'api' }), concurrencyGate, executeTaskById);
-app.post('/api/tasks/:id/api', requireApiKey, dataRateLimiter, prepareExecution({ source: 'api' }), concurrencyGate, executeTaskById);
+app.post('/tasks/:id/api', requireApiKey, requireApiPermission('tasks:run', { taskParam: 'id' }), dataRateLimiter, prepareExecution({ source: 'api' }), concurrencyGate, executeTaskById);
+app.post('/api/tasks/:id/api', requireApiKey, requireApiPermission('tasks:run', { taskParam: 'id' }), dataRateLimiter, prepareExecution({ source: 'api' }), concurrencyGate, executeTaskById);
 
 app.all('/scrape', requireAuth, dataRateLimiter, prepareExecution({ mode: 'scrape' }), concurrencyGate, (req, res) => {
     preprocessScrapeRequest(req);

@@ -11,7 +11,8 @@ const {
     loadThemeConfig, saveThemeConfig,
     loadCaptchaSettings, saveCaptchaSettings,
     loadSystemSettings, saveSystemSettings,
-    loadUsers, loadTasks, loadExecutions, saveTasks, saveExecutions, saveCredentials
+    loadUsers, loadTasks, loadExecutions, saveTasks, saveExecutions, loadCredentials, saveCredentials,
+    exportApiKeys, importApiKeys, clearApiKeys
 } = require('../storage');
 const { DATA_DIR, STORAGE_STATE_PATH } = require('../constants');
 const { getStatus: getExecutionQueueStatus } = require('../execution-queue');
@@ -33,7 +34,7 @@ router.post('/reset', csrfProtection, dataRateLimiter, requireAuthForSettings, a
     try {
         const captureDirs = [path.join(__dirname, '../../../public/captures'), path.join(__dirname, '../../../src/public/captures'), path.join(DATA_DIR, 'recordings')];
         await Promise.all([
-            saveTasks([]), saveExecutions([]), saveCredentials([]), saveApiKey(null),
+            saveTasks([]), saveExecutions([]), saveCredentials([]), saveApiKey(null), clearApiKeys(),
             saveThemeConfig('auto'), saveCaptchaSettings({}), saveSystemSettings({ retentionDays: 7 }),
             ...captureDirs.map((dir) => fs.promises.rm(dir, { recursive: true, force: true })),
             fs.promises.rm(path.join(DATA_DIR, 'browser-profile'), { recursive: true, force: true }),
@@ -42,6 +43,8 @@ router.post('/reset', csrfProtection, dataRateLimiter, requireAuthForSettings, a
             fs.promises.rm(path.join(DATA_DIR, 'captcha-model'), { recursive: true, force: true }),
             fs.promises.rm(STORAGE_STATE_PATH, { recursive: true, force: true })
         ]);
+        await require('../cookie-states').clearCookieStates();
+        await require('../onepassword').saveConfig({});
         const proxyConfig = listProxies();
         deleteProxies(proxyConfig.proxies.filter((proxy) => proxy.id !== 'host').map((proxy) => proxy.id));
         await require('../cabinets').resetCabinets();
@@ -77,7 +80,7 @@ router.post('/system', csrfProtection, dataRateLimiter, requireAuthForSettings, 
 });
 
 router.post('/export', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
-    const allowed = new Set(['tasks', 'executions', 'captures', 'apiKeys', 'cookies']);
+    const allowed = new Set(['tasks', 'executions', 'captures', 'apiKeys', 'cookies', 'connections']);
     const include = [...new Set(Array.isArray(req.body?.include) ? req.body.include.filter((item) => allowed.has(item)) : [])];
     if (!include.length) return res.status(400).json({ error: 'EXPORT_SELECTION_REQUIRED' });
 
@@ -87,14 +90,27 @@ router.post('/export', csrfProtection, dataRateLimiter, requireAuthForSettings, 
 
         if (include.includes('tasks')) addJson('tasks.json', await loadTasks());
         if (include.includes('executions')) addJson('executions.json', await loadExecutions());
-        if (include.includes('apiKeys')) addJson('api-keys.json', { apiKey: await loadApiKey() });
+        if (include.includes('apiKeys')) {
+            addJson('api-keys.json', { keys: await exportApiKeys() });
+        }
 
         if (include.includes('cookies')) {
             let state = { cookies: [], origins: [] };
             try {
                 if (fs.existsSync(STORAGE_STATE_PATH)) state = JSON.parse(await fs.promises.readFile(STORAGE_STATE_PATH, 'utf8'));
             } catch { }
-            addJson('cookies.json', { cookies: Array.isArray(state?.cookies) ? state.cookies : [] });
+            addJson('cookies.json', {
+                sharedState: { cookies: Array.isArray(state?.cookies) ? state.cookies : [], origins: Array.isArray(state?.origins) ? state.origins : [] },
+                states: await require('../cookie-states').exportCookieStates()
+            });
+        }
+
+        if (include.includes('connections')) {
+            const credentials = await loadCredentials();
+            addJson('connections.json', {
+                credentials,
+                onePassword: await require('../onepassword').loadConfig()
+            });
         }
 
         if (include.includes('captures')) {
@@ -118,7 +134,7 @@ router.post('/export', csrfProtection, dataRateLimiter, requireAuthForSettings, 
             }
         }
 
-        addJson('manifest.json', { exportedAt: new Date().toISOString(), included: include });
+        addJson('manifest.json', { version: 2, exportedAt: new Date().toISOString(), included: include });
         const archive = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
         const date = new Date().toISOString().slice(0, 10);
         res.setHeader('Content-Type', 'application/zip');
@@ -138,7 +154,7 @@ router.post('/import', csrfProtection, dataRateLimiter, requireAuthForSettings, 
         const manifestFile = zip.file('manifest.json');
         if (!manifestFile) return res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
         const manifest = JSON.parse(await manifestFile.async('string'));
-        const available = Array.isArray(manifest?.included) ? manifest.included.filter((item) => ['tasks', 'executions', 'captures', 'apiKeys', 'cookies'].includes(item)) : [];
+        const available = Array.isArray(manifest?.included) ? manifest.included.filter((item) => ['tasks', 'executions', 'captures', 'apiKeys', 'cookies', 'connections'].includes(item)) : [];
         const requested = String(req.query.include || '').split(',').filter(Boolean);
         const include = requested.length ? requested.filter((item) => available.includes(item)) : available;
         if (!include.length) return res.status(400).json({ error: 'IMPORT_SELECTION_REQUIRED', available });
@@ -161,15 +177,22 @@ router.post('/import', csrfProtection, dataRateLimiter, requireAuthForSettings, 
         }
         if (include.includes('apiKeys')) {
             const keys = await readJson('api-keys.json');
-            await saveApiKey(typeof keys?.apiKey === 'string' ? keys.apiKey : null);
+            await importApiKeys(keys?.keys);
         }
         if (include.includes('cookies')) {
             const imported = await readJson('cookies.json');
-            const current = await fs.promises.readFile(STORAGE_STATE_PATH, 'utf8').then(JSON.parse).catch(() => ({ origins: [] }));
+            const sharedState = imported?.sharedState && typeof imported.sharedState === 'object' ? imported.sharedState : null;
             await fs.promises.writeFile(STORAGE_STATE_PATH, JSON.stringify({
-                cookies: Array.isArray(imported?.cookies) ? imported.cookies : [],
-                origins: Array.isArray(current?.origins) ? current.origins : []
+                cookies: Array.isArray(sharedState?.cookies) ? sharedState.cookies : Array.isArray(imported?.sharedCookies) ? imported.sharedCookies : Array.isArray(imported?.cookies) ? imported.cookies : [],
+                origins: Array.isArray(sharedState?.origins) ? sharedState.origins : []
             }, null, 2));
+            if (Array.isArray(imported?.states)) await require('../cookie-states').replaceCookieStates(imported.states);
+        }
+        if (include.includes('connections')) {
+            const imported = await readJson('connections.json');
+            if (!Array.isArray(imported?.credentials) || !imported?.onePassword || typeof imported.onePassword !== 'object') throw new Error('Invalid connections.json');
+            await saveCredentials(imported.credentials);
+            await require('../onepassword').saveConfig(imported.onePassword);
         }
         if (include.includes('captures')) {
             const captureDir = path.join(__dirname, '../../../public/captures');
@@ -196,7 +219,7 @@ router.post('/import/inspect', csrfProtection, dataRateLimiter, requireAuthForSe
         const manifestFile = zip.file('manifest.json');
         if (!manifestFile) return res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
         const manifest = JSON.parse(await manifestFile.async('string'));
-        const allowed = ['tasks', 'executions', 'captures', 'apiKeys', 'cookies'];
+        const allowed = ['tasks', 'executions', 'captures', 'apiKeys', 'cookies', 'connections'];
         res.json({ available: Array.isArray(manifest?.included) ? manifest.included.filter((item) => allowed.includes(item)) : [], exportedAt: manifest?.exportedAt || null });
     } catch {
         res.status(400).json({ error: 'INVALID_FIGRANIUM_EXPORT' });
@@ -245,26 +268,11 @@ async function validateProxyServer(server) {
 
 // API Key
 router.get('/api-key', requireAuthForSettings, async (req, res) => {
-    try {
-        const currentKey = await loadApiKey();
-        res.json({ apiKey: currentKey || null });
-    } catch (e) {
-        console.error('[API_KEY] Load failed:', e);
-        res.status(500).json({ error: 'API_KEY_LOAD_FAILED' });
-    }
+    res.status(410).json({ error: 'API_KEY_ENDPOINT_REPLACED', message: 'Use /api/api-keys.' });
 });
 
 router.post('/api-key', csrfProtection, dataRateLimiter, requireAuthForSettings, async (req, res) => {
-    try {
-        const bodyKey = req.body && typeof req.body.apiKey === 'string' ? req.body.apiKey.trim() : '';
-        if (bodyKey.length > 512) return res.status(400).json({ error: 'API_KEY_TOO_LONG' });
-        const newKey = bodyKey || createNewApiKey();
-        await saveApiKey(newKey);
-        res.json({ apiKey: newKey });
-    } catch (e) {
-        console.error('[API_KEY] Save failed:', e);
-        res.status(500).json({ error: 'API_KEY_SAVE_FAILED' });
-    }
+    res.status(410).json({ error: 'API_KEY_ENDPOINT_REPLACED', message: 'Use /api/api-keys.' });
 });
 
 // User Agent

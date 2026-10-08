@@ -2,13 +2,13 @@ import React from 'react';
 import TablerIcon from './TablerIcon';
 
 interface SidebarProps {
-    onNavigate: (screen: 'dashboard' | 'editor' | 'templates' | 'settings' | 'executions' | 'cabinets') => void;
+    onNavigate: (screen: 'dashboard' | 'editor' | 'vault' | 'templates' | 'settings' | 'executions' | 'cabinets') => void;
     onNewTask: () => void;
     onLogout: () => void;
-    currentScreen: 'dashboard' | 'editor' | 'templates' | 'settings' | 'executions' | 'cabinets';
+    currentScreen: 'dashboard' | 'editor' | 'vault' | 'templates' | 'settings' | 'executions' | 'cabinets';
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, currentScreen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, currentScreen }) => {
     const activeScreen = window.location.pathname.startsWith('/cabinets') ? 'cabinets' : currentScreen;
 
     return (
@@ -36,8 +36,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
                     ['dashboard', 'home', 'Dashboard (Alt/Option + 1)'],
                     ['templates', 'sketching', 'Templates (Alt/Option + 2)'],
                     ['executions', 'history', 'Executions (Alt/Option + 3)'],
+                    ['vault', 'vault', 'Vault'],
                     ['cabinets', 'folders', 'Cabinets (Alt/Option + 4)'],
-                    ['settings', 'settings', 'Settings (Alt/Option + 5)'],
                 ] as const).map(([screen, icon, title]) => (
                     <button
                         key={screen}
@@ -53,12 +53,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, onLogout, curr
             </div>
 
             <button
-                onClick={onLogout}
-                className="w-12 h-12 rounded-2xl cursor-pointer flex items-center justify-center theme-text-faint hover:bg-red-500/10 hover:text-red-500 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                title="Logout (Alt/Option + L)"
-                aria-label="Logout (Alt/Option + L)"
+                onClick={() => onNavigate('settings')}
+                className={`w-12 h-12 rounded-2xl cursor-pointer flex items-center justify-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${activeScreen === 'settings' ? 'theme-highlight' : 'theme-text-faint theme-hover'}`}
+                title="Settings (Alt/Option + 5)"
+                aria-label="Settings (Alt/Option + 5)"
             >
-                <TablerIcon name="logout" className="text-2xl theme-text-faint" />
+                <TablerIcon name="settings" className="text-2xl theme-text" />
             </button>
         </aside>
     );

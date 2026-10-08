@@ -73,11 +73,12 @@ async function createBrowserContext(launchOptions, options = {}) {
     const {
         userAgent,
         rotateViewport,
-        statelessExecution,
         disableRecording,
         recordingsDir,
         includeShadowDom,
         sessionId,
+        cookieState,
+        isolatedCookies,
         captchaInterceptionMode
     } = options;
 
@@ -127,7 +128,7 @@ async function createBrowserContext(launchOptions, options = {}) {
     }
 
     let context;
-    if (statelessExecution) {
+    if (isolatedCookies) {
         const browser = await chromium.launch({
             headless: launchOptions.headless,
             args: launchOptions.args,
@@ -156,7 +157,11 @@ async function createBrowserContext(launchOptions, options = {}) {
     // Highlight-tool handoffs use a short-lived (stateless) context. Restore
     // cookies captured from the previous interactive headful session for both
     // context types so logging in normally carries into that handoff.
-    await injectHeadfulCookies(context);
+    if (cookieState?.cookies?.length) {
+        await context.addCookies(cookieState.cookies);
+    } else if (!isolatedCookies) {
+        await injectHeadfulCookies(context);
+    }
 
     await setupNavigationProtection(context);
     await context.addInitScript(installMouseHelper);

@@ -78,6 +78,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const [browseSupported, setBrowseSupported] = React.useState(true);
         const [versionContextMenu, setVersionContextMenu] = React.useState<{ id: string; x: number; y: number } | null>(null);
         const [cabinets, setCabinets] = React.useState<{ id: string; name: string; isDefault?: boolean }[]>([]);
+        const [cookieStates, setCookieStates] = React.useState<{ id: string; name: string; cookies: number }[]>([]);
 
         React.useEffect(() => {
             if (isOpen) {
@@ -106,6 +107,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
 
         React.useEffect(() => {
             if (!isOpen || activeTab !== 'cabinets') return;
+            fetch('/api/cookie-states').then(r => r.ok ? r.json() : null).then(data => setCookieStates(data?.states || [])).catch(() => setCookieStates([]));
             fetch('/api/cabinets').then(r => r.ok ? r.json() : null).then(data => setCabinets(data?.cabinets || [])).catch(() => setCabinets([]));
         }, [isOpen, activeTab]);
 
@@ -271,12 +273,12 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                     <div role="tablist" className="flex flex-wrap gap-2 mb-8 bg-[var(--app-input)] p-1 rounded-2xl border border-[var(--app-border)]">
                         {renderTabButton('mode', 'Mode', 'settings_input_component')}
                         {renderTabButton('variables', 'Vars', 'variables')}
-                        {renderTabButton('behavior', 'Behavior', 'psychology')}
+                        {renderTabButton('behavior', 'Behavior', 'device_gamepad_3')}
                         {renderTabButton('extraction', 'Extract', 'terminal')}
                         {renderTabButton('api', 'API', 'api')}
-                        {renderTabButton('output', 'Output', 'table')}
+                        {renderTabButton('output', 'Output', 'outbound')}
                         {renderTabButton('schedule', 'Schedule', 'event_repeat')}
-                        {renderTabButton('cabinets', 'Cabinets', 'shelves')}
+                        {renderTabButton('cabinets', 'States', 'polygon')}
                         {renderTabButton('history', 'History', 'history_toggle')}
                     </div>
 
@@ -330,7 +332,6 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Runtime Flags</label>
                                     <div className="grid grid-cols-1 gap-2">
                                         {[
-                                            { label: 'Stateless Execution', key: 'statelessExecution', icon: 'auto_delete' },
                                             { label: 'Disable Recording', key: 'disableRecording', icon: 'videocam_off' },
                                             { label: 'Rotate Proxies', key: 'rotateProxies', icon: 'vpn_lock', disabled: rotateProxiesDisabled },
                                             { label: 'Rotate User Agents', key: 'rotateUserAgents', icon: 'person_search' },
@@ -437,6 +438,18 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
 
                         {activeTab === 'cabinets' && (
                             <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Cookie state</label>
+                                    <p className="text-xs text-[var(--app-text-faint)]">Attached runs use and update this isolated state. Detached runs start with no cookies.</p>
+                                    <CustomSelect
+                                        value={currentTask.cookieStateId === undefined ? 'cookies_default' : currentTask.cookieStateId || ''}
+                                        onChange={(cookieStateId) => onUpdateTask({ cookieStateId: cookieStateId || null })}
+                                        options={[...cookieStates.map(state => ({ value: state.id, label: `${state.name} (${state.cookies} cookies)` })), { value: '', label: 'No State' }]}
+                                        ariaLabel="Attached cookie state"
+                                    />
+                                    <a href="/vault" className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Vault</a>
+                                </div>
+
                                 <div>
                                     <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Download destination</label>
                                     <p className="mt-2 text-xs text-[var(--app-text-faint)]">Downloads made by this automation are saved in this cabinet.</p>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Variable } from '../../types';
 import TablerIcon from '../TablerIcon';
 import { BLOCK_OUTPUT_VARIABLE, MORE_RESERVED_VARIABLES, ReservedVariableDefinition } from '../../utils/reservedVariables';
@@ -31,11 +31,57 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
     onInsertVariable,
 }) => {
     const entries = Object.entries(variables || {});
-    const [activeTab, setActiveTab] = useState<'variables' | 'more'>('variables');
+    const [activeTab, setActiveTab] = useState<'variables' | 'passwords' | 'more'>('variables');
+    const [passwordVariables, setPasswordVariables] = useState<ReservedVariableDefinition[]>([]);
+    const [passwordVariablesStatus, setPasswordVariablesStatus] = useState<'loading' | 'ready' | 'unconfigured' | 'error'>('loading');
     const [draggingVariable, setDraggingVariable] = useState<string | null>(null);
     const dragImageRef = useRef<HTMLElement | null>(null);
     const dragFrameRef = useRef<number | null>(null);
     const dragActiveRef = useRef(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch('/api/passwords')
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    if (data.error === 'ONEPASSWORD_NOT_CONFIGURED') {
+                        if (!cancelled) setPasswordVariablesStatus('unconfigured');
+                        return null;
+                    }
+                    throw new Error(data.error || 'Failed to load password variables.');
+                }
+                return data.items || [];
+            })
+            .then(items => {
+                if (cancelled || !items) return;
+                const variables = new Map<string, { domain: string; titles: Set<string> }>();
+                for (const item of items) {
+                    if (!item.hasPassword) continue;
+                    for (const domain of item.domains || []) {
+                        const normalizedDomain = String(domain).toLowerCase();
+                        const name = `passwords.${normalizedDomain.replace(/\./g, '^')}`;
+                        const existing = variables.get(name) || { domain: normalizedDomain, titles: new Set<string>() };
+                        existing.titles.add(item.title);
+                        variables.set(name, existing);
+                    }
+                }
+                setPasswordVariables([...variables].map(([name, variable]) => ({
+                    name,
+                    label: name,
+                    description: variable.titles.size > 1
+                        ? `Multiple 1Password Login items match ${variable.domain}; resolve the duplicate website mapping in 1Password.`
+                        : `Password for ${variable.domain} from ${[...variable.titles][0]}.`,
+                    icon: 'key',
+                })));
+                setPasswordVariablesStatus('ready');
+            })
+            .catch(() => {
+                if (!cancelled) setPasswordVariablesStatus('error');
+            });
+        return () => { cancelled = true; };
+    }, []);
+
     const insertOrDragProps = (name: string, unavailable = false) => ({
         draggable: !unavailable,
         disabled: unavailable,
@@ -109,6 +155,7 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
             </div>
             <div className="mt-3 flex gap-1 border-b theme-border" role="tablist" aria-label="Variable categories">
                 <button type="button" role="tab" aria-selected={activeTab === 'variables'} onClick={() => setActiveTab('variables')} className={`border-b-2 px-2 py-1.5 text-[10px] font-bold tracking-wider ${activeTab === 'variables' ? 'border-blue-500 text-blue-500' : 'border-transparent text-[var(--app-text-faint)]'}`}>Variables</button>
+                <button type="button" role="tab" aria-selected={activeTab === 'passwords'} onClick={() => setActiveTab('passwords')} className={`border-b-2 px-2 py-1.5 text-[10px] font-bold tracking-wider ${activeTab === 'passwords' ? 'border-blue-500 text-blue-500' : 'border-transparent text-[var(--app-text-faint)]'}`}>Passwords</button>
                 <button type="button" role="tab" aria-selected={activeTab === 'more'} onClick={() => setActiveTab('more')} className={`border-b-2 px-2 py-1.5 text-[10px] font-bold tracking-wider ${activeTab === 'more' ? 'border-blue-500 text-blue-500' : 'border-transparent text-[var(--app-text-faint)]'}`}>More</button>
             </div>
             <p className="mt-2 text-[10px] text-[var(--app-text-faint)]">
@@ -136,6 +183,19 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
                 {activeTab === 'variables' && reservedVariableRow(BLOCK_OUTPUT_VARIABLE)}
                 {activeTab === 'variables' && entries.length === 0 && (
                     <p className="py-4 text-center text-xs text-[var(--app-text-faint)]">No task variables defined</p>
+                )}
+                {activeTab === 'passwords' && passwordVariables.map(reservedVariableRow)}
+                {activeTab === 'passwords' && passwordVariablesStatus === 'loading' && (
+                    <p className="text-xs text-[var(--app-text-faint)]">Loading 1Password variables…</p>
+                )}
+                {activeTab === 'passwords' && passwordVariablesStatus === 'unconfigured' && (
+                    <p className="text-xs text-[var(--app-text-faint)]">Connect 1Password in Settings to use password variables.</p>
+                )}
+                {activeTab === 'passwords' && passwordVariablesStatus === 'ready' && passwordVariables.length === 0 && (
+                    <p className="text-xs text-[var(--app-text-faint)]">No Login passwords with website domains were found in the Figranium vault.</p>
+                )}
+                {activeTab === 'passwords' && passwordVariablesStatus === 'error' && (
+                    <p role="alert" className="text-xs text-red-400">Could not load 1Password variables.</p>
                 )}
                 {activeTab === 'more' && MORE_RESERVED_VARIABLES.map(reservedVariableRow)}
             </div>

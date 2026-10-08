@@ -8,6 +8,7 @@ const { cleanHtml } = require('../dom-utils');
 const { launchBrowser, createBrowserContext } = require('../browser');
 const cabinets = require('../../server/cabinets');
 const { saveSharedBrowserState } = require('../../../browser-storage-state');
+const { resolveCookieStateId, getCookieState, updateCookieState } = require('../../server/cookie-states');
 
 // New Modules
 const { buildBlockMap, randomBetween, getForeachItems } = require('./helpers');
@@ -25,7 +26,7 @@ async function runFigranite(data, options = {}) {
     let { actions, wait: globalWait, rotateUserAgents, rotateProxies, humanTyping, stealth = {}, sessionId } = data;
     const autoSolveCaptcha = parseBooleanFlag(data.autoSolveCaptcha);
 
-    const { runtimeVars, setBlockOutput, resolveTemplate } = await createRuntimeContext(data);
+    const { runtimeVars, setBlockOutput, resolveTemplate, redactSensitive } = await createRuntimeContext(data);
 
     const runId = data.runId ? String(data.runId) : null;
     const captureRunId = sanitizeRunId(runId) || `run_${Date.now()}_unknown`;
@@ -35,8 +36,8 @@ async function runFigranite(data, options = {}) {
         : !(String(includeShadowDomRaw).toLowerCase() === 'false' || includeShadowDomRaw === false);
     const disableRecordingRaw = data.disableRecording;
     const disableRecording = parseBooleanFlag(disableRecordingRaw);
-    const statelessExecutionRaw = data.statelessExecution;
-    const statelessExecution = parseBooleanFlag(statelessExecutionRaw);
+    const requestedCookieStateId = resolveCookieStateId(data);
+    const attachedCookieState = requestedCookieStateId ? await getCookieState(String(requestedCookieStateId)) : null;
     const isTestMode = options.testMode === true;
     const testRunStartedAt = Date.now();
     const testTargetActionId = options.stopAfterActionId ? String(options.stopAfterActionId) : null;
@@ -101,7 +102,12 @@ async function runFigranite(data, options = {}) {
     let stopPageTranslation = () => {};
 
     const syncBrowserState = async () => {
-        if (statelessExecution || isTestMode || !context) return;
+        if (isTestMode || !context || requestedCookieStateId === null) return;
+        if (attachedCookieState) {
+            await updateCookieState(attachedCookieState.id, await context.storageState({ indexedDB: true }));
+            return;
+        }
+        if (requestedCookieStateId) return;
         // Agent contexts import the shared cookies after launch, but their persistent
         // profile does not contain headful-only local storage for unrelated origins.
         // Keep those origins intact while publishing the agent's updated cookies.
@@ -141,11 +147,12 @@ async function runFigranite(data, options = {}) {
         context = await createBrowserContext(launchOptions, {
             userAgent: selectedUA,
             rotateViewport,
-            statelessExecution,
             disableRecording,
             recordingsDir,
             includeShadowDom,
-            sessionId,
+            sessionId: requestedCookieStateId === null ? undefined : sessionId,
+            cookieState: attachedCookieState?.state,
+            isolatedCookies: true,
             captchaInterceptionMode: hasCaptchaSolver ? 'solve' : (hasCaptchaWait ? 'observe' : null)
         });
         browser = context.browser();
@@ -661,7 +668,7 @@ async function runFigranite(data, options = {}) {
         const rawExtraction = extraction.result !== undefined ? extraction.result : (extraction.logs.length ? extraction.logs.join('\n') : undefined);
         const formattedExtraction = extractionFormat === 'csv' ? toCsvString(rawExtraction) : rawExtraction;
 
-        if (!isTestMode && sessionId) {
+        if (!isTestMode && requestedCookieStateId !== null && sessionId) {
             const cleanSessionId = String(sessionId).replace(/[^a-zA-Z0-9_-]/g, '');
             if (cleanSessionId) {
                 const sessionPath = path.join(__dirname, '../../../data/sessions', `${cleanSessionId}.json`);
@@ -708,6 +715,7 @@ async function runFigranite(data, options = {}) {
                 }
             } : {})
         };
+        const safeOutputData = redactSensitive(outputData);
 
         const video = page.video();
         if (!options.handoffContext) {
@@ -743,32 +751,34 @@ async function runFigranite(data, options = {}) {
 
         if (options.handoffContext) {
             return {
-                ...outputData,
+                ...safeOutputData,
                 _handoff: { browser, context, page }
             };
         }
 
         try { await browser.close(); } catch { }
-        return outputData;
+        return safeOutputData;
     } catch (error) {
         if (userStopped || isForceStopped || (runId && consumeStopRequest(runId))) {
             logs.push('Execution stopped by user.');
-            return {
+            return redactSensitive({
                 outcome: 'stopped',
                 final_url: (page && typeof page.isClosed === 'function' && !page.isClosed()) ? (page.url() || '') : (url || ''),
                 logs: logs || [],
                 html: '',
                 data: null,
                 screenshot_url: null,
-            };
+            });
         }
-        console.error('Engine Error:', error);
+        const safeErrorMessage = redactSensitive(error.message || '');
+        console.error('Engine Error:', safeErrorMessage);
         const antiBot = await inspectPageForAntiBot(page, { status: lastMainDocumentStatus });
         if (antiBot.reason) {
             error.antiBotReason = antiBot.reason;
             logs.push(`[OUTCOME] Anti-bot detected: ${antiBot.reason}.`);
         }
-        error.executionLogs = logs;
+        error.message = safeErrorMessage;
+        error.executionLogs = redactSensitive(logs);
         try {
             await syncBrowserState();
             if (context) await context.close();

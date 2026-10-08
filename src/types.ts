@@ -189,10 +189,10 @@ export interface Task {
     output?: TaskOutput;
     includeShadowDom?: boolean;
     disableRecording?: boolean;
-    statelessExecution?: boolean;
     autoSolveCaptcha?: boolean;
     translation?: TaskTranslation;
     downloadCabinetId?: string;
+    cookieStateId?: string | null;
     versions?: TaskVersion[];
     schedule?: TaskSchedule;
 }

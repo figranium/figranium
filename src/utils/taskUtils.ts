@@ -58,14 +58,14 @@ export const makeDefaultTask = (): Task => ({
     variables: {},
     includeShadowDom: true,
     disableRecording: false,
-    statelessExecution: false,
     translation: { enabled: false, targetLanguage: 'english' }
 } as Task);
 
 export const normalizeImportedTask = (raw: any, index: number): Task | null => {
     if (!raw || typeof raw !== 'object') return null;
     const base = makeDefaultTask();
-    const merged: Task = { ...base, ...raw };
+    const { statelessExecution, ...taskFields } = raw;
+    const merged: Task = { ...base, ...taskFields };
     if (!merged.name || typeof merged.name !== 'string') {
         merged.name = `Imported Task ${index + 1}`;
     }
@@ -79,8 +79,7 @@ export const normalizeImportedTask = (raw: any, index: number): Task | null => {
     if (merged.rotateProxies === undefined) merged.rotateProxies = false;
     if (merged.disableRecording === undefined) merged.disableRecording = false;
     merged.disableRecording = parseBooleanFlag(merged.disableRecording);
-    if (merged.statelessExecution === undefined) merged.statelessExecution = false;
-    merged.statelessExecution = parseBooleanFlag(merged.statelessExecution);
+    if (parseBooleanFlag(statelessExecution)) merged.cookieStateId = null;
     if (!merged.translation || typeof merged.translation !== 'object') {
         merged.translation = { enabled: false, targetLanguage: 'english' };
     } else {
@@ -123,7 +122,6 @@ export const buildNewTask = (downloadCabinetId = 'cab_basic'): Task => {
         includeHtml: false,
         includeShadowDom: true,
         disableRecording: false,
-        statelessExecution: false,
         translation: { enabled: false, targetLanguage: 'english' },
         downloadCabinetId
     };

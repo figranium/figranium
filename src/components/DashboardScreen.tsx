@@ -197,8 +197,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, o
                             ) : null)}
                         </div>
                         <div className="p-6 sm:p-8 bg-black/40 border-t border-white/5 flex gap-3 shrink-0">
-                            <button onClick={() => setIsExportModalOpen(false)} className="flex-1 px-4 py-3 rounded-xl border border-white/10 text-white text-xs font-bold tracking-widest hover:bg-white/5">Cancel</button>
-                            <button onClick={() => { onExportTasks(selectedTaskIds); setIsExportModalOpen(false); }} disabled={!selectedTaskIds.length} className={`flex-1 px-4 py-3 rounded-xl text-xs font-bold tracking-widest ${selectedTaskIds.length ? 'bg-white text-black hover:brightness-90' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}>Export ({selectedTaskIds.length})</button>
+                            <button onClick={() => setIsExportModalOpen(false)} className="flex-1 app-button-secondary">Cancel</button>
+                            <button onClick={() => { onExportTasks(selectedTaskIds); setIsExportModalOpen(false); }} disabled={!selectedTaskIds.length} className={selectedTaskIds.length ? 'flex-1 app-button-primary justify-center' : 'flex-1 min-h-10 rounded-2xl border border-[var(--app-border)] bg-[var(--app-input)] text-xs font-bold tracking-[.13em] theme-text-faint cursor-not-allowed'}>Export ({selectedTaskIds.length})</button>
                         </div>
                     </div>
                 </div>

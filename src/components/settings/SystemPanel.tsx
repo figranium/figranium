@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import TablerIcon from '../TablerIcon';
 import { ConfirmRequest } from '../../types';
 import CustomSelect from '../common/CustomSelect';
 
@@ -15,7 +16,7 @@ const RETENTION_OPTIONS = [
     { value: '365', label: '365 days' }, { value: 'never', label: 'Never' }
 ] as const;
 
-export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (request: string | ConfirmRequest) => Promise<boolean>; onNotify: (message: string, tone?: 'success' | 'error') => void }) {
+export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfirm: (request: string | ConfirmRequest) => Promise<boolean>; onNotify: (message: string, tone?: 'success' | 'error') => void; onLogout: () => void }) {
     const [data, setData] = useState<SystemData | null>(null);
     const [choice, setChoice] = useState<string>('7');
     const [saving, setSaving] = useState(false);
@@ -26,12 +27,13 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
     const [resetPassword, setResetPassword] = useState('');
     const [exporting, setExporting] = useState(false);
     const [exportSelection, setExportSelection] = useState<Record<string, boolean>>({
-        tasks: true, executions: true, captures: true, apiKeys: true, cookies: true
+        tasks: true, executions: true, captures: true, apiKeys: true, cookies: true, connections: true
     });
     const [importFile, setImportFile] = useState<File | null>(null);
     const [importAvailable, setImportAvailable] = useState<string[]>([]);
     const [importSelection, setImportSelection] = useState<Record<string, boolean>>({});
     const [importing, setImporting] = useState(false);
+    const importInputRef = useRef<HTMLInputElement>(null);
     const load = useCallback(async () => {
         try {
             const response = await fetch('/api/settings/system', { credentials: 'include' });
@@ -138,6 +140,10 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
         } catch { onNotify('Could not clear workspace data. Check your current password.', 'error'); } finally { setSaving(false); }
     };
     return <div className="space-y-5">
+        <section className="app-panel p-7 flex flex-wrap items-center justify-between gap-4">
+            <div><h3 className="text-sm font-bold theme-text">Session</h3><p className="text-xs theme-text-faint mt-1">Sign out of this Figranium workspace on this device.</p></div>
+            <button type="button" onClick={onLogout} className="app-button-danger">Sign out</button>
+        </section>
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Account</h3><p className="text-xs theme-text-faint mt-1">Use your current password to protect account changes.</p>
             <div className="mt-5 grid gap-3 max-w-xl"><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="New email address (optional)" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="New password (optional)" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={passwordConfirm} onChange={(event) => setPasswordConfirm(event.target.value)} placeholder="Confirm new password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} placeholder="Current password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /></div>
@@ -158,7 +164,7 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
             <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
                 {[
                     ['tasks', 'Tasks'], ['executions', 'Executions'], ['captures', 'Captures'],
-                    ['apiKeys', 'API Keys'], ['cookies', 'Cookies']
+                    ['apiKeys', 'API Keys'], ['cookies', 'Cookie states'], ['connections', 'Connections']
                 ].map(([key, label]) => (
                     <label key={key} className="flex items-center gap-3 rounded-xl border theme-border px-4 py-3 text-sm theme-text cursor-pointer">
                         <input type="checkbox" checked={!!exportSelection[key]} onChange={(event) => setExportSelection((current) => ({ ...current, [key]: event.target.checked }))} className="size-4 accent-blue-600" />
@@ -166,19 +172,23 @@ export default function SystemPanel({ onConfirm, onNotify }: { onConfirm: (reque
                     </label>
                 ))}
             </div>
-            <p className="mt-4 text-xs theme-text-faint">API Keys and cookies are sensitive and are exported in readable form when selected.</p>
+            <p className="mt-4 text-xs theme-text-faint">Archives include API key values, session cookies, and connection tokens. Store exported ZIP files securely.</p>
             <button type="button" disabled={saving || exporting} onClick={exportData} className="app-button-primary mt-4 disabled:opacity-50">{exporting ? 'Exporting…' : 'Export selected'}</button>
         </section>
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Import data</h3>
             <p className="text-xs theme-text-faint mt-1">Restore selected data from a Figranium export ZIP. Imported categories replace their matching workspace data.</p>
-            <input type="file" accept=".zip,application/zip" onChange={(event) => void inspectImport(event.target.files?.[0] || null)} className="mt-5 block max-w-xl text-sm theme-text file:mr-4 file:rounded-lg file:border-0 file:px-4 file:py-2 file:font-semibold file:cursor-pointer" />
+            <div className="mt-5 flex max-w-xl items-center gap-3 rounded-xl border theme-border bg-[var(--app-input)] p-2">
+                <input ref={importInputRef} type="file" accept=".zip,application/zip" onChange={(event) => void inspectImport(event.target.files?.[0] || null)} className="hidden" />
+                <button type="button" onClick={() => importInputRef.current?.click()} className="app-button-secondary shrink-0"><TablerIcon name="upload_file" /> Choose ZIP</button>
+                <span className={`min-w-0 truncate text-sm ${importFile ? 'theme-text' : 'theme-text-faint'}`}>{importFile?.name || 'No file selected'}</span>
+            </div>
             {importFile && importAvailable.length > 0 && <div className="mt-4">
                 <p className="text-xs theme-text-faint mb-2">Choose what to import from <span className="font-bold theme-text">{importFile.name}</span>.</p>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
                     {[
                         ['tasks', 'Tasks'], ['executions', 'Executions'], ['captures', 'Captures'],
-                        ['apiKeys', 'API Keys'], ['cookies', 'Cookies']
+                        ['apiKeys', 'API Keys'], ['cookies', 'Cookie states'], ['connections', 'Connections']
                     ].filter(([key]) => importAvailable.includes(key)).map(([key, label]) => (
                         <label key={key} className="flex items-center gap-3 rounded-xl border theme-border px-4 py-3 text-sm theme-text cursor-pointer">
                             <input type="checkbox" checked={!!importSelection[key]} onChange={(event) => setImportSelection((current) => ({ ...current, [key]: event.target.checked }))} className="size-4 accent-blue-600" />

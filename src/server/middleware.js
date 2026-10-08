@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { REQUEST_LIMIT_WINDOW_MS, AUTH_RATE_LIMIT_MAX, DATA_RATE_LIMIT_MAX } = require('./constants');
-const { loadAllowedIps, loadApiKey } = require('./storage');
+const { loadAllowedIps, verifyApiKey } = require('./storage');
 const { normalizeIp } = require('./utils');
 const { recordActivity } = require('./telemetry');
 
@@ -127,33 +127,29 @@ const requireApiKey = async (req, res, next) => {
         (req.body && (req.body.apiKey || req.body.key)) ||
         bodyKey;
 
-    let storedKey = null;
-    try {
-        storedKey = await loadApiKey();
-    } catch (err) {
-        // fall through
-    }
-
-    if (!storedKey) {
-        return res.status(403).json({ error: 'API_KEY_NOT_SET' });
-    }
-
     if (!providedKey || typeof providedKey !== 'string') {
         return res.status(401).json({ error: 'INVALID_API_KEY' });
     }
-
-    // Secure comparison using HMAC-SHA256 to mitigate timing attacks and satisfy CodeQL constraints.
-    // We treat the API key as the HMAC key and a random salt as the message. This avoids CodeQL flagging
-    // "hashing of a password" (which implies storage) while ensuring a constant-time comparison of the result.
-    const salt = crypto.randomBytes(32);
-    const providedHmac = crypto.createHmac('sha256', providedKey).update(salt).digest();
-    const storedHmac = crypto.createHmac('sha256', storedKey).update(salt).digest();
-
-    if (!crypto.timingSafeEqual(providedHmac, storedHmac)) {
+    const key = await verifyApiKey(providedKey).catch(() => null);
+    if (!key) {
         return res.status(401).json({ error: 'INVALID_API_KEY' });
     }
+    req.apiKey = key;
     res.locals.figraniumActivity = 'api';
     next();
+};
+
+const requireApiPermission = (permission, { taskParam = null } = {}) => (req, res, next) => {
+    if (!req.apiKey) return res.status(401).json({ error: 'INVALID_API_KEY' });
+    if (!req.apiKey.permissions?.includes(permission)) return res.status(403).json({ error: 'API_KEY_FORBIDDEN' });
+    const taskId = taskParam ? String(req.params[taskParam] || '') : '';
+    if (taskId && req.apiKey.taskIds?.length && !req.apiKey.taskIds.includes(taskId)) return res.status(403).json({ error: 'TASK_NOT_ALLOWED' });
+    next();
+};
+
+const requireScopedPermission = (permission, options = {}) => (req, res, next) => {
+    if (!req.apiKey) return next();
+    return requireApiPermission(permission, options)(req, res, next);
 };
 
 module.exports = {
@@ -164,6 +160,8 @@ module.exports = {
     requireAuth,
     requireAuthForSettings,
     requireApiKey,
+    requireApiPermission,
+    requireScopedPermission,
     requireAuthOrApiKey,
     isIpAllowed
 };

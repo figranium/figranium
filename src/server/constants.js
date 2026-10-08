@@ -11,6 +11,10 @@ const SESSION_SECRET_FILE = path.join(DATA_DIR, 'session_secret.txt');
 const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
 const VNC_PASSWORD_FILE = path.join(DATA_DIR, 'vnc_password.txt');
 const API_KEY_FILE = path.join(DATA_DIR, 'api_key.json');
+const API_KEYS_FILE = path.join(DATA_DIR, 'api_keys.json');
+const API_KEY_ARCHIVE_SECRET_FILE = path.join(DATA_DIR, 'api_key_archive_secret.txt');
+const COOKIE_STATES_FILE = path.join(DATA_DIR, 'cookie_states.json');
+const ONEPASSWORD_FILE = path.join(DATA_DIR, 'onepassword.json');
 const THEME_FILE = path.join(DATA_DIR, 'theme.json');
 const DEFAULT_THEME_ID = 'auto';
 const CAPTCHA_SETTINGS_FILE = path.join(DATA_DIR, 'captcha_settings.json');
@@ -47,6 +51,10 @@ module.exports = {
     TASKS_FILE,
     VNC_PASSWORD_FILE,
     API_KEY_FILE,
+    API_KEYS_FILE,
+    API_KEY_ARCHIVE_SECRET_FILE,
+    COOKIE_STATES_FILE,
+    ONEPASSWORD_FILE,
     THEME_FILE,
     DEFAULT_THEME_ID,
     CAPTCHA_SETTINGS_FILE,

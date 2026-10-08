@@ -5,6 +5,8 @@ export const CANVAS_DOT_RADIUS = 0.8;
 export const CANVAS_DOT_MAX_RADIUS = 2.2;
 export const CANVAS_DOT_INFLUENCE_RADIUS = 48;
 export const CANVAS_SELECTION_DOT_RADIUS = 1.55;
+export const CANVAS_DOT_IDLE_DELAY_MS = 1500;
+export const CANVAS_DOT_IDLE_SHRINK_MS = 3000;
 
 export interface CanvasSelectionBox {
     startX: number;
@@ -54,6 +56,11 @@ export const getCanvasDotRadius = (distance: number, strength = 1) => {
     return CANVAS_DOT_RADIUS + (CANVAS_DOT_MAX_RADIUS - CANVAS_DOT_RADIUS) * easedProximity * strength;
 };
 
+export const getCanvasDotIdleStrength = (idleDuration: number) => {
+    const shrinkProgress = Math.max(0, idleDuration - CANVAS_DOT_IDLE_DELAY_MS) / CANVAS_DOT_IDLE_SHRINK_MS;
+    return Math.max(0, 1 - shrinkProgress);
+};
+
 /**
  * Keeps the inexpensive CSS dot grid as the base layer and paints only the
  * magnified rings near the pointer. This makes animation cost independent of
@@ -83,6 +90,8 @@ const CanvasDotGrid: React.FC<CanvasDotGridProps> = ({ canvasOffset, canvasScale
         let height = 0;
         let devicePixelRatio = 1;
         let dotColor = '';
+        let idleTimer: number | null = null;
+        let lastPointerMoveAt = 0;
 
         const clearCanvas = () => {
             const context = canvas.getContext('2d');
@@ -122,6 +131,8 @@ const CanvasDotGrid: React.FC<CanvasDotGridProps> = ({ canvasOffset, canvasScale
             const target = targetPointerRef.current;
             const animated = animatedPointerRef.current;
             const positionProgress = 1 - Math.exp(-elapsed / 42);
+            const idleDuration = timestamp - lastPointerMoveAt;
+            const targetStrength = target.active ? getCanvasDotIdleStrength(idleDuration) : 0;
             const strengthProgress = 1 - Math.exp(-elapsed / (target.active ? 40 : 45));
 
             if (target.active && animated.strength === 0) {
@@ -131,7 +142,7 @@ const CanvasDotGrid: React.FC<CanvasDotGridProps> = ({ canvasOffset, canvasScale
                 animated.x += (target.x - animated.x) * positionProgress;
                 animated.y += (target.y - animated.y) * positionProgress;
             }
-            animated.strength += ((target.active ? 1 : 0) - animated.strength) * strengthProgress;
+            animated.strength += (targetStrength - animated.strength) * strengthProgress;
 
             context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
             context.clearRect(0, 0, width, height);
@@ -188,7 +199,10 @@ const CanvasDotGrid: React.FC<CanvasDotGridProps> = ({ canvasOffset, canvasScale
             }
 
             const pointerIsSettling = target.active
-                ? Math.abs(target.x - animated.x) > 0.1 || Math.abs(target.y - animated.y) > 0.1 || animated.strength < 0.99
+                ? Math.abs(target.x - animated.x) > 0.1
+                    || Math.abs(target.y - animated.y) > 0.1
+                    || Math.abs(targetStrength - animated.strength) > 0.01
+                    || (idleDuration >= CANVAS_DOT_IDLE_DELAY_MS && targetStrength > 0)
                 : animated.strength > 0.01;
             if (pointerIsSettling) scheduleDrawRef.current();
         };
@@ -202,11 +216,19 @@ const CanvasDotGrid: React.FC<CanvasDotGridProps> = ({ canvasOffset, canvasScale
             const bounds = viewport.getBoundingClientRect();
             const isInside = event.clientX >= bounds.left && event.clientX <= bounds.right
                 && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+            lastPointerMoveAt = performance.now();
             targetPointerRef.current = {
                 x: event.clientX - bounds.left,
                 y: event.clientY - bounds.top,
                 active: isInside,
             };
+            if (idleTimer !== null) window.clearTimeout(idleTimer);
+            idleTimer = targetPointerRef.current.active
+                ? window.setTimeout(() => {
+                    idleTimer = null;
+                    scheduleDraw();
+                }, CANVAS_DOT_IDLE_DELAY_MS)
+                : null;
             scheduleDraw();
         };
 
@@ -256,6 +278,7 @@ const CanvasDotGrid: React.FC<CanvasDotGridProps> = ({ canvasOffset, canvasScale
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             reducedMotionQuery.removeEventListener('change', updateMotionPreference);
             if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
+            if (idleTimer !== null) window.clearTimeout(idleTimer);
             frameRef.current = null;
             scheduleDrawRef.current = () => {};
         };

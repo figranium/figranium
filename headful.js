@@ -7,7 +7,7 @@ const { installPageTranslation } = require('./src/agent/translate');
 
 const SEVERE_PERFORMANCE_STYLE_ID = '__figranium_severe_stream_performance';
 const { Mutex } = require('./src/server/utils');
-const { loadSharedBrowserState, saveSharedBrowserState } = require('./browser-storage-state');
+const { getCookieState, updateCookieState, resolveCookieStateId } = require('./src/server/cookie-states');
 
 const headfulMutex = new Mutex();
 
@@ -49,28 +49,73 @@ async function rejectSiteCreatedPage(nextPage) {
     return true;
 }
 
+function navigateActiveSession(session, url) {
+    if (!url || !session?.page || session.page.isClosed()) return Promise.resolve('skipped');
+
+    session.navigationStatus = 'loading';
+    const navigation = session.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20_000 })
+        .then(() => {
+            if (activeSession === session) session.navigationStatus = 'complete';
+            return 'complete';
+        })
+        .catch((error) => {
+            if (activeSession === session) session.navigationStatus = 'failed';
+            if (!session.stopping) console.warn('[HEADFUL] Deferred navigation failed:', error.message);
+            return 'failed';
+        });
+    session.navigation = navigation;
+    return navigation;
+}
+
+async function monitorHeadfulSession(session) {
+    try {
+        if (session.browser) {
+            await new Promise((resolve) => session.browser.once('disconnected', resolve));
+        } else if (session.context) {
+            await new Promise((resolve) => session.context.once('close', resolve));
+        }
+    } finally {
+        if (session.interval) clearInterval(session.interval);
+        if (!session.stopping && session.context && session.cookieStateId) {
+            await updateCookieState(session.cookieStateId, await session.context.storageState({ indexedDB: true })).catch(() => {});
+        }
+        if (activeSession === session) activeSession = null;
+    }
+}
+
 const teardownActiveSession = async () => {
     if (!activeSession) return;
+    const session = activeSession;
+    session.stopping = true;
     try {
-        if (activeSession.interval) clearInterval(activeSession.interval);
+        if (session.interval) clearInterval(session.interval);
     } catch { }
-    if (activeSession.context && !activeSession.statelessExecution) {
-        await saveSharedBrowserState(activeSession.context);
+    if (session.context && session.cookieStateId) {
+        await updateCookieState(session.cookieStateId, await session.context.storageState({ indexedDB: true }));
     }
     try {
-        if (activeSession.browser) {
-            await activeSession.browser.close();
-        } else if (activeSession.context) {
-            await activeSession.context.close();
+        if (session.browser) {
+            await session.browser.close();
+        } else if (session.context) {
+            await session.context.close();
         }
     } catch { }
-    activeSession = null;
+    if (activeSession === session) activeSession = null;
 };
 
 async function runHeadful(data, options = {}) {
     const { res } = options;
     if (activeSession) {
-        const responseData = { message: 'Headful session already active.', reused: true };
+        if (data.url) {
+            await validateUrl(data.url);
+            navigateActiveSession(activeSession, data.url);
+        }
+        const responseData = {
+            message: 'Headful session already active.',
+            reused: true,
+            ready: true,
+            navigation: activeSession.navigationStatus || 'skipped'
+        };
         if (res && !res.headersSent) res.json(responseData);
         return activeSession;
     }
@@ -81,31 +126,31 @@ async function runHeadful(data, options = {}) {
 
     const rotateProxiesRaw = data.rotateProxies;
     const rotateProxies = String(rotateProxiesRaw).toLowerCase() === 'true' || rotateProxiesRaw === true;
-    const statelessExecutionRaw = data.statelessExecution;
-    const statelessExecution = parseBooleanFlag(statelessExecutionRaw);
-
     const inspectModeEnabled = !!(data.targetActionId);
 
-    activeSession = {
+    const startingSession = {
         status: 'starting',
         startedAt: Date.now(),
         inspectModeEnabled,
         inspectScopeSelector: null,
         inspectRevision: 0
     };
+    activeSession = startingSession;
 
     const selectedUA = await selectUserAgent(false);
 
     let browser;
     let context;
     let page;
+    let cookieStateId = resolveCookieStateId(data);
     let navigated = false;
 
     try {
         if (data.targetActionId && data.taskSnapshot) {
             const { runFigranite } = require('./src/agent/figranite');
             try {
-                const reqScope = { ...data.taskSnapshot, variables: data.variables || data.taskVariables || {}, statelessExecution: true, disableRecording: true };
+                const { statelessExecution: _legacyStatelessExecution, ...taskScope } = data.taskSnapshot;
+                const reqScope = { ...taskScope, variables: data.variables || data.taskVariables || {}, cookieStateId, disableRecording: true };
                 if (data.url) reqScope.url = data.url;
 
                 const result = await runFigranite(reqScope, {
@@ -165,10 +210,8 @@ async function runHeadful(data, options = {}) {
 
             const isHeadless = parseBooleanFlag(data.headless) || parseBooleanFlag(process.env.HEADLESS);
 
-            if (!statelessExecution) {
-                const storageState = await loadSharedBrowserState();
-                if (storageState) contextOptions.storageState = storageState;
-            }
+            const attachedCookieState = cookieStateId ? await getCookieState(String(cookieStateId)) : null;
+            if (attachedCookieState) contextOptions.storageState = attachedCookieState.state;
 
             // A persistent Chromium profile also restores tab/session and service-worker
             // state. Authenticated sites can consequently reopen background tabs, which
@@ -551,30 +594,30 @@ async function runHeadful(data, options = {}) {
         });
         attachPageTracking(page);
 
-        if (!navigated && url) {
-            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20_000 }).catch(() => { });
-        }
-
-        const syncInterval = statelessExecution ? null : setInterval(() => {
-            if (activeSession && activeSession.context) {
-                saveSharedBrowserState(activeSession.context).catch(() => {});
-            }
-        }, 30000);
-        activeSession = {
+        const session = {
             browser,
             context,
             page,
             status: 'running',
-            startedAt: activeSession.startedAt,
-            inspectModeEnabled: activeSession.inspectModeEnabled,
-            inspectScopeSelector: activeSession.inspectScopeSelector || null,
-            inspectRevision: Number(activeSession.inspectRevision) || 0,
-            statelessExecution,
+            startedAt: startingSession.startedAt,
+            inspectModeEnabled: startingSession.inspectModeEnabled,
+            inspectScopeSelector: startingSession.inspectScopeSelector || null,
+            inspectRevision: Number(startingSession.inspectRevision) || 0,
             viewerProfile: 'full',
-            interval: syncInterval
+            interval: null,
+            cookieStateId,
+            isolatedCookies: true,
+            navigationStatus: navigated ? 'complete' : (url ? 'loading' : 'skipped')
         };
+        const syncInterval = cookieStateId ? setInterval(() => {
+            if (activeSession === session && session.context && session.cookieStateId) {
+                updateCookieState(session.cookieStateId, session.context.storageState({ indexedDB: true })).catch(() => {});
+            }
+        }, 30000) : null;
+        session.interval = syncInterval;
+        activeSession = session;
 
-        const readyInMs = Date.now() - activeSession.startedAt;
+        const readyInMs = Date.now() - session.startedAt;
         console.info(`[HEADFUL] Session ready in ${readyInMs}ms.`);
 
         page.on('domcontentloaded', () => {
@@ -585,34 +628,28 @@ async function runHeadful(data, options = {}) {
 
         const responseData = {
             message: 'Headful session started.',
-            userAgentUsed: selectedUA
+            userAgentUsed: selectedUA,
+            ready: true,
+            navigation: session.navigationStatus
         };
 
-        if (res) {
+        if (res && !res.headersSent) {
             res.json(responseData);
         }
+
+        if (!navigated && url) navigateActiveSession(session, url);
 
         // Translation is optional presentation work. Register it after the session
         // is ready so a remote translation script never delays the live viewer.
         installPageTranslation(page, data.translation || data.taskSnapshot?.translation)
             .catch((error) => console.warn('[HEADFUL] Deferred translation setup failed:', error.message));
 
-        if (browser) {
-            await new Promise((resolve) => browser.once('disconnected', resolve));
-        } else {
-            // Persistent context: context.browser() returns null; wait for context close instead
-            await new Promise((resolve) => context.once('close', resolve));
-        }
-        if (syncInterval) clearInterval(syncInterval);
-        if (!statelessExecution && context) {
-            await saveSharedBrowserState(context).catch(() => {});
-        }
-        activeSession = null;
+        monitorHeadfulSession(session).catch((error) => console.warn('[HEADFUL] Session monitor failed:', error.message));
         return responseData;
     } catch (error) {
         if (browser) await browser.close();
         else if (context) await context.close().catch(() => {});
-        activeSession = null;
+        if (activeSession === startingSession) activeSession = null;
         throw error;
     }
 }
@@ -673,7 +710,8 @@ async function launchApiSession(data = {}) {
     if (activeSession) {
         // Reuse existing session
         if (data.url) {
-            try { await activeSession.page.goto(data.url).catch(() => {}); } catch (e) {}
+            await validateUrl(data.url);
+            navigateActiveSession(activeSession, data.url);
         }
         return activeSession;
     }

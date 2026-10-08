@@ -333,7 +333,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [x] **Cron triggers** — schedule Tasks with cron expressions.
 - [x] **Resizable canvas notes** — add and resize annotations alongside workflows.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/380" target="_blank">Page triggers</a>** — trigger a Task when a page changes in a specified way.
-- [ ] **<a href="https://github.com/figranium/figranium/issues/382" target="_blank">Task-dedicated browser state & cookie buckets</a>** — isolate or intentionally share persistent browser state between Tasks.
+- [x] **<a href="https://github.com/figranium/figranium/issues/382" target="_blank">Task-dedicated browser state & cookie buckets</a>** — isolate or intentionally share persistent browser state between Tasks.
 
 # Security Considerations
 

@@ -82,6 +82,13 @@ async function initDB() {
                 `);
                 await client.query('ALTER TABLE api_key ALTER COLUMN key TYPE TEXT');
                 await client.query(`
+                    CREATE TABLE IF NOT EXISTS api_keys (
+                        id VARCHAR(255) PRIMARY KEY,
+                        data JSONB NOT NULL,
+                        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                    );
+                `);
+                await client.query(`
                     CREATE TABLE IF NOT EXISTS credentials (
                         id SERIAL PRIMARY KEY,
                         data JSONB NOT NULL

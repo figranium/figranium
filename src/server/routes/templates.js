@@ -50,6 +50,12 @@ const loadCatalog = async () => {
     }
 };
 
+setImmediate(() => {
+    loadCatalog().catch((error) => {
+        console.warn('[templates] Catalog prewarm failed:', error?.message || error);
+    });
+});
+
 const toSummary = ({ configuration, readme, expected_output, ...preset }) => ({
     ...preset,
     action_count: Array.isArray(configuration?.actions)

@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth, requireApiKey, requireAuthOrApiKey, dataRateLimiter } = require('../middleware');
+const { requireAuth, requireApiKey, requireAuthOrApiKey, requireScopedPermission, dataRateLimiter } = require('../middleware');
 const {
     loadTasks, saveTasks, getTaskById, getTaskIndexById
 } = require('../storage');
@@ -11,10 +11,11 @@ const { clearStopRequest } = require('../../agent/execution-control');
 
 const router = express.Router();
 
-router.get('/', requireAuthOrApiKey, async (req, res) => {
+router.get('/', requireAuthOrApiKey, requireScopedPermission('tasks:read'), async (req, res) => {
     const tasks = await loadTasks();
     // ⚡ Bolt: Strip large versions history from the list view to reduce payload size by ~95%
-    const summary = tasks.map(({ versions, ...rest }) => rest);
+    const allowed = req.apiKey?.taskIds?.length ? tasks.filter(task => req.apiKey.taskIds.includes(String(task.id))) : tasks;
+    const summary = allowed.map(({ versions, ...rest }) => rest);
     res.json(summary);
 });
 
@@ -43,9 +44,9 @@ router.get('/:id/stream', requireAuth, (req, res) => {
     });
 });
 
-router.get('/list', requireApiKey, async (req, res) => {
+router.get('/list', requireApiKey, requireScopedPermission('tasks:read'), async (req, res) => {
     const tasks = await loadTasks();
-    const summary = tasks.map((task) => ({
+    const summary = tasks.filter(task => !req.apiKey?.taskIds?.length || req.apiKey.taskIds.includes(String(task.id))).map((task) => ({
         id: task.id,
         name: task.name || task.id,
         ...(task.description ? { description: task.description } : {})
@@ -53,11 +54,16 @@ router.get('/list', requireApiKey, async (req, res) => {
     res.json({ tasks: summary });
 });
 
-router.post('/', requireAuthOrApiKey, async (req, res) => {
+router.post('/', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), async (req, res) => {
     await taskMutex.lock();
     try {
         const tasks = await loadTasks();
         const newTask = req.body;
+        const legacyStatelessExecution = newTask.statelessExecution === true
+            || String(newTask.statelessExecution).toLowerCase() === 'true'
+            || String(newTask.statelessExecution) === '1';
+        delete newTask.statelessExecution;
+        if (legacyStatelessExecution) newTask.cookieStateId = null;
         const isExplicitUpdate = req.query.update === 'true';
         if (!newTask.id) newTask.id = 'task_' + Date.now();
 
@@ -80,6 +86,7 @@ router.post('/', requireAuthOrApiKey, async (req, res) => {
             }
             tasks[index] = newTask;
         } else {
+            if (!Object.prototype.hasOwnProperty.call(newTask, 'cookieStateId')) newTask.cookieStateId = require('../cookie-states').DEFAULT_COOKIE_STATE_ID;
             newTask.versions = [];
             tasks.push(newTask);
         }
@@ -111,7 +118,7 @@ router.post('/:id/touch', requireAuth, async (req, res) => {
  * Partial update of a task (name, mode, actions, etc.). Creates a version
  * snapshot before modifying. Returns the modified task.
  */
-router.patch('/:id', requireAuthOrApiKey, async (req, res) => {
+router.patch('/:id', requireAuthOrApiKey, requireScopedPermission('tasks:manage', { taskParam: 'id' }), async (req, res) => {
     await taskMutex.lock();
     try {
         const tasks = await loadTasks();
@@ -148,7 +155,7 @@ router.patch('/:id', requireAuthOrApiKey, async (req, res) => {
     }
 });
 
-router.delete('/:id', requireAuthOrApiKey, async (req, res) => {
+router.delete('/:id', requireAuthOrApiKey, requireScopedPermission('tasks:manage', { taskParam: 'id' }), async (req, res) => {
     await taskMutex.lock();
     try {
         const taskId = req.params.id;
@@ -286,7 +293,7 @@ router.post('/test-action', requireAuth, dataRateLimiter, concurrencyGate, async
         variables: runtimeVariables,
         runId: testRunId,
         runSource: 'block-test',
-        statelessExecution: true,
+        cookieStateId: null,
         disableRecording: true,
     };
 
