@@ -162,7 +162,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.detail || result.error || 'Provisioning failed');
-                onUpdateTask({ output: { ...currentTask.output, databaseId: result.databaseId, tableId: result.tableId } });
+                onUpdateTask({ output: { ...currentTask.output, databaseId: result.databaseId, tableId: result.tableId, dedicated: true } });
                 await fetchDatabases(currentTask.output.credentialId);
                 await fetchTables(currentTask.output.credentialId, result.databaseId);
             } catch (error) {
