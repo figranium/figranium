@@ -77,6 +77,7 @@ Figranium is proudly supported by:
       <td align="center" valign="middle" width="150"><a href="https://www.mintlify.com" target="_blank"><img src="partner-assets/mintlify.svg" width="110" alt="Mintlify"></a></td>
       <td align="center" valign="middle" width="150"><a href="https://neon.com" target="_blank"><img src="partner-assets/neon.png" width="106" alt="Neon"></a></td>
       <td align="center" valign="middle" width="150"><a href="https://www.algolia.com" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Algolia_logo_full_blue.svg/1920px-Algolia_logo_full_blue.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail&_=20221025105233" width="110" alt="Algolia"></a></td>
+      <td align="center" valign="middle" width="150"><a href="https://1password.com" target="_blank"><img src="https://cdn.simpleicons.org/1password/0572EC" width="110" alt="1Password"></a></td>
       <td align="center" valign="middle" width="170"><a href="https://www.digitalocean.com/?utm_medium=opensource&utm_source=Figranium" target="_blank"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" width="150" alt="DigitalOcean"></a></td>
     </tr>
   </table>
