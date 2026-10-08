@@ -71,11 +71,10 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const [newCred, setNewCred] = React.useState({ name: '', baseUrl: 'https://api.baserow.io', token: '' });
         const [showNewCredForm, setShowNewCredForm] = React.useState(false);
         const [credSaving, setCredSaving] = React.useState(false);
-        const [databases, setDatabases] = React.useState<{ id: string; name: string; workspaceName: string }[]>([]);
-        const [tables, setTables] = React.useState<{ id: string; name: string }[]>([]);
-        const [dbLoading, setDbLoading] = React.useState(false);
-        const [tableLoading, setTableLoading] = React.useState(false);
-        const [browseSupported, setBrowseSupported] = React.useState(true);
+        const [workspaces, setWorkspaces] = React.useState<{ id: string; name: string }[]>([]);
+        const [workspaceId, setWorkspaceId] = React.useState('');
+        const [provisioning, setProvisioning] = React.useState(false);
+        const [provisionError, setProvisionError] = React.useState('');
         const [versionContextMenu, setVersionContextMenu] = React.useState<{ id: string; x: number; y: number } | null>(null);
         const [cabinets, setCabinets] = React.useState<{ id: string; name: string; isDefault?: boolean }[]>([]);
         const [cookieStates, setCookieStates] = React.useState<{ id: string; name: string; cookies: number }[]>([]);
@@ -111,51 +110,33 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
             fetch('/api/cabinets').then(r => r.ok ? r.json() : null).then(data => setCabinets(data?.cabinets || [])).catch(() => setCabinets([]));
         }, [isOpen, activeTab]);
 
-        const fetchDatabases = React.useCallback(async (credentialId: string) => {
-            if (!credentialId) { setDatabases([]); setTables([]); setBrowseSupported(true); return; }
-            setDbLoading(true);
-            setBrowseSupported(true);
-            try {
-                const res = await fetch(`/api/credentials/${credentialId}/proxy/baserow/databases`);
-                if (res.ok) {
-                    const dbs = await res.json();
-                    setDatabases(dbs);
-                    setBrowseSupported(true);
-                } else {
-                    setDatabases([]);
-                    setBrowseSupported(false);
-                }
-            } catch { setDatabases([]); setBrowseSupported(false); } finally { setDbLoading(false); }
-        }, []);
-
-        const fetchTables = React.useCallback(async (credentialId: string, databaseId: string) => {
-            if (!credentialId || !databaseId) { setTables([]); return; }
-            setTableLoading(true);
-            try {
-                const res = await fetch(`/api/credentials/${credentialId}/proxy/baserow/databases/${databaseId}/tables`);
-                if (res.ok) setTables(await res.json());
-                else setTables([]);
-            } catch { setTables([]); } finally { setTableLoading(false); }
-        }, []);
-
-        // Auto-load databases when credential changes
         React.useEffect(() => {
-            if (currentTask.output?.credentialId) {
-                fetchDatabases(currentTask.output.credentialId);
-            } else {
-                setDatabases([]);
-                setTables([]);
-            }
-        }, [currentTask.output?.credentialId, fetchDatabases]);
+            const credentialId = currentTask.output?.credentialId;
+            if (!credentialId || !isOpen || activeTab !== 'output') return;
+            fetch(`/api/credentials/${credentialId}/proxy/baserow/workspaces`)
+                .then(async r => r.ok ? r.json() : [])
+                .then(setWorkspaces).catch(() => setWorkspaces([]));
+        }, [currentTask.output?.credentialId, isOpen, activeTab]);
 
-        // Auto-load tables when database changes
-        React.useEffect(() => {
-            if (currentTask.output?.credentialId && currentTask.output?.databaseId) {
-                fetchTables(currentTask.output.credentialId, currentTask.output.databaseId);
-            } else {
-                setTables([]);
+        const provisionDestination = async () => {
+            if (!currentTask.id || !currentTask.output?.credentialId || !workspaceId || provisioning) return;
+            setProvisioning(true);
+            setProvisionError('');
+            try {
+                const response = await fetch(`/api/credentials/${currentTask.output.credentialId}/proxy/baserow/provision`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workspaceId, taskId: currentTask.id, taskName: currentTask.name })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.detail || result.error || 'Provisioning failed');
+                onUpdateTask({ output: { ...currentTask.output, databaseId: result.databaseId, tableId: result.tableId, dedicated: true } });
+            } catch (error) {
+                setProvisionError(error instanceof Error ? error.message : 'Provisioning failed');
+            } finally {
+                setProvisioning(false);
             }
-        }, [currentTask.output?.databaseId, currentTask.output?.credentialId, fetchTables]);
+        };
 
         const saveNewCredential = async () => {
             if (!newCred.name || !newCred.token) return;
@@ -593,52 +574,20 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                         )}
                                     </div>
 
-                                    {currentTask.output.credentialId && browseSupported && (
-                                        <>
-                                            {/* Database picker */}
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Database</label>
-                                                    {dbLoading && <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
-                                                </div>
-                                                <CustomSelect
-                                                    value={currentTask.output.databaseId || ''}
-                                                    onChange={(databaseId) => onUpdateTask({ output: { ...currentTask.output as TaskOutput, databaseId, tableId: '' } })}
-                                                    options={[{ value: '', label: 'Select database…' }, ...databases.map((database) => ({ value: database.id, label: database.name }))]}
-                                                    disabled={dbLoading}
-                                                    ariaLabel="Output database"
-                                                />
-                                            </div>
-
-                                            {/* Table picker */}
-                                            {currentTask.output.databaseId && (
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Table</label>
-                                                        {tableLoading && <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
-                                                    </div>
-                                                    <CustomSelect
-                                                        value={currentTask.output.tableId}
-                                                        onChange={(tableId) => onUpdateTask({ output: { ...currentTask.output as TaskOutput, tableId } })}
-                                                        options={[{ value: '', label: 'Select table…' }, ...tables.map((table) => ({ value: table.id, label: table.name }))]}
-                                                        disabled={tableLoading}
-                                                        ariaLabel="Output table"
-                                                    />
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {currentTask.output.credentialId && !browseSupported && (
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Table ID</label>
-                                            <input
-                                                className="w-full bg-[var(--app-input)] border border-[var(--app-border)] rounded-lg px-3 py-2 text-xs text-[var(--app-text)] placeholder-[var(--app-text-faint)] focus:outline-none focus:border-[var(--app-border-strong)]"
-                                                placeholder="e.g. 1234"
-                                                value={currentTask.output.tableId}
-                                                onChange={e => onUpdateTask({ output: { ...currentTask.output as TaskOutput, tableId: e.target.value } })}
-                                            />
-                                            <p className="text-xs text-[var(--app-text-faint)]">Your token doesn't support browsing. Use a <span className="text-[var(--app-text-muted)]">Personal API Token</span> for dropdowns, or enter the Table ID from the Baserow URL.</p>
+                                    {currentTask.output.credentialId && (
+                                        <div className="space-y-2 rounded-xl border border-[var(--app-border)] p-3">
+                                            <p className="text-xs font-medium text-[var(--app-text)]">Dedicated Baserow destination</p>
+                                            <p className="text-xs text-[var(--app-text-muted)]">Create a separate database and Results table for this task. Existing tables cannot be selected. Requires a Baserow token with workspace creation permissions.</p>
+                                            <CustomSelect value={workspaceId} onChange={setWorkspaceId}
+                                                options={[{ value: '', label: 'Choose workspace…' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
+                                                ariaLabel="Baserow workspace" />
+                                            <button type="button" disabled={!workspaceId || !currentTask.id || provisioning}
+                                                onClick={provisionDestination}
+                                                className="rounded-lg bg-[var(--app-accent)] px-3 py-2 text-xs font-bold text-[var(--app-accent-text)] disabled:opacity-40">
+                                                {provisioning ? 'Creating…' : 'Create dedicated database and table'}
+                                            </button>
+                                            {provisionError && <p role="alert" className="text-xs text-red-400">{provisionError}</p>}
+                                            {currentTask.output.tableId && <p className="text-xs text-[var(--app-text-muted)]">Current table: {currentTask.output.tableId}</p>}
                                         </div>
                                     )}
 

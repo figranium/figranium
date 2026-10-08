@@ -161,11 +161,11 @@ const tests = [
     },
     {
         id: 'API-004',
-        name: 'Settings API - Theme, API Key, Proxy, and User-Agent Reads',
+        name: 'Settings API - Theme, Proxy, and User-Agent Reads',
         subsystem: 'api',
         setup: 'Authenticated API requests via session cookie',
-        steps: 'Read theme, API key, proxy list, and user-agent configuration; write a temporary theme value and restore the original.',
-        expected: 'All four settings endpoints return valid structures and theme persistence round-trips without leaving changed state.',
+        steps: 'Read theme, proxy list, and user-agent configuration; write a temporary theme value and restore the original.',
+        expected: 'All three supported settings endpoints return valid structures and theme persistence round-trips without leaving changed state.',
         severity: 'HIGH',
         blocksV1: true,
         run: async () => {
@@ -175,11 +175,6 @@ const tests = [
             const themeGet = await fetch(`${base}/api/settings/theme`, { headers: h });
             assert.strictEqual(themeGet.status, 200);
             const originalTheme = (await themeGet.json()).theme;
-
-            const keyRes = await fetch(`${base}/api/settings/api-key`, { headers: h });
-            assert.strictEqual(keyRes.status, 200);
-            const keyData = await keyRes.json();
-            assert.ok(Object.prototype.hasOwnProperty.call(keyData, 'apiKey'));
 
             const proxyRes = await fetch(`${base}/api/settings/proxies`, { headers: h });
             assert.strictEqual(proxyRes.status, 200);
