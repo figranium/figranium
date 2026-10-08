@@ -165,6 +165,60 @@ router.get('/:id/proxy/baserow/databases/:dbId/tables', requireAuthOrApiKey, asy
     }
 });
 
+
+async function baserowRequest(credential, path, options = {}) {
+    const { baseUrl, token } = credential.config;
+    await validateUrl(baseUrl);
+    const response = await fetchWithRedirectValidation(`${baseUrl}${path}`, {
+        ...options,
+        headers: { Authorization: `Token ${token}`, 'Content-Type': 'application/json', ...options.headers }
+    });
+    if (!response.ok) throw new Error(`Baserow returned HTTP ${response.status}`);
+    return response.json();
+}
+
+// Workspace access and application creation require a Baserow user token with
+// appropriate workspace permissions; database-only tokens cannot provision.
+router.get('/:id/proxy/baserow/workspaces', requireAuthOrApiKey, async (req, res) => {
+    try {
+        const credential = (await loadCredentials()).find(c => c.id === req.params.id && c.provider === 'baserow');
+        if (!credential) return res.status(404).json({ error: 'CREDENTIAL_NOT_FOUND' });
+        const data = await baserowRequest(credential, '/api/workspaces/');
+        res.json((Array.isArray(data) ? data : []).map(w => ({ id: String(w.id), name: w.name })));
+    } catch (err) {
+        res.status(502).json({ error: 'BASEROW_WORKSPACES_FAILED', detail: err.message });
+    }
+});
+
+router.post('/:id/proxy/baserow/provision', requireAuthOrApiKey, async (req, res) => {
+    const { workspaceId, taskId, taskName } = req.body || {};
+    if (!/^\\d+$/.test(String(workspaceId || '')) || !/^[a-zA-Z0-9_-]{1,128}$/.test(String(taskId || ''))) {
+        return res.status(400).json({ error: 'INVALID_PROVISION_REQUEST' });
+    }
+    try {
+        const credential = (await loadCredentials()).find(c => c.id === req.params.id && c.provider === 'baserow');
+        if (!credential) return res.status(404).json({ error: 'CREDENTIAL_NOT_FOUND' });
+        const name = String(taskName || 'Task').trim().slice(0, 80);
+        const database = await baserowRequest(credential, '/api/applications/', {
+            method: 'POST',
+            body: JSON.stringify({ name: `Figranium - ${name} - ${taskId}`, type: 'database', workspace: Number(workspaceId) })
+        });
+        if (!Number.isSafeInteger(database.id)) throw new Error('Baserow did not return a database ID');
+        try {
+            const table = await baserowRequest(credential, `/api/database/tables/database/${database.id}/`, {
+                method: 'POST',
+                body: JSON.stringify({ name: 'Results' })
+            });
+            if (!Number.isSafeInteger(table.id)) throw new Error('Baserow did not return a table ID');
+            return res.json({ databaseId: String(database.id), tableId: String(table.id) });
+        } catch (err) {
+            return res.status(502).json({ error: 'BASEROW_TABLE_CREATION_FAILED', detail: err.message, databaseId: String(database.id) });
+        }
+    } catch (err) {
+        res.status(502).json({ error: 'BASEROW_PROVISION_FAILED', detail: err.message });
+    }
+});
+
 // DELETE /api/credentials/:id
 router.delete('/:id', requireAuthOrApiKey, async (req, res) => {
     try {
