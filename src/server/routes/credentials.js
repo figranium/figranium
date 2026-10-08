@@ -1,6 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
-const { requireAuthOrApiKey } = require('../middleware');
+const { requireAuthOrApiKey, dataRateLimiter } = require('../middleware');
 const { loadCredentials, saveCredentials } = require('../storage');
 const { validateUrl, fetchWithRedirectValidation } = require('../../../url-utils');
 
@@ -179,7 +179,7 @@ async function baserowRequest(credential, path, options = {}) {
 
 // Workspace access and application creation require a Baserow user token with
 // appropriate workspace permissions; database-only tokens cannot provision.
-router.get('/:id/proxy/baserow/workspaces', requireAuthOrApiKey, async (req, res) => {
+router.get('/:id/proxy/baserow/workspaces', requireAuthOrApiKey, dataRateLimiter, async (req, res) => {
     try {
         const credential = (await loadCredentials()).find(c => c.id === req.params.id && c.provider === 'baserow');
         if (!credential) return res.status(404).json({ error: 'CREDENTIAL_NOT_FOUND' });
@@ -190,7 +190,7 @@ router.get('/:id/proxy/baserow/workspaces', requireAuthOrApiKey, async (req, res
     }
 });
 
-router.post('/:id/proxy/baserow/provision', requireAuthOrApiKey, async (req, res) => {
+router.post('/:id/proxy/baserow/provision', requireAuthOrApiKey, dataRateLimiter, async (req, res) => {
     const { workspaceId, taskId, taskName } = req.body || {};
     if (!/^\\d+$/.test(String(workspaceId || '')) || !/^[a-zA-Z0-9_-]{1,128}$/.test(String(taskId || ''))) {
         return res.status(400).json({ error: 'INVALID_PROVISION_REQUEST' });
