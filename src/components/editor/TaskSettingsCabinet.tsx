@@ -75,6 +75,10 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const [tables, setTables] = React.useState<{ id: string; name: string }[]>([]);
         const [dbLoading, setDbLoading] = React.useState(false);
         const [tableLoading, setTableLoading] = React.useState(false);
+        const [workspaces, setWorkspaces] = React.useState<{ id: string; name: string }[]>([]);
+        const [workspaceId, setWorkspaceId] = React.useState('');
+        const [provisioning, setProvisioning] = React.useState(false);
+        const [provisionError, setProvisionError] = React.useState('');
         const [browseSupported, setBrowseSupported] = React.useState(true);
         const [versionContextMenu, setVersionContextMenu] = React.useState<{ id: string; x: number; y: number } | null>(null);
         const [cabinets, setCabinets] = React.useState<{ id: string; name: string; isDefault?: boolean }[]>([]);
@@ -137,6 +141,36 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                 else setTables([]);
             } catch { setTables([]); } finally { setTableLoading(false); }
         }, []);
+
+        React.useEffect(() => {
+            const credentialId = currentTask.output?.credentialId;
+            if (!credentialId || !isOpen || activeTab !== 'output') return;
+            fetch(`/api/credentials/${credentialId}/proxy/baserow/workspaces`)
+                .then(async r => r.ok ? r.json() : [])
+                .then(setWorkspaces).catch(() => setWorkspaces([]));
+        }, [currentTask.output?.credentialId, isOpen, activeTab]);
+
+        const provisionDestination = async () => {
+            if (!currentTask.id || !currentTask.output?.credentialId || !workspaceId || provisioning) return;
+            setProvisioning(true);
+            setProvisionError('');
+            try {
+                const response = await fetch(`/api/credentials/${currentTask.output.credentialId}/proxy/baserow/provision`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workspaceId, taskId: currentTask.id, taskName: currentTask.name })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.detail || result.error || 'Provisioning failed');
+                onUpdateTask({ output: { ...currentTask.output, databaseId: result.databaseId, tableId: result.tableId } });
+                await fetchDatabases(currentTask.output.credentialId);
+                await fetchTables(currentTask.output.credentialId, result.databaseId);
+            } catch (error) {
+                setProvisionError(error instanceof Error ? error.message : 'Provisioning failed');
+            } finally {
+                setProvisioning(false);
+            }
+        };
 
         // Auto-load databases when credential changes
         React.useEffect(() => {
@@ -592,6 +626,23 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                             </div>
                                         )}
                                     </div>
+
+                                    {currentTask.output.credentialId && (
+                                        <div className="space-y-2 rounded-xl border border-[var(--app-border)] p-3">
+                                            <p className="text-xs font-medium text-[var(--app-text)]">Dedicated Baserow destination</p>
+                                            <p className="text-xs text-[var(--app-text-muted)]">Create a separate database and Results table for this task. Requires a Baserow token with workspace creation permissions.</p>
+                                            <CustomSelect value={workspaceId} onChange={setWorkspaceId}
+                                                options={[{ value: '', label: 'Choose workspace…' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
+                                                ariaLabel="Baserow workspace" />
+                                            <button type="button" disabled={!workspaceId || !currentTask.id || provisioning}
+                                                onClick={provisionDestination}
+                                                className="rounded-lg bg-[var(--app-accent)] px-3 py-2 text-xs font-bold text-[var(--app-accent-text)] disabled:opacity-40">
+                                                {provisioning ? 'Creating…' : 'Create dedicated database and table'}
+                                            </button>
+                                            {provisionError && <p role="alert" className="text-xs text-red-400">{provisionError}</p>}
+                                            {currentTask.output.tableId && <p className="text-xs text-[var(--app-text-muted)]">Current table: {currentTask.output.tableId}</p>}
+                                        </div>
+                                    )}
 
                                     {currentTask.output.credentialId && browseSupported && (
                                         <>
