@@ -71,15 +71,10 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const [newCred, setNewCred] = React.useState({ name: '', baseUrl: 'https://api.baserow.io', token: '' });
         const [showNewCredForm, setShowNewCredForm] = React.useState(false);
         const [credSaving, setCredSaving] = React.useState(false);
-        const [databases, setDatabases] = React.useState<{ id: string; name: string; workspaceName: string }[]>([]);
-        const [tables, setTables] = React.useState<{ id: string; name: string }[]>([]);
-        const [dbLoading, setDbLoading] = React.useState(false);
-        const [tableLoading, setTableLoading] = React.useState(false);
         const [workspaces, setWorkspaces] = React.useState<{ id: string; name: string }[]>([]);
         const [workspaceId, setWorkspaceId] = React.useState('');
         const [provisioning, setProvisioning] = React.useState(false);
         const [provisionError, setProvisionError] = React.useState('');
-        const [browseSupported, setBrowseSupported] = React.useState(true);
         const [versionContextMenu, setVersionContextMenu] = React.useState<{ id: string; x: number; y: number } | null>(null);
         const [cabinets, setCabinets] = React.useState<{ id: string; name: string; isDefault?: boolean }[]>([]);
         const [cookieStates, setCookieStates] = React.useState<{ id: string; name: string; cookies: number }[]>([]);
@@ -115,33 +110,6 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
             fetch('/api/cabinets').then(r => r.ok ? r.json() : null).then(data => setCabinets(data?.cabinets || [])).catch(() => setCabinets([]));
         }, [isOpen, activeTab]);
 
-        const fetchDatabases = React.useCallback(async (credentialId: string) => {
-            if (!credentialId) { setDatabases([]); setTables([]); setBrowseSupported(true); return; }
-            setDbLoading(true);
-            setBrowseSupported(true);
-            try {
-                const res = await fetch(`/api/credentials/${credentialId}/proxy/baserow/databases`);
-                if (res.ok) {
-                    const dbs = await res.json();
-                    setDatabases(dbs);
-                    setBrowseSupported(true);
-                } else {
-                    setDatabases([]);
-                    setBrowseSupported(false);
-                }
-            } catch { setDatabases([]); setBrowseSupported(false); } finally { setDbLoading(false); }
-        }, []);
-
-        const fetchTables = React.useCallback(async (credentialId: string, databaseId: string) => {
-            if (!credentialId || !databaseId) { setTables([]); return; }
-            setTableLoading(true);
-            try {
-                const res = await fetch(`/api/credentials/${credentialId}/proxy/baserow/databases/${databaseId}/tables`);
-                if (res.ok) setTables(await res.json());
-                else setTables([]);
-            } catch { setTables([]); } finally { setTableLoading(false); }
-        }, []);
-
         React.useEffect(() => {
             const credentialId = currentTask.output?.credentialId;
             if (!credentialId || !isOpen || activeTab !== 'output') return;
@@ -163,33 +131,12 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.detail || result.error || 'Provisioning failed');
                 onUpdateTask({ output: { ...currentTask.output, databaseId: result.databaseId, tableId: result.tableId, dedicated: true } });
-                await fetchDatabases(currentTask.output.credentialId);
-                await fetchTables(currentTask.output.credentialId, result.databaseId);
             } catch (error) {
                 setProvisionError(error instanceof Error ? error.message : 'Provisioning failed');
             } finally {
                 setProvisioning(false);
             }
         };
-
-        // Auto-load databases when credential changes
-        React.useEffect(() => {
-            if (currentTask.output?.credentialId) {
-                fetchDatabases(currentTask.output.credentialId);
-            } else {
-                setDatabases([]);
-                setTables([]);
-            }
-        }, [currentTask.output?.credentialId, fetchDatabases]);
-
-        // Auto-load tables when database changes
-        React.useEffect(() => {
-            if (currentTask.output?.credentialId && currentTask.output?.databaseId) {
-                fetchTables(currentTask.output.credentialId, currentTask.output.databaseId);
-            } else {
-                setTables([]);
-            }
-        }, [currentTask.output?.databaseId, currentTask.output?.credentialId, fetchTables]);
 
         const saveNewCredential = async () => {
             if (!newCred.name || !newCred.token) return;
