@@ -12,6 +12,9 @@ const { fetchWithRedirectValidation } = require('../../../url-utils');
 async function push(credential, output, data) {
     const { baseUrl, token } = credential.config;
     const { tableId } = output;
+    if (!output.dedicated || !output.databaseId || !/^\d+$/.test(String(tableId))) {
+        throw new Error('Baserow output requires a dedicated provisioned database and table');
+    }
 
     if (!data || (typeof data !== 'object' && typeof data !== 'string')) {
         throw new Error('No data to push');
