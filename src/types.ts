@@ -16,6 +16,7 @@ export interface TaskOutput {
     credentialId: string;
     databaseId?: string;
     tableId: string;
+    dedicated?: boolean;
     onError: 'fail' | 'ignore';
 }
 export type ViewMode = 'visual' | 'json' | 'api' | 'history';
