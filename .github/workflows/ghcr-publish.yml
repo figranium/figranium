@@ -2,7 +2,7 @@ name: Publish Docker Image
 
 on:
   push:
-    branches: ['main', 'beta']
+    branches: ['main']
     tags: ['v*']
   workflow_dispatch:
 
@@ -62,12 +62,12 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=raw,value=beta,enable=${{ github.ref == 'refs/heads/beta' }}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
+            type=raw,value=edge,enable=${{ github.ref == 'refs/heads/main' }}
             type=ref,event=tag
-            type=semver,pattern={{version}}
+            type=semver,pattern={{version}},enable=${{ github.ref_type == 'tag' && !contains(github.ref_name, '-') }}
             # Any other branch (e.g. manual workflow_dispatch runs): tag by branch name
-            type=ref,event=branch,enable=${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/beta' }}
+            type=ref,event=branch,enable=${{ github.ref_type == 'branch' && github.ref != 'refs/heads/main' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
