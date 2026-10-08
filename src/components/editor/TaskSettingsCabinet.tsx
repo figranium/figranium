@@ -630,7 +630,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     {currentTask.output.credentialId && (
                                         <div className="space-y-2 rounded-xl border border-[var(--app-border)] p-3">
                                             <p className="text-xs font-medium text-[var(--app-text)]">Dedicated Baserow destination</p>
-                                            <p className="text-xs text-[var(--app-text-muted)]">Create a separate database and Results table for this task. Requires a Baserow token with workspace creation permissions.</p>
+                                            <p className="text-xs text-[var(--app-text-muted)]">Create a separate database and Results table for this task. Existing tables cannot be selected. Requires a Baserow token with workspace creation permissions.</p>
                                             <CustomSelect value={workspaceId} onChange={setWorkspaceId}
                                                 options={[{ value: '', label: 'Choose workspace…' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
                                                 ariaLabel="Baserow workspace" />
@@ -641,55 +641,6 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                             </button>
                                             {provisionError && <p role="alert" className="text-xs text-red-400">{provisionError}</p>}
                                             {currentTask.output.tableId && <p className="text-xs text-[var(--app-text-muted)]">Current table: {currentTask.output.tableId}</p>}
-                                        </div>
-                                    )}
-
-                                    {currentTask.output.credentialId && browseSupported && (
-                                        <>
-                                            {/* Database picker */}
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Database</label>
-                                                    {dbLoading && <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
-                                                </div>
-                                                <CustomSelect
-                                                    value={currentTask.output.databaseId || ''}
-                                                    onChange={(databaseId) => onUpdateTask({ output: { ...currentTask.output as TaskOutput, databaseId, tableId: '' } })}
-                                                    options={[{ value: '', label: 'Select database…' }, ...databases.map((database) => ({ value: database.id, label: database.name }))]}
-                                                    disabled={dbLoading}
-                                                    ariaLabel="Output database"
-                                                />
-                                            </div>
-
-                                            {/* Table picker */}
-                                            {currentTask.output.databaseId && (
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Table</label>
-                                                        {tableLoading && <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />}
-                                                    </div>
-                                                    <CustomSelect
-                                                        value={currentTask.output.tableId}
-                                                        onChange={(tableId) => onUpdateTask({ output: { ...currentTask.output as TaskOutput, tableId } })}
-                                                        options={[{ value: '', label: 'Select table…' }, ...tables.map((table) => ({ value: table.id, label: table.name }))]}
-                                                        disabled={tableLoading}
-                                                        ariaLabel="Output table"
-                                                    />
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-
-                                    {currentTask.output.credentialId && !browseSupported && (
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Table ID</label>
-                                            <input
-                                                className="w-full bg-[var(--app-input)] border border-[var(--app-border)] rounded-lg px-3 py-2 text-xs text-[var(--app-text)] placeholder-[var(--app-text-faint)] focus:outline-none focus:border-[var(--app-border-strong)]"
-                                                placeholder="e.g. 1234"
-                                                value={currentTask.output.tableId}
-                                                onChange={e => onUpdateTask({ output: { ...currentTask.output as TaskOutput, tableId: e.target.value } })}
-                                            />
-                                            <p className="text-xs text-[var(--app-text-faint)]">Your token doesn't support browsing. Use a <span className="text-[var(--app-text-muted)]">Personal API Token</span> for dropdowns, or enter the Table ID from the Baserow URL.</p>
                                         </div>
                                     )}
 
