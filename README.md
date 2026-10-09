@@ -303,8 +303,8 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [x] **Unified execution history** — review results, screenshots, and recordings through Executions rather than a duplicate Captures page.
 - [x] **IP rotation tooling** — import proxies and automatically rotate them.
 - [x] **API key workflow** — manage API access without extra setup.
-- [ ] **<a href="https://github.com/figranium/figranium/issues/405" target="_blank">Scoped API keys</a>** — support multiple individually revocable API keys with explicit permissions.
-- [ ] **<a href="https://github.com/figranium/figranium/issues/406" target="_blank">Password manager & credential injector</a>** — securely store credentials and inject them into browser Tasks at runtime.
+- [x] **<a href="https://github.com/figranium/figranium/issues/405" target="_blank">Scoped API keys</a>** — support multiple individually revocable API keys with explicit permissions.
+- [x] **<a href="https://github.com/figranium/figranium/issues/406" target="_blank">Password manager & credential injector</a>** — securely store credentials and inject them into browser Tasks at runtime.
 - [x] **Task proxy rotation toggle** — enable rotation per Task execution.
 - [x] **Spatial editor transition** — spatial block-based Task editor.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/366" target="_blank">Action key combos</a>** — add modifier shortcuts for browser interactions.
@@ -317,7 +317,6 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [x] **Extraction response mode** — choose between HTML+data and data-only API responses.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/369" target="_blank">Folder organization</a>** — organize Tasks and assets into named folders.
 - [x] **Configurable capture and execution retention** — set retention in Advanced Settings, with automatic cleanup.
-- [ ] **<a href="https://github.com/figranium/figranium/issues/370" target="_blank">Capture pinning and archiving</a>** — further organization beyond configurable retention.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/371" target="_blank">Workspace templates</a>** — reusable workspace presets.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/372" target="_blank">Geo-targeted exits</a>** — choose proxy regions for Tasks.
 - [x] **Complete anti-detection coverage** — anti-detection controls across browser executions.
