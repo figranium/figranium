@@ -673,6 +673,17 @@ app.use(dataRateLimiter, (req, res, next) => {
     return res.sendFile(path.join(DIST_DIR, 'index.html'));
 });
 
+// API consumers must receive structured errors even when storage middleware fails.
+app.use((err, req, res, next) => {
+    if (res.headersSent) return next(err);
+    console.error('[HTTP] Unhandled request error:', err);
+    const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 600 ? err.status : 500;
+    if (req.path.startsWith('/api/') || req.path.startsWith('/tasks/')) {
+        return res.status(status).json({ error: status === 500 ? 'INTERNAL_SERVER_ERROR' : (err.code || 'REQUEST_FAILED') });
+    }
+    return res.status(status).send(status === 500 ? 'Internal Server Error' : 'Request failed');
+});
+
 // Start Server
 findAvailablePort(port, 20)
     .then((availablePort) => {

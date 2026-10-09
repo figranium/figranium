@@ -252,7 +252,7 @@ async function loadTasks() {
         if (tasksCache && (now - tasksLastCheck < STORAGE_CACHE_TTL)) return tasksCache;
 
         if (tasksLoadPromise) {
-            return await tasksLoadPromise;
+            try { return await tasksLoadPromise; } finally { tasksLoadPromise = null; }
         }
 
         tasksLoadPromise = (async () => {
@@ -268,14 +268,12 @@ async function loadTasks() {
                 if (changed) saveTasks(migrated).catch(e => console.error('[MIGRATE] Failed to save migrated tasks:', e));
             } catch (e) {
                 console.error('[STORAGE] loadTasks DB error:', e.message);
-                tasksCache = tasksCache || [];
-                syncTasksMap();
+                throw e;
             }
-            tasksLoadPromise = null;
             return tasksCache;
         })();
 
-        return await tasksLoadPromise;
+        try { return await tasksLoadPromise; } finally { tasksLoadPromise = null; }
     }
 
     if (tasksCache && (now - tasksLastCheck < STORAGE_CACHE_TTL)) {
@@ -285,7 +283,8 @@ async function loadTasks() {
     let stat;
     try {
         stat = await fs.promises.stat(TASKS_FILE);
-    } catch {
+    } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
         tasksCache = [];
         tasksMtime = 0;
         return [];
@@ -297,7 +296,7 @@ async function loadTasks() {
     }
 
     if (tasksLoadPromise) {
-        return await tasksLoadPromise;
+        try { return await tasksLoadPromise; } finally { tasksLoadPromise = null; }
     }
 
     tasksLoadPromise = (async () => {
@@ -311,9 +310,8 @@ async function loadTasks() {
             syncTasksMap();
             if (changed) saveTasks(migrated).catch(e => console.error('[MIGRATE] Failed to save migrated tasks:', e));
         } catch (e) {
-            tasksCache = tasksCache || [];
-            tasksMtime = 0;
-            syncTasksMap();
+            console.error('[STORAGE] loadTasks file error:', e.message);
+            throw e;
         }
         tasksLoadPromise = null;
         return tasksCache;
@@ -323,9 +321,6 @@ async function loadTasks() {
 }
 
 async function saveTasks(tasks) {
-    tasksCache = tasks;
-    tasksLastCheck = Date.now();
-    syncTasksMap();
     const useDB = await ensureDB();
     if (useDB) {
         const pool = getPool();
@@ -342,10 +337,16 @@ async function saveTasks(tasks) {
         } finally {
             client.release();
         }
+        tasksCache = tasks;
+        tasksLastCheck = Date.now();
+        syncTasksMap();
         return;
     }
 
     await fs.promises.writeFile(TASKS_FILE, JSON.stringify(tasks, null, 2));
+    tasksCache = tasks;
+    tasksLastCheck = Date.now();
+    syncTasksMap();
     try {
         const stat = await fs.promises.stat(TASKS_FILE);
         tasksMtime = stat.mtimeMs;
