@@ -135,8 +135,9 @@ async function loadCredentials() {
     }
     try {
         credentialsCache = await readSecretFile(CREDENTIALS_FILE, 'credentials', []);
-    } catch {
-        credentialsCache = [];
+    } catch (error) {
+        // Never silently discard credentials on tampering or lost master keys.
+        throw error;
     }
     return credentialsCache;
 }
