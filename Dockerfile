@@ -17,6 +17,12 @@ RUN npm run build
 
 FROM mcr.microsoft.com/playwright:v1.63.0-noble AS runtime
 
+LABEL org.opencontainers.image.title="Figranium" \
+      org.opencontainers.image.description="Figranium is an open-source visual browser automation platform for building and running website automation tasks as APIs." \
+      org.opencontainers.image.source="https://github.com/figranium/figranium" \
+      org.opencontainers.image.url="https://figranium.dev" \
+      org.opencontainers.image.licenses="GPL-3.0-only"
+
 WORKDIR /app
 
 # Install VNC + noVNC tooling for containerized headful viewer (optional for CI)
