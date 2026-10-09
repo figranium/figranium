@@ -288,6 +288,47 @@ const tests = [
             }
         }
     }
+
+    {
+        id: 'API-010',
+        name: 'Concurrent authenticated API reads and JSON response contracts',
+        subsystem: 'api',
+        setup: 'Authenticated qualification session',
+        steps: 'Send 40 parallel requests to task and execution APIs and inspect response content types',
+        expected: 'All requests succeed with JSON and consistent response structures',
+        severity: 'CRITICAL', blocksV1: true,
+        run: async () => {
+            const base = await ensureServerRunning();
+            assert.ok(authCookie, 'Qualification login must have established a session');
+            const endpoints = ['/api/tasks', '/api/executions'];
+            const requests = Array.from({ length: 40 }, (_, i) =>
+                fetch(base + endpoints[i % endpoints.length], { headers: headers() })
+            );
+            const responses = await Promise.all(requests);
+            for (const response of responses) {
+                assert.equal(response.status, 200, 'Concurrent API reads must succeed');
+                assert.match(response.headers.get('content-type') || '', /application\\/json/i, 'API must respond with JSON');
+                await response.json();
+            }
+        }
+    },
+    {
+        id: 'API-011',
+        name: 'Unauthenticated API access fails without HTML errors',
+        subsystem: 'api',
+        setup: 'No session cookie or API key',
+        steps: 'Request protected task and execution APIs without authentication',
+        expected: 'Unauthorized requests cannot retrieve protected data',
+        severity: 'CRITICAL', blocksV1: true,
+        run: async () => {
+            const base = await ensureServerRunning();
+            for (const endpoint of ['/api/tasks', '/api/executions']) {
+                const response = await fetch(base + endpoint, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                assert.ok([401, 403].includes(response.status), endpoint + ' must reject unauthenticated access');
+                assert.doesNotMatch(response.headers.get('content-type') || '', /text\\/html/i, 'API errors must not return HTML');
+            }
+        }
+    },
 ];
 
 module.exports = { tests, cleanup };
