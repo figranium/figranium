@@ -1,5 +1,6 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const { readSecretFile, writeSecretFile } = require('./secret-store');
 const { API_KEY_FILE, API_KEYS_FILE, API_KEY_ARCHIVE_SECRET_FILE, CREDENTIALS_FILE } = require('./constants');
 
 module.exports = function createIdentityStorage({ ensureDB, getPool, bulkInsert, loadUsers, saveUsers }) {
@@ -133,10 +134,10 @@ async function loadCredentials() {
         return credentialsCache;
     }
     try {
-        const raw = await fs.promises.readFile(CREDENTIALS_FILE, 'utf8');
-        credentialsCache = JSON.parse(raw);
-    } catch {
-        credentialsCache = [];
+        credentialsCache = await readSecretFile(CREDENTIALS_FILE, 'credentials', []);
+    } catch (error) {
+        // Never silently discard credentials on tampering or lost master keys.
+        throw error;
     }
     return credentialsCache;
 }
@@ -161,7 +162,7 @@ async function saveCredentials(credentials) {
         }
         return;
     }
-    await fs.promises.writeFile(CREDENTIALS_FILE, JSON.stringify(credentials, null, 2));
+    await writeSecretFile(CREDENTIALS_FILE, 'credentials', credentials);
 }
 
 // Named API keys are stored as salted hashes. The clear-text key only exists at
