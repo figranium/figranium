@@ -189,15 +189,26 @@ async function readApiKeys() {
 }
 
 async function persistApiKeys(keys) {
-    apiKeysCache = keys;
     const useDB = await ensureDB();
     if (useDB) {
         const pool = getPool();
-        await pool.query('DELETE FROM api_keys');
-        for (const key of keys) await pool.query('INSERT INTO api_keys (id, data, created_at) VALUES ($1, $2, $3)', [key.id, key, key.createdAt]);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            await client.query('DELETE FROM api_keys');
+            for (const key of keys) await client.query('INSERT INTO api_keys (id, data, created_at) VALUES ($1, $2, $3)', [key.id, key, key.createdAt]);
+            await client.query('COMMIT');
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+        apiKeysCache = keys;
         return;
     }
     await fs.promises.writeFile(API_KEYS_FILE, JSON.stringify(keys, null, 2));
+    apiKeysCache = keys;
 }
 
 async function loadApiKeys() {
