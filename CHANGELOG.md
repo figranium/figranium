@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.21.1] - 2026-10-09
+
+### Cloud secret storage reliability
+- Fixed scoped API-key creation on database-backed deployments with read-only local filesystems by keeping scoped key secrets one-time only instead of persisting an additional local encryption key.
+- Store 1Password configuration as an encrypted database record when PostgreSQL is configured, avoiding a local-file dependency in cloud deployments.
+- Added `MASTER_KEY` for cloud deployments and a stable session-secret-derived fallback when the local master-key path is unavailable.
+- Allow password management to continue when the optional encrypted local password cache cannot be written.
+
 ## [0.21.0] - 2026-10-09
 
 ### Scoped API keys and access control
