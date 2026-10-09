@@ -307,7 +307,7 @@ const tests = [
             const responses = await Promise.all(requests);
             for (const response of responses) {
                 assert.equal(response.status, 200, 'Concurrent API reads must succeed');
-                assert.match(response.headers.get('content-type') || '', /application\\/json/i, 'API must respond with JSON');
+                assert.match(response.headers.get('content-type') || '', /application\/json/i, 'API must respond with JSON');
                 await response.json();
             }
         }
@@ -325,7 +325,7 @@ const tests = [
             for (const endpoint of ['/api/tasks', '/api/executions']) {
                 const response = await fetch(base + endpoint, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 assert.ok([401, 403].includes(response.status), endpoint + ' must reject unauthenticated access');
-                assert.doesNotMatch(response.headers.get('content-type') || '', /text\\/html/i, 'API errors must not return HTML');
+                assert.doesNotMatch(response.headers.get('content-type') || '', /text\/html/i, 'API errors must not return HTML');
             }
         }
     },
