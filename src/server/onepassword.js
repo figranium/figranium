@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { readSecretFile, writeSecretFile } = require('./secret-store');
 const { ONEPASSWORD_FILE, PASSWORD_CACHE_FILE, PASSWORD_CACHE_KEY_FILE } = require('./constants');
 
 const LOGIN_CACHE_TTL_MS = 15_000;
@@ -14,8 +15,8 @@ let persistentCache = null;
 let persistentCachePromise = null;
 let passwordCacheKeyPromise = null;
 
-async function loadConfig() { try { return JSON.parse(await fs.promises.readFile(ONEPASSWORD_FILE, 'utf8')); } catch { return {}; } }
-async function saveConfig(config) { await fs.promises.mkdir(path.dirname(ONEPASSWORD_FILE), { recursive: true }); await fs.promises.writeFile(ONEPASSWORD_FILE, JSON.stringify(config, null, 2), { mode: 0o600 }); await invalidateLoginCache(); }
+async function loadConfig() { return readSecretFile(ONEPASSWORD_FILE, 'onepassword-config', {}); }
+async function saveConfig(config) { await writeSecretFile(ONEPASSWORD_FILE, 'onepassword-config', config); await invalidateLoginCache(); }
 async function getPasswordCacheKey() {
     if (!passwordCacheKeyPromise) passwordCacheKeyPromise = (async () => {
         if (process.env.PASSWORD_CACHE_KEY) return crypto.createHash('sha256').update(process.env.PASSWORD_CACHE_KEY).digest();
