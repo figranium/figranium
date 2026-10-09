@@ -82,7 +82,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           annotations: |
-            index:org.opencontainers.image.description=Figranium is an open-source visual browser automation framework for building and running website automation tasks as APIs.
+            index:org.opencontainers.image.description=Figranium is an open-source visual browser automation platform for building and running website automation tasks as APIs.
 
       - name: Attest container image provenance
         uses: actions/attest@v4
