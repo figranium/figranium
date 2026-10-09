@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.21.0] - 2026-10-09
+
+### Security and credentials
+- Added named, scoped API keys with granular permissions and Task allowlists.
+- Added isolated browser cookie states and task-level state attachment.
+- Added 1Password-backed password management and secret injection.
+- Hardened local secret encryption with a configurable `MASTER_KEY_FILE` and no mandatory externally supplied key.
+
+### Integrations and workflow
+- Expanded output destinations with task-specific Baserow table provisioning.
+- Improved CI and release verification, including build provenance and attestations.
+- Continued Playwright, Docker, and Tailwind v4 compatibility updates.
+
+### Interface and maintenance
+- Refined the workspace, documentation, and deployment configuration for the new capabilities.
+
 ## [0.20.0] - 2026-10-03
 
 ### Embedded templates
