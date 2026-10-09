@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { DATA_DIR } = require('./constants');
-const KEY_FILE = process.env.FIGRANIUM_MASTER_KEY_FILE || path.join(DATA_DIR, 'master.key');
+const KEY_FILE = process.env.MASTER_KEY_FILE || path.join(DATA_DIR, 'master.key');
 let keyPromise;
 async function masterKey() {
   if (!keyPromise) keyPromise = (async () => {
