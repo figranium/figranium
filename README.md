@@ -153,6 +153,10 @@ Figranium automatically generates a cryptographically random session secret on f
 | `USE_CLOAK_ENGINE` | Set to `true` to run the browser engine on CloakBrowser instead of the default Playwright stealth stack. | `false` |
 | `CLOAKBROWSER_LICENSE_KEY` | CloakBrowser license key for the latest binary. | — |
 | `MAX_CONCURRENT_EXECUTIONS` | Override the automatic browser-execution limit. | host-aware |
+
+## Upgrading to 0.21.1
+
+For cloud or read-only deployments, set a stable `MASTER_KEY` before upgrading. On its first 0.21.1 read, a PostgreSQL-backed instance imports the existing encrypted 1Password configuration from `data/onepassword.json` into Postgres and re-encrypts it with `MASTER_KEY`. If the prior version used the automatic `data/master.key`, keep that file mounted for the first upgraded start so the migration can decrypt the existing configuration.
 | `MAX_EXECUTION_QUEUE` | Maximum waiting executions before new work receives 503. | `50` |
 | `EXECUTION_QUEUE_TIMEOUT_MS` | Maximum time an execution may wait for capacity. | `600000` |
 | `EXECUTION_TIMEOUT_MS` | Maximum non-headful execution runtime. | `900000` |

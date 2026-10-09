@@ -19,6 +19,18 @@ function sessionDerivedKey() {
   // Keep cookie signing and data encryption cryptographically separated.
   return crypto.createHash('sha256').update('figranium:secret-store:v1\0').update(secret).digest();
 }
+async function legacyFileMasterKey() {
+  // During a cloud upgrade, MASTER_KEY may be configured before an older
+  // data-volume key is retired. Read it only for decryption; never create it.
+  try {
+    const key = await fs.promises.readFile(KEY_FILE);
+    if (key.length !== 32) throw new Error('Invalid encryption master key');
+    return key;
+  } catch (error) {
+    if (error.code === 'ENOENT' || ['EACCES', 'EROFS', 'EPERM'].includes(error.code)) return null;
+    throw error;
+  }
+}
 async function masterKey() {
   if (!keyPromise) keyPromise = (async () => {
     const configured = configuredMasterKey();
@@ -88,7 +100,18 @@ async function readSecretFile(file, context, fallback) {
   let value;
   try { value = JSON.parse(await fs.promises.readFile(file, 'utf8')); }
   catch (error) { if (error.code === 'ENOENT') return fallback; throw error; }
-  if (value?.__figraniumEncrypted === true) return open(value.envelope, await masterKey(), context);
+  if (value?.__figraniumEncrypted === true) {
+    const key = await masterKey();
+    try {
+      return open(value.envelope, key, context);
+    } catch (error) {
+      // A configured MASTER_KEY takes precedence for new writes, but v0.21
+      // may have encrypted this file with the former local master key.
+      const legacyKey = process.env.MASTER_KEY ? await legacyFileMasterKey() : null;
+      if (!legacyKey || legacyKey.equals(key)) throw error;
+      return open(value.envelope, legacyKey, context);
+    }
+  }
   await writeSecretFile(file, context, value);
   return value;
 }
