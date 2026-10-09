@@ -2,19 +2,49 @@
 
 ## [0.21.0] - 2026-10-09
 
-### Security and credentials
-- Added named, scoped API keys with granular permissions and Task allowlists.
-- Added isolated browser cookie states and task-level state attachment.
-- Added 1Password-backed password management and secret injection.
-- Hardened local secret encryption with a configurable `MASTER_KEY_FILE` and no mandatory externally supplied key.
+### Scoped API keys and access control
+- Replaced the single shared API key workflow with named keys that can be created and revoked individually.
+- Added permissions for reading Tasks, running Tasks, reading execution results, and managing Tasks, with optional Task allowlists to restrict access to selected automations.
+- Added a dedicated Scoped API Keys management interface and updated qualification coverage to remove reliance on the retired legacy key endpoint.
 
-### Integrations and workflow
-- Expanded output destinations with task-specific Baserow table provisioning.
-- Improved CI and release verification, including build provenance and attestations.
-- Continued Playwright, Docker, and Tailwind v4 compatibility updates.
+### Cookies, passwords, and connections
+- Added named, reusable browser cookie states, including management controls and the ability to attach a state to a Task.
+- Introduced a Passwords workspace and Connections panel for 1Password and Baserow integrations.
+- Integrated the 1Password SDK for retrieving login items and resolving Task credentials. Tasks can use reserved `{$password}` and `{$uname}` variables sourced from a matching 1Password website Login.
+- Added headful browser login capture and credential-saving flows, including improvements to the browser viewer's prompts.
+- Added `PASSWORD_CACHE_ENABLED` to control server-side caching of 1Password metadata, with additional credential-resolution and cookie-state tests.
 
-### Interface and maintenance
-- Refined the workspace, documentation, and deployment configuration for the new capabilities.
+### Encryption and credential security
+- Added authenticated envelope encryption for persisted secrets without requiring operators to supply an external encryption key.
+- Introduced `MASTER_KEY_FILE` to configure the local master-key file path, and documented the setting in the README.
+- Encrypted persisted 1Password service credentials and other file-backed integration credentials; hardened credential reads to fail closed on decryption errors.
+- Added rate limiting to Baserow workspace and provisioning endpoints.
+
+### Baserow output destinations
+- Added Baserow workspace and destination-provisioning APIs, including creation of dedicated databases and tables for individual Task outputs.
+- Added typed destination configuration, text-field provisioning, and automatic column creation for provisioned outputs.
+- Updated the output configuration UI and removed legacy manual destination-selection controls during the dedicated-destination implementation.
+- Subsequently added a Baserow selection flow for existing databases and tables, alongside the new 1Password login capture experience.
+
+### Data portability and Cloud authentication
+- Added selective data export from Advanced Settings. Exports can include Tasks, Executions, Captures, API Keys, and Cookies in a ZIP archive with a manifest; selected capture and recording files are included directly.
+- Added selective data import controls and supporting endpoints.
+- Added optional Cloud-to-instance authentication handoff using short-lived, single-use codes exchanged server-to-server. The integration is disabled unless explicitly configured, requires a matching pre-provisioned local account, and includes HTTPS, redirect, replay, and session protections.
+
+### Browser compatibility and interface
+- Fixed Safari startup failures after browser restarts by revalidating the application shell while preserving immutable caching for hashed assets.
+- Fixed Safari headful WebSocket handling, prevented stale viewer cleanup from stopping newer sessions, and improved browser viewer error reporting.
+- Completed Tailwind CSS v4 migration follow-up work, including stylesheet/font integration, PostCSS configuration cleanup, and removal of obsolete Tailwind configuration.
+- Fixed pinned Results toolbar overflow and improved the Unpin action's light-theme contrast.
+- Standardized interactive cursor states across the interface.
+
+### Docker, publishing, and release verification
+- Updated the Playwright dependency and Docker runtime toward v1.64.0, including Noble image compatibility checks and browser installation alignment.
+- Separated container channels: stable release tags publish to `latest`, while commits on `main` publish to `edge`.
+- Added verifiable GHCR build provenance attestations and adjusted publishing metadata to avoid unwanted attestation tags and unknown-platform entries.
+- Added OCI image description and source labels, multi-architecture image description metadata, and updated package presentation for GHCR.
+- Refined README documentation for telemetry opt-out, automatically generated session secrets, and infrastructure backers.
+- Updated project dependencies and CI tooling.
 
 ## [0.20.0] - 2026-10-03
 
