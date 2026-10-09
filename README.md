@@ -135,6 +135,7 @@ Figranium automatically generates a cryptographically random session secret on f
 |----------|---------|---------|
 | `SESSION_SECRET` | Optional override for the automatically generated, persisted session-cookie signing secret. | Auto-generated |
 | `PASSWORD_CACHE_KEY` | Secret used to encrypt the server-side 1Password cache. Set this to keep the encryption key outside the Figranium data directory. | Auto-generated and stored at `data/password_cache.key` |
+| `PASSWORD_CACHE_ENABLED` | Enable encrypted server-side caching of 1Password Login metadata and resolved passwords. Set to `false` to always fetch from 1Password. | `true` |
 | `FIGRANIUM_TELEMETRY_ENABLED` | Send anonymous installation environment details and daily UI/API usage flags to Figranium telemetry. Set to `false` to disable. | `true` |
 | `ALLOWED_IPS` | Comma list for basic IP allowlisting. | none (open) |
 | `TRUST_PROXY` | Honor `X-Forwarded-*` for application-level proxy behavior. Not required for the embedded browser viewer. | `0` |

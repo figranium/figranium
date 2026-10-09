@@ -7,6 +7,7 @@ const LOGIN_CACHE_TTL_MS = 15_000;
 const LOGIN_FETCH_CONCURRENCY = 6;
 const PERSISTED_LOGIN_CACHE_TTL_MS = 30 * 60 * 1000;
 const PERSISTED_PASSWORD_CACHE_TTL_MS = 10 * 60 * 1000;
+const PASSWORD_CACHE_ENABLED = !['0', 'false', 'no'].includes(String(process.env.PASSWORD_CACHE_ENABLED || 'true').toLowerCase());
 let loginCache = null;
 let loginListInFlight = null;
 let persistentCache = null;
@@ -41,6 +42,7 @@ function decryptCache(value, key) {
 }
 function emptyPersistentCache() { return { logins: null, loginsSavedAt: 0, passwords: {} }; }
 async function loadPersistentCache() {
+    if (!PASSWORD_CACHE_ENABLED) return emptyPersistentCache();
     if (persistentCache) return persistentCache;
     if (!persistentCachePromise) persistentCachePromise = (async () => {
         try {
@@ -52,6 +54,7 @@ async function loadPersistentCache() {
     return persistentCachePromise;
 }
 async function savePersistentCache(cache) {
+    if (!PASSWORD_CACHE_ENABLED) return;
     persistentCache = cache;
     const key = await getPasswordCacheKey();
     const encrypted = encryptCache(cache, key);
@@ -121,16 +124,16 @@ async function fetchLogins() {
     return rows;
 }
 async function listLogins() {
-    if (loginCache?.expiresAt > Date.now()) return loginCache.rows;
+    if (PASSWORD_CACHE_ENABLED && loginCache?.expiresAt > Date.now()) return loginCache.rows;
     const cache = await loadPersistentCache();
-    if (Array.isArray(cache.logins) && Date.now() - cache.loginsSavedAt < PERSISTED_LOGIN_CACHE_TTL_MS) {
+    if (PASSWORD_CACHE_ENABLED && Array.isArray(cache.logins) && Date.now() - cache.loginsSavedAt < PERSISTED_LOGIN_CACHE_TTL_MS) {
         loginCache = { rows: cache.logins, expiresAt: Date.now() + LOGIN_CACHE_TTL_MS };
         return loginCache.rows;
     }
     if (!loginListInFlight) {
         loginListInFlight = fetchLogins()
             .then(rows => {
-                loginCache = { rows, expiresAt: Date.now() + LOGIN_CACHE_TTL_MS };
+                if (PASSWORD_CACHE_ENABLED) loginCache = { rows, expiresAt: Date.now() + LOGIN_CACHE_TTL_MS };
                 return rows;
             })
             .finally(() => { loginListInFlight = null; });
@@ -181,7 +184,7 @@ async function getUsernameForDomain(domain, dependencies = {}) {
 async function getPassword(vaultId, itemId) {
     const cache = await loadPersistentCache();
     const cachedPassword = cache.passwords?.[`${vaultId}:${itemId}`];
-    if (cachedPassword && Date.now() - cachedPassword.savedAt < PERSISTED_PASSWORD_CACHE_TTL_MS) return cachedPassword.value;
+    if (PASSWORD_CACHE_ENABLED && cachedPassword && Date.now() - cachedPassword.savedAt < PERSISTED_PASSWORD_CACHE_TTL_MS) return cachedPassword.value;
     const vault = await ensureFigraniumVault();
     if (vault.id !== vaultId) throw Object.assign(new Error('Item is outside the Figranium vault'), { code: 'VAULT_ACCESS_DENIED' });
     const op = await client(); const item = await op.items.get(vaultId, itemId);
@@ -219,4 +222,4 @@ async function saveLoginForDomain({ domain, url, username, password }, dependenc
     await (dependencies.invalidateLoginCache || invalidateLoginCache)();
     return 'created';
 }
-module.exports = { loadConfig, saveConfig, client, ensureFigraniumVault, selectFigraniumVault, listLogins, getPassword, getPasswordForDomain, getUsernameForDomain, saveLoginForDomain, websiteDomains, findPasswordLoginForDomain, findUsernameLoginForDomain, mapWithConcurrency, invalidateLoginCache, encryptCache, decryptCache };
+module.exports = { loadConfig, saveConfig, client, ensureFigraniumVault, selectFigraniumVault, listLogins, getPassword, getPasswordForDomain, getUsernameForDomain, saveLoginForDomain, websiteDomains, findPasswordLoginForDomain, findUsernameLoginForDomain, mapWithConcurrency, invalidateLoginCache, encryptCache, decryptCache, PASSWORD_CACHE_ENABLED };
