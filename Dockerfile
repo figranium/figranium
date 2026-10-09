@@ -15,7 +15,7 @@ RUN npm ci --include=dev
 COPY . .
 RUN npm run build
 
-FROM mcr.microsoft.com/playwright:v1.63.0-noble AS runtime
+FROM mcr.microsoft.com/playwright:v1.64.0-noble AS runtime
 
 LABEL org.opencontainers.image.title="Figranium" \
       org.opencontainers.image.description="Figranium is an open-source visual browser automation platform for building and running website automation tasks as APIs." \
