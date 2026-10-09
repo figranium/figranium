@@ -5,6 +5,7 @@
 ### Cloud secret storage reliability
 - Fixed scoped API-key creation on database-backed deployments with read-only local filesystems by keeping scoped key secrets one-time only instead of persisting an additional local encryption key.
 - Store 1Password configuration as an encrypted database record when PostgreSQL is configured, avoiding a local-file dependency in cloud deployments.
+- Automatically migrate the existing v0.21 encrypted 1Password configuration into PostgreSQL on the first upgraded read, including configurations encrypted with the former local master key.
 - Added `MASTER_KEY` for cloud deployments and a stable session-secret-derived fallback when the local master-key path is unavailable.
 - Allow password management to continue when the optional encrypted local password cache cannot be written.
 

@@ -22,7 +22,14 @@ async function loadConfig() {
     if (!pool) return readSecretFile(ONEPASSWORD_FILE, 'onepassword-config', {});
     const result = await pool.query('SELECT data FROM onepassword_config WHERE id = 1');
     const data = result.rows[0]?.data;
-    if (!data) return {};
+    if (!data) {
+        // v0.21 stored this configuration in the encrypted local data file.
+        // Move it into Postgres on the first 0.21.1 read so a cloud instance
+        // can subsequently run without a writable application filesystem.
+        const legacy = await readSecretFile(ONEPASSWORD_FILE, 'onepassword-config', {});
+        if (Object.keys(legacy).length) await saveConfig(legacy);
+        return legacy;
+    }
     if (!data.__figraniumEncrypted) throw new Error('Unsupported 1Password configuration format');
     return open(data.envelope, await masterKey(), 'onepassword-config');
 }
