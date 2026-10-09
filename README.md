@@ -134,7 +134,8 @@ Figranium automatically generates a cryptographically random session secret on f
 | Variable | Purpose | Default |
 |----------|---------|---------|
 | `SESSION_SECRET` | Optional override for the automatically generated, persisted session-cookie signing secret. | Auto-generated |
-| `MASTER_KEY_FILE` | Optional path to the persistent 256-bit master key used to encrypt stored 1Password configuration and file-backed credentials. Keep this file persistent and restrict access; use a separately protected mount for stronger isolation. | `data/master.key` (auto-generated) |
+| `MASTER_KEY` | Preferred 256-bit encryption key for cloud/read-only deployments. Provide 32 bytes as base64url or 64 hexadecimal characters. | — |
+| `MASTER_KEY_FILE` | Optional path to the persistent 256-bit master key used to encrypt stored 1Password configuration and file-backed credentials. Keep this file persistent and restrict access; use a separately protected mount for stronger isolation. If neither key source can be written, Figranium derives a stable, domain-separated key from `SESSION_SECRET`. | `data/master.key` (auto-generated) |
 | `PASSWORD_CACHE_KEY` | Secret used to encrypt the server-side 1Password cache. Set this to keep the encryption key outside the Figranium data directory. | Auto-generated and stored at `data/password_cache.key` |
 | `PASSWORD_CACHE_ENABLED` | Enable encrypted server-side caching of 1Password Login metadata and resolved passwords. Set to `false` to always fetch from 1Password. | `true` |
 | `FIGRANIUM_TELEMETRY_ENABLED` | Send anonymous installation environment details and daily UI/API usage flags to Figranium telemetry. Set to `false` to disable. | `true` |

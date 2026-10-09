@@ -5,15 +5,41 @@ const crypto = require('crypto');
 const { DATA_DIR } = require('./constants');
 const KEY_FILE = process.env.MASTER_KEY_FILE || path.join(DATA_DIR, 'master.key');
 let keyPromise;
+function configuredMasterKey() {
+  const raw = process.env.MASTER_KEY;
+  if (!raw) return null;
+  const value = raw.trim();
+  const key = /^[0-9a-f]{64}$/i.test(value) ? Buffer.from(value, 'hex') : Buffer.from(value, 'base64url');
+  if (key.length !== 32) throw new Error('MASTER_KEY must contain exactly 32 bytes (base64url or hex)');
+  return key;
+}
+function sessionDerivedKey() {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) return null;
+  // Keep cookie signing and data encryption cryptographically separated.
+  return crypto.createHash('sha256').update('figranium:secret-store:v1\0').update(secret).digest();
+}
 async function masterKey() {
   if (!keyPromise) keyPromise = (async () => {
-    await fs.promises.mkdir(path.dirname(KEY_FILE), { recursive: true, mode: 0o700 });
+    const configured = configuredMasterKey();
+    if (configured) return configured;
+    try {
+      await fs.promises.mkdir(path.dirname(KEY_FILE), { recursive: true, mode: 0o700 });
+    } catch (error) {
+      const fallback = sessionDerivedKey();
+      if (fallback && ['EACCES', 'EROFS', 'EPERM'].includes(error.code)) return fallback;
+      throw error;
+    }
     try {
       const key = await fs.promises.readFile(KEY_FILE);
       if (key.length !== 32) throw new Error('Invalid encryption master key');
       return key;
     } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
+      if (error.code !== 'ENOENT') {
+        const fallback = sessionDerivedKey();
+        if (fallback && ['EACCES', 'EROFS', 'EPERM'].includes(error.code)) return fallback;
+        throw error;
+      }
       const candidate = crypto.randomBytes(32);
       try {
         await fs.promises.writeFile(KEY_FILE, candidate, { flag: 'wx', mode: 0o600 });
@@ -24,6 +50,8 @@ async function masterKey() {
           if (key.length !== 32) throw new Error('Invalid encryption master key');
           return key;
         }
+        const fallback = sessionDerivedKey();
+        if (fallback && ['EACCES', 'EROFS', 'EPERM'].includes(writeError.code)) return fallback;
         throw writeError;
       }
     }

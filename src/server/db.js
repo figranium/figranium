@@ -95,6 +95,12 @@ async function initDB() {
                     );
                 `);
                 await client.query(`
+                    CREATE TABLE IF NOT EXISTS onepassword_config (
+                        id INT PRIMARY KEY DEFAULT 1,
+                        data JSONB NOT NULL
+                    );
+                `);
+                await client.query(`
                     CREATE TABLE IF NOT EXISTS proxies_config (
                         id INT PRIMARY KEY DEFAULT 1,
                         data JSONB NOT NULL

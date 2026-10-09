@@ -1,7 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const { readSecretFile, writeSecretFile } = require('./secret-store');
-const { API_KEY_FILE, API_KEYS_FILE, API_KEY_ARCHIVE_SECRET_FILE, CREDENTIALS_FILE } = require('./constants');
+const { API_KEY_FILE, API_KEYS_FILE, CREDENTIALS_FILE } = require('./constants');
 
 module.exports = function createIdentityStorage({ ensureDB, getPool, bulkInsert, loadUsers, saveUsers }) {
 // API Key Storage
@@ -165,41 +165,12 @@ async function saveCredentials(credentials) {
     await writeSecretFile(CREDENTIALS_FILE, 'credentials', credentials);
 }
 
-// Named API keys are stored as salted hashes. The clear-text key only exists at
-// creation time, and the pre-scoped key is migrated once as a full-access key.
+// Named API keys are stored as salted hashes. The clear-text key is returned
+// exactly once at creation time and is never persisted. In particular, do not
+// add a second encryption key solely to retain it for exports: DB-backed
+// deployments may intentionally have no writable local filesystem.
 let apiKeysCache = null;
 const API_KEY_PERMISSIONS = ['tasks:read', 'tasks:run', 'results:read', 'tasks:manage'];
-let archiveKeyPromise = null;
-
-async function getArchiveKey() {
-    if (!archiveKeyPromise) archiveKeyPromise = (async () => {
-        let value = '';
-        try { value = (await fs.promises.readFile(API_KEY_ARCHIVE_SECRET_FILE, 'utf8')).trim(); } catch { }
-        if (!value) {
-            value = crypto.randomBytes(32).toString('base64url');
-            await fs.promises.mkdir(require('path').dirname(API_KEY_ARCHIVE_SECRET_FILE), { recursive: true });
-            await fs.promises.writeFile(API_KEY_ARCHIVE_SECRET_FILE, value, { mode: 0o600 });
-        }
-        return crypto.createHash('sha256').update(value).digest();
-    })();
-    return archiveKeyPromise;
-}
-
-async function encryptExportSecret(secret) {
-    const iv = crypto.randomBytes(12);
-    const cipher = crypto.createCipheriv('aes-256-gcm', await getArchiveKey(), iv);
-    const ciphertext = Buffer.concat([cipher.update(secret, 'utf8'), cipher.final()]);
-    return { iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), ciphertext: ciphertext.toString('base64') };
-}
-
-async function decryptExportSecret(value) {
-    if (!value?.iv || !value?.tag || !value?.ciphertext) return null;
-    try {
-        const decipher = crypto.createDecipheriv('aes-256-gcm', await getArchiveKey(), Buffer.from(value.iv, 'base64'));
-        decipher.setAuthTag(Buffer.from(value.tag, 'base64'));
-        return Buffer.concat([decipher.update(Buffer.from(value.ciphertext, 'base64')), decipher.final()]).toString('utf8');
-    } catch { return null; }
-}
 
 function hashApiKey(value, salt = crypto.randomBytes(16).toString('hex')) {
     return new Promise((resolve, reject) => crypto.scrypt(value, salt, 64, (err, derived) => {
@@ -236,7 +207,7 @@ async function loadApiKeys() {
     const legacy = await loadApiKey();
     if (!legacy) return (apiKeysCache = []);
     const hashed = await hashApiKey(legacy);
-    const migrated = [{ id: `key_${crypto.randomBytes(8).toString('hex')}`, name: 'Legacy full access key', ...hashed, exportSecret: await encryptExportSecret(legacy),
+    const migrated = [{ id: `key_${crypto.randomBytes(8).toString('hex')}`, name: 'Legacy full access key', ...hashed,
         permissions: API_KEY_PERMISSIONS, taskIds: [], createdAt: new Date().toISOString(), legacy: true }];
     await persistApiKeys(migrated);
     return migrated;
@@ -247,7 +218,7 @@ async function createApiKey({ name, permissions, taskIds }) {
     if (!validPermissions.length) throw new Error('PERMISSIONS_REQUIRED');
     const secret = crypto.randomBytes(32).toString('base64url');
     const hashed = await hashApiKey(secret);
-    const key = { id: `key_${crypto.randomBytes(8).toString('hex')}`, name: String(name || 'API key').trim().slice(0, 120) || 'API key', ...hashed, exportSecret: await encryptExportSecret(secret),
+    const key = { id: `key_${crypto.randomBytes(8).toString('hex')}`, name: String(name || 'API key').trim().slice(0, 120) || 'API key', ...hashed,
         permissions: validPermissions,
         taskIds: [...new Set((taskIds || []).map(String))], createdAt: new Date().toISOString() };
     const keys = await loadApiKeys();
@@ -295,10 +266,10 @@ async function importApiKeyMetadata(records) {
 
 async function exportApiKeys() {
     const legacySecret = await loadApiKey();
-    return Promise.all((await loadApiKeys()).map(async key => ({
+    return (await loadApiKeys()).map(key => ({
         ...publicApiKeyMetadata(key),
-        secret: key.legacy ? legacySecret : await decryptExportSecret(key.exportSecret)
-    })));
+        ...(key.legacy && legacySecret ? { secret: legacySecret } : {})
+    }));
 }
 
 async function importApiKeys(records) {
@@ -314,7 +285,7 @@ async function importApiKeys(records) {
             continue;
         }
         const hashed = await hashApiKey(secret);
-        const key = { ...metadata, ...hashed, exportSecret: await encryptExportSecret(secret) };
+        const key = { ...metadata, ...hashed };
         keys.push(key);
         if (key.legacy) legacySecret = secret;
     }

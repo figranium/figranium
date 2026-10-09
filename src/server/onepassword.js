@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { readSecretFile, writeSecretFile } = require('./secret-store');
+const { readSecretFile, writeSecretFile, masterKey, seal, open } = require('./secret-store');
 const { ONEPASSWORD_FILE, PASSWORD_CACHE_FILE, PASSWORD_CACHE_KEY_FILE } = require('./constants');
+const { initDB } = require('./db');
 
 const LOGIN_CACHE_TTL_MS = 15_000;
 const LOGIN_FETCH_CONCURRENCY = 6;
@@ -14,9 +15,27 @@ let loginListInFlight = null;
 let persistentCache = null;
 let persistentCachePromise = null;
 let passwordCacheKeyPromise = null;
+let persistentCacheAvailable = true;
 
-async function loadConfig() { return readSecretFile(ONEPASSWORD_FILE, 'onepassword-config', {}); }
-async function saveConfig(config) { await writeSecretFile(ONEPASSWORD_FILE, 'onepassword-config', config); await invalidateLoginCache(); }
+async function loadConfig() {
+    const pool = await initDB();
+    if (!pool) return readSecretFile(ONEPASSWORD_FILE, 'onepassword-config', {});
+    const result = await pool.query('SELECT data FROM onepassword_config WHERE id = 1');
+    const data = result.rows[0]?.data;
+    if (!data) return {};
+    if (!data.__figraniumEncrypted) throw new Error('Unsupported 1Password configuration format');
+    return open(data.envelope, await masterKey(), 'onepassword-config');
+}
+async function saveConfig(config) {
+    const pool = await initDB();
+    if (pool) {
+        const data = { __figraniumEncrypted: true, envelope: seal(config, await masterKey(), 'onepassword-config') };
+        await pool.query('INSERT INTO onepassword_config (id, data) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data', [data]);
+    } else {
+        await writeSecretFile(ONEPASSWORD_FILE, 'onepassword-config', config);
+    }
+    await invalidateLoginCache();
+}
 async function getPasswordCacheKey() {
     if (!passwordCacheKeyPromise) passwordCacheKeyPromise = (async () => {
         if (process.env.PASSWORD_CACHE_KEY) return crypto.createHash('sha256').update(process.env.PASSWORD_CACHE_KEY).digest();
@@ -55,14 +74,20 @@ async function loadPersistentCache() {
     return persistentCachePromise;
 }
 async function savePersistentCache(cache) {
-    if (!PASSWORD_CACHE_ENABLED) return;
+    if (!PASSWORD_CACHE_ENABLED || !persistentCacheAvailable) return;
     persistentCache = cache;
-    const key = await getPasswordCacheKey();
-    const encrypted = encryptCache(cache, key);
-    await fs.promises.mkdir(path.dirname(PASSWORD_CACHE_FILE), { recursive: true });
-    const temporary = `${PASSWORD_CACHE_FILE}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;
-    await fs.promises.writeFile(temporary, JSON.stringify(encrypted), { mode: 0o600 });
-    await fs.promises.rename(temporary, PASSWORD_CACHE_FILE);
+    try {
+        const key = await getPasswordCacheKey();
+        const encrypted = encryptCache(cache, key);
+        await fs.promises.mkdir(path.dirname(PASSWORD_CACHE_FILE), { recursive: true });
+        const temporary = `${PASSWORD_CACHE_FILE}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;
+        await fs.promises.writeFile(temporary, JSON.stringify(encrypted), { mode: 0o600 });
+        await fs.promises.rename(temporary, PASSWORD_CACHE_FILE);
+    } catch (error) {
+        if (!['EACCES', 'EROFS', 'EPERM'].includes(error?.code)) throw error;
+        persistentCacheAvailable = false;
+        console.warn('[1PASSWORD] Persistent password cache disabled: local storage is unavailable.');
+    }
 }
 async function client() {
     const config = await loadConfig();
