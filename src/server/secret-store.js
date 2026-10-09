@@ -5,6 +5,31 @@ const crypto = require('crypto');
 const { DATA_DIR } = require('./constants');
 const KEY_FILE = process.env.MASTER_KEY_FILE || path.join(DATA_DIR, 'master.key');
 let keyPromise;
+const ENCRYPTED_SECRET_FILES = [
+  'credentials.json', 'onepassword.json', 'password_cache.json',
+  'system_settings.json', 'database_config.json', 'captcha_settings.json',
+  'users.json', 'api_key.json'
+];
+async function assertSafeToGenerateKey() {
+  // Never silently replace a lost key while encrypted data remains on disk.
+  // Only recognize the envelope marker; plaintext legacy files are safe to migrate.
+  for (const name of ENCRYPTED_SECRET_FILES) {
+    let raw;
+    try {
+      raw = await fs.promises.readFile(path.join(DATA_DIR, name), 'utf8');
+    } catch (error) {
+      if (error.code === 'ENOENT') continue;
+      throw error;
+    }
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { continue; }
+    if (parsed?.__figraniumEncrypted === true) {
+      const error = new Error('Encryption master key is missing while encrypted data exists. Restore the original master key at ' + KEY_FILE + ' (or configure MASTER_KEY); refusing to generate a replacement.');
+      error.code = 'FIGRANIUM_MASTER_KEY_MISSING';
+      throw error;
+    }
+  }
+}
 function configuredMasterKey() {
   const raw = process.env.MASTER_KEY;
   if (!raw) return null;
@@ -52,6 +77,7 @@ async function masterKey() {
         if (fallback && ['EACCES', 'EROFS', 'EPERM'].includes(error.code)) return fallback;
         throw error;
       }
+      await assertSafeToGenerateKey();
       const candidate = crypto.randomBytes(32);
       try {
         await fs.promises.writeFile(KEY_FILE, candidate, { flag: 'wx', mode: 0o600 });
