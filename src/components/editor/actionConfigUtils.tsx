@@ -96,7 +96,7 @@ export { PRESS_MODIFIERS, PRESS_BASE_KEYS, TYPE_MODE_OPTIONS, CLICK_TYPE_OPTIONS
 export type { ActionConfigModalProps };
 
 export const field = (labelText: string, children: React.ReactNode) => (
-    <div className="space-y-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5 self-stretch">
         <label className="text-xs font-bold text-gray-600 tracking-widest pl-1 block">{labelText}</label>
         {children}
     </div>

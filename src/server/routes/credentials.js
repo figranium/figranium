@@ -1,8 +1,9 @@
 const express = require('express');
 const crypto = require('crypto');
-const { requireAuthOrApiKey, dataRateLimiter } = require('../middleware');
+const { requireAuthOrApiKey } = require('../middleware');
 const { loadCredentials, saveCredentials } = require('../storage');
 const { validateUrl, fetchWithRedirectValidation } = require('../../../url-utils');
+const { normalizeBaserowTables } = require('../baserow-table-list');
 
 const router = express.Router();
 
@@ -89,133 +90,41 @@ router.put('/:id', requireAuthOrApiKey, async (req, res) => {
     }
 });
 
-// GET /api/credentials/:id/proxy/baserow/databases
-// Lists all Baserow databases (applications of type "database") accessible by the credential.
-router.get('/:id/proxy/baserow/databases', requireAuthOrApiKey, async (req, res) => {
+// Database tokens can enumerate their permitted tables through the Database API.
+router.get('/:id/proxy/baserow/tables', requireAuthOrApiKey, async (req, res) => {
     try {
-        const credentials = await loadCredentials();
-        const credential = credentials.find(c => c.id === req.params.id);
+        const credential = (await loadCredentials()).find(c => c.id === req.params.id && c.provider === 'baserow');
         if (!credential) return res.status(404).json({ error: 'CREDENTIAL_NOT_FOUND' });
-
         const { baseUrl, token } = credential.config;
         await validateUrl(baseUrl);
-        const url = `${baseUrl}/api/applications/`;
-        const resp = await fetchWithRedirectValidation(url, {
+        const resp = await fetchWithRedirectValidation(`${baseUrl}/api/database/tables/all-tables/`, {
             headers: { 'Authorization': `Token ${token}` }
         });
         if (!resp.ok) {
-            return res.status(resp.status).json({ error: 'BASEROW_ERROR', detail: 'Failed to fetch databases from Baserow' });
+            return res.status(resp.status).json({ error: 'BASEROW_TABLES_FAILED', detail: `Baserow returned HTTP ${resp.status}. Check the database token and its read access.` });
         }
         const data = await resp.json();
-        const items = Array.isArray(data) ? data : [];
-        const databases = [];
-        for (const item of items) {
-            // Flat array of applications (each has type, workspace, etc.)
-            if (item.type === 'database') {
-                databases.push({
-                    id: String(item.id),
-                    name: item.name,
-                    workspaceName: item.workspace?.name || item.group?.name || ''
-                });
-            }
-            // Workspace-grouped format (workspace with nested applications)
-            if (item.applications) {
-                for (const app of item.applications) {
-                    if (app.type === 'database') {
-                        databases.push({
-                            id: String(app.id),
-                            name: app.name,
-                            workspaceName: item.name || ''
-                        });
-                    }
-                }
-            }
-        }
-        res.json(databases);
+        res.json(normalizeBaserowTables(data, { fallbackDatabaseName: credential.name }));
     } catch (err) {
         res.status(500).json({ error: 'PROXY_ERROR', detail: 'Internal proxy error' });
     }
 });
 
-// GET /api/credentials/:id/proxy/baserow/databases/:dbId/tables
-// Lists all tables within a Baserow database.
-router.get('/:id/proxy/baserow/databases/:dbId/tables', requireAuthOrApiKey, async (req, res) => {
-    // Security: Validate dbId to prevent path traversal via URL manipulation.
-    if (!/^\d+$/.test(req.params.dbId)) {
-        return res.status(400).json({ error: 'INVALID_DATABASE_ID' });
-    }
+router.get('/:id/proxy/baserow/tables/:tableId/fields', requireAuthOrApiKey, async (req, res) => {
+    if (!/^\d+$/.test(req.params.tableId)) return res.status(400).json({ error: 'INVALID_TABLE_ID' });
     try {
-        const credentials = await loadCredentials();
-        const credential = credentials.find(c => c.id === req.params.id);
+        const credential = (await loadCredentials()).find(c => c.id === req.params.id && c.provider === 'baserow');
         if (!credential) return res.status(404).json({ error: 'CREDENTIAL_NOT_FOUND' });
-
         const { baseUrl, token } = credential.config;
         await validateUrl(baseUrl);
-        const resp = await fetchWithRedirectValidation(`${baseUrl}/api/database/tables/database/${req.params.dbId}/`, {
+        const resp = await fetchWithRedirectValidation(`${baseUrl}/api/database/fields/table/${req.params.tableId}/`, {
             headers: { 'Authorization': `Token ${token}` }
         });
-        if (!resp.ok) {
-            return res.status(resp.status).json({ error: 'BASEROW_ERROR', detail: 'Failed to fetch tables from Baserow' });
-        }
+        if (!resp.ok) return res.status(resp.status).json({ error: 'BASEROW_FIELDS_FAILED', detail: `Baserow returned HTTP ${resp.status}. Check read access to this table.` });
         const data = await resp.json();
-        const tables = (Array.isArray(data) ? data : []).map(t => ({ id: String(t.id), name: t.name }));
-        res.json(tables);
+        res.json((Array.isArray(data) ? data : []).map(field => ({ name: field.name, type: field.type })));
     } catch (err) {
         res.status(500).json({ error: 'PROXY_ERROR', detail: 'Internal proxy error' });
-    }
-});
-
-
-async function baserowRequest(credential, path, options = {}) {
-    const { baseUrl, token } = credential.config;
-    await validateUrl(baseUrl);
-    const response = await fetchWithRedirectValidation(`${baseUrl}${path}`, {
-        ...options,
-        headers: { Authorization: `Token ${token}`, 'Content-Type': 'application/json', ...options.headers }
-    });
-    if (!response.ok) throw new Error(`Baserow returned HTTP ${response.status}`);
-    return response.json();
-}
-
-// Workspace access and application creation require a Baserow user token with
-// appropriate workspace permissions; database-only tokens cannot provision.
-router.get('/:id/proxy/baserow/workspaces', requireAuthOrApiKey, dataRateLimiter, async (req, res) => {
-    try {
-        const credential = (await loadCredentials()).find(c => c.id === req.params.id && c.provider === 'baserow');
-        if (!credential) return res.status(404).json({ error: 'CREDENTIAL_NOT_FOUND' });
-        const data = await baserowRequest(credential, '/api/workspaces/');
-        res.json((Array.isArray(data) ? data : []).map(w => ({ id: String(w.id), name: w.name })));
-    } catch (err) {
-        res.status(502).json({ error: 'BASEROW_WORKSPACES_FAILED', detail: err.message });
-    }
-});
-
-router.post('/:id/proxy/baserow/provision', requireAuthOrApiKey, dataRateLimiter, async (req, res) => {
-    const { workspaceId, taskId, taskName } = req.body || {};
-    if (!/^\\d+$/.test(String(workspaceId || '')) || !/^[a-zA-Z0-9_-]{1,128}$/.test(String(taskId || ''))) {
-        return res.status(400).json({ error: 'INVALID_PROVISION_REQUEST' });
-    }
-    try {
-        const credential = (await loadCredentials()).find(c => c.id === req.params.id && c.provider === 'baserow');
-        if (!credential) return res.status(404).json({ error: 'CREDENTIAL_NOT_FOUND' });
-        const name = String(taskName || 'Task').trim().slice(0, 80);
-        const database = await baserowRequest(credential, '/api/applications/', {
-            method: 'POST',
-            body: JSON.stringify({ name: `Figranium - ${name} - ${taskId}`, type: 'database', workspace: Number(workspaceId) })
-        });
-        if (!Number.isSafeInteger(database.id)) throw new Error('Baserow did not return a database ID');
-        try {
-            const table = await baserowRequest(credential, `/api/database/tables/database/${database.id}/`, {
-                method: 'POST',
-                body: JSON.stringify({ name: 'Results' })
-            });
-            if (!Number.isSafeInteger(table.id)) throw new Error('Baserow did not return a table ID');
-            return res.json({ databaseId: String(database.id), tableId: String(table.id) });
-        } catch (err) {
-            return res.status(502).json({ error: 'BASEROW_TABLE_CREATION_FAILED', detail: err.message, databaseId: String(database.id) });
-        }
-    } catch (err) {
-        res.status(502).json({ error: 'BASEROW_PROVISION_FAILED', detail: err.message });
     }
 });
 

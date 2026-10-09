@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconColorPicker, IconUserCircle } from '@tabler/icons-react';
 import { IconGitBranch, IconPlus, IconClick, IconApi, IconArrowLeft, IconCircleChevronDown, IconFileText, IconWand, IconTrash, IconRefresh, IconBan, IconBolt, IconCircleX, IconCategory, IconFocusCentered, IconCheck, IconSquareCheck, IconSquare, IconCircleCheck, IconCircle, IconX, IconCode, IconDeviceDesktop, IconDeviceGamepad3, IconCopy, IconCut, IconCopyPlus, IconFolderPlus, IconFileTypeCsv, IconBraces, IconDatabase, IconTrashX, IconFileDescription, IconServer, IconDownload, IconArrowsMove, IconGripVertical, IconEdit, IconAlertCircle, IconCalendarRepeat, IconChevronDown, IconCompassOff, IconFile, IconMaximize, IconFolder, IconFolderX, IconFolders, IconFileZip, IconListNumbers, IconHistory, IconHistoryToggle, IconHourglassEmpty, IconHourglassHigh, IconPhoto, IconLogin, IconPackage, IconBrandJavascript, IconJson, IconKeyboard, IconKey, IconKeyOff, IconCookie, IconCookieOff, IconVault, IconWorld, IconLayersLinked, IconList, IconLogout, IconDotsVertical, IconMouse, IconMovie, IconLocation, IconNavigation, IconNumbers, IconBrowserMaximize, IconExternalLink, IconPalette, IconUserSearch, IconCamera, IconPlayerPlay, IconLoader2, IconRepeat, IconRocket, IconDeviceFloppy, IconClock, IconFlask, IconSearch, IconSearchOff, IconShield, IconSettings, IconSettingsCog, IconArrowsShuffle, IconCpu, IconSortAscendingLetters, IconAbc, IconStar, IconPlayerStop, IconCornerDownRight, IconArrowsUpDown, IconTerminal2, IconTypography, IconTextSize, IconToggleRight, IconLanguage, IconAdjustmentsHorizontal, IconArrowsMaximize, IconUpload, IconFileUpload, IconVariable, IconShieldCheck, IconRosetteDiscountCheck, IconVideoOff, IconEye, IconEyeOff, IconLock, IconAlertTriangle, IconWifi, IconNote, IconInfoCircle, IconLink, IconTag, IconHome, IconFiles, IconCloud, IconDeviceDesktopCog, IconPuzzle, IconFileTypePdf, IconFileTypeDoc, IconFileTypeXls, IconFileTypePpt, IconSketching, IconPolygon, IconOutbound } from '@tabler/icons-react';
 
 type TablerIconProps = {
@@ -11,7 +12,7 @@ type TablerIconProps = {
 type IconComponent = React.ElementType;
 
 const iconNames: Record<string, string> = {
-    account_tree: 'IconGitBranch', add: 'IconPlus', ads_click: 'IconClick', api: 'IconApi',
+    account_tree: 'IconGitBranch', add: 'IconPlus', ads_click: 'IconClick', 'color-picker': 'IconColorPicker', api: 'IconApi',
     arrow_back: 'IconArrowLeft', arrow_drop_down_circle: 'IconCircleChevronDown', article: 'IconFileText', audio_file: 'IconFile',
     auto_awesome: 'IconWand', auto_delete: 'IconTrash', autorenew: 'IconRefresh', block: 'IconBan',
     bolt: 'IconBolt', call_split: 'IconGitBranch', cancel: 'IconCircleX', category: 'IconCategory',
@@ -29,7 +30,7 @@ const iconNames: Record<string, string> = {
     hourglass_top: 'IconHourglassHigh', image: 'IconPhoto', info: 'IconInfoCircle', input: 'IconLogin', inventory_2: 'IconPackage',
     javascript: 'IconBrandJavascript', json: 'IconJson', keyboard: 'IconKeyboard', key: 'IconKey', key_off: 'IconKeyOff', cookie: 'IconCookie', cookie_off: 'IconCookieOff', vault: 'IconVault',
     label: 'IconTag', language: 'IconWorld', layers: 'IconLayersLinked', link: 'IconLink', list: 'IconList', logout: 'IconLogout', more_vert: 'IconDotsVertical',
-    mouse: 'IconMouse', monitor: 'IconDeviceDesktopCog', movie: 'IconMovie', my_location: 'IconLocation', near_me: 'IconLocation', user_search: 'IconUserSearch',
+    mouse: 'IconMouse', monitor: 'IconDeviceDesktopCog', movie: 'IconMovie', my_location: 'IconLocation', near_me: 'IconLocation', user_search: 'IconUserSearch', 'user-circle': 'IconUserCircle',
     navigation: 'IconNavigation', numbers: 'IconNumbers', open_in_browser: 'IconBrowserMaximize', open_in_new: 'IconExternalLink',
     output: 'IconLogout', outbound: 'IconOutbound', palette: 'IconPalette', person_search: 'IconUserSearch', photo_camera: 'IconCamera',
     play_arrow: 'IconPlayerPlay', play_circle: 'IconPlayerPlay', progress_activity: 'IconLoader2', psychology: 'IconCpu', public: 'IconWorld',
@@ -49,6 +50,8 @@ const iconNames: Record<string, string> = {
 };
 
 const tablerIcons: Record<string, IconComponent> = {
+    IconColorPicker,
+    IconUserCircle,
     IconGitBranch,
     IconPlus,
     IconClick,

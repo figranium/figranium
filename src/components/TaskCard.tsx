@@ -4,6 +4,7 @@ import { Task } from '../types';
 import TablerIcon from './TablerIcon';
 import { copyToClipboard } from '../utils/clipboard';
 import { formatLabel } from '../utils/taskUtils';
+import UrlVariableDisplay from './UrlVariableDisplay';
 
 interface TaskCardProps {
     task: Task;
@@ -117,7 +118,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onEditTask, onDeleteTask }) =
                 </div>
                 <div className="min-w-0">
                     <h3 className="text-sm font-bold theme-text truncate" title={task.name || 'Untitled'}>{task.name || 'Untitled'}</h3>
-                    <p className="mt-1 text-[11px] theme-text-faint truncate" title={task.url || 'Target undefined'}>{task.url || 'Target undefined'}</p>
+                    <p className="mt-1 text-[11px] theme-text-faint truncate"><UrlVariableDisplay value={task.url} emptyLabel="Target undefined" /></p>
                 </div>
             </div>
 

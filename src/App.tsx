@@ -322,7 +322,7 @@ export default function App() {
                     <Route path="/" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
                     <Route path="/dashboard" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
                     <Route path="/templates" element={<TemplatesScreen onImport={handleImportTemplate} />} />
-                    <Route path="/vault" element={<CookiesScreen onNotify={showAlert} />} />
+                    <Route path="/vault" element={<CookiesScreen onNotify={showAlert} onConfirm={requestConfirm} />} />
                     <Route path="/cookies" element={<Navigate to="/vault" replace />} />
                     <Route path="/passwords" element={<Navigate to="/vault" replace />} />
                     <Route path="/tasks/new" element={

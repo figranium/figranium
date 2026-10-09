@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import TablerIcon from './TablerIcon';
 import PasswordsScreen from './PasswordsScreen';
+import { ConfirmRequest } from '../types';
 
 type State = { id: string; name: string; cookies: number; origins: number; updatedAt: string };
 type Source = 'fresh' | 'import';
 
-export default function CookiesScreen({ onNotify }: { onNotify: (message: string, tone?: 'success' | 'error') => void }) {
+export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (message: string, tone?: 'success' | 'error') => void; onConfirm: (request: string | ConfirmRequest) => Promise<boolean> }) {
     const [states, setStates] = useState<State[]>([]);
     const [tab, setTab] = useState<'cookies' | 'passwords'>('cookies');
     const [creating, setCreating] = useState(false);
@@ -54,7 +55,9 @@ export default function CookiesScreen({ onNotify }: { onNotify: (message: string
         setEditingId(null); await load();
     };
 
-    const remove = async (id: string) => {
+    const remove = async (state: State) => {
+        if (!await onConfirm({ title: 'Delete cookie state', message: `Permanently delete ${state.name}? This cannot be undone.`, confirmLabel: 'Delete state' })) return;
+        const { id } = state;
         const response = await fetch(`/api/cookie-states/${id}`, { method: 'DELETE' });
         if (!response.ok) return onNotify('Cookie state could not be deleted.', 'error');
         await load(); onNotify('Cookie state deleted.', 'success');
@@ -67,7 +70,7 @@ export default function CookiesScreen({ onNotify }: { onNotify: (message: string
                 <button onClick={() => setTab('cookies')} className={`rounded-xl px-4 py-2 text-xs font-bold ${tab === 'cookies' ? 'theme-highlight' : 'theme-text-faint theme-hover'}`}><TablerIcon name="cookie" /> Cookie states</button>
                 <button onClick={() => setTab('passwords')} className={`rounded-xl px-4 py-2 text-xs font-bold ${tab === 'passwords' ? 'theme-highlight' : 'theme-text-faint theme-hover'}`}><TablerIcon name="key" /> Passwords</button>
             </div>
-            {tab === 'passwords' ? <PasswordsScreen embedded onNotify={onNotify} /> : <>
+            {tab === 'passwords' ? <PasswordsScreen embedded /> : <>
                 <section className="app-panel mb-5 flex items-center justify-between gap-4 p-5">
                     <div><h2 className="text-sm font-bold theme-text">Cookie states</h2><p className="mt-1 text-xs theme-text-faint">Each state keeps its own session and is updated after browser runs.</p></div>
                     <button onClick={() => setCreating(true)} className="app-button-primary shrink-0"><TablerIcon name="add" /> Create state</button>
@@ -78,7 +81,7 @@ export default function CookiesScreen({ onNotify }: { onNotify: (message: string
                             {editingId === state.id ? <input autoFocus value={editingName} onChange={(event) => setEditingName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') rename(state.id); if (event.key === 'Escape') setEditingId(null); }} className="max-w-md rounded-lg border theme-border bg-[var(--app-input)] px-3 py-2 text-sm theme-text" /> : <h2 className="text-sm font-bold theme-text">{state.name}</h2>}
                             <p className="mt-1 text-[11px] theme-text-faint">{state.cookies} cookies · {state.origins} origins · updated {new Date(state.updatedAt).toLocaleString()}</p>
                         </div>
-                        <div className="flex items-center gap-3">{editingId === state.id ? <><button aria-label="Save name" title="Save" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => rename(state.id)}><TablerIcon name="check" /></button><button aria-label="Cancel rename" title="Cancel" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => setEditingId(null)}><TablerIcon name="close" /></button></> : <button aria-label={`Rename ${state.name}`} title="Rename" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => { setEditingId(state.id); setEditingName(state.name); }}><TablerIcon name="edit" /></button>}{state.id !== 'cookies_default' && <button title="Delete" aria-label={`Delete ${state.name}`} className="text-red-400 hover:text-red-500" onClick={() => remove(state.id)}><TablerIcon name="delete" /></button>}</div>
+                        <div className="flex items-center gap-3">{editingId === state.id ? <><button aria-label="Save name" title="Save" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => rename(state.id)}><TablerIcon name="check" /></button><button aria-label="Cancel rename" title="Cancel" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => setEditingId(null)}><TablerIcon name="close" /></button></> : <button aria-label={`Rename ${state.name}`} title="Rename" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => { setEditingId(state.id); setEditingName(state.name); }}><TablerIcon name="edit" /></button>}{state.id !== 'cookies_default' && <button title="Delete" aria-label={`Delete ${state.name}`} className="text-red-400 hover:text-red-500" onClick={() => void remove(state)}><TablerIcon name="delete" /></button>}</div>
                     </article>)}
                     {!states.length && <div className="app-empty-state"><TablerIcon name="cookie_off" className="text-3xl" /><p className="text-xs theme-text-faint">No saved cookie states yet.</p></div>}
                 </section>

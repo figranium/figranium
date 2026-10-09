@@ -1,5 +1,5 @@
 import { ReactNode, useMemo } from 'react';
-import { Action, BlockTestResult, Variable } from '../../types';
+import { Action, BlockTestResult, Task, Variable } from '../../types';
 import TablerIcon from '../TablerIcon';
 import ConfigVariableList from './ConfigVariableList';
 import { isBlockStartAction } from '../../utils/actionBlocks';
@@ -10,6 +10,7 @@ interface BlockConfigWorkspaceProps {
     configuration: ReactNode;
     action: Action;
     actions: Action[];
+    taskUrl: Task['url'];
     variables: Record<string, Variable>;
     canInsertVariable: boolean;
     isTesting: boolean;
@@ -81,7 +82,7 @@ const statusTone: Record<BlockTestResult['status'], string> = {
 };
 
 const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
-    configuration, action, actions, variables, canInsertVariable, isTesting, testError,
+    configuration, action, actions, taskUrl, variables, canInsertVariable, isTesting, testError,
     testResult, onInsertVariable, onRunTest, onStopTest,
 }) => {
     const inputEntries = getActionInputEntries(action, variables);
@@ -136,7 +137,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
             </div>
 
             <aside className="min-w-0 space-y-5" aria-label="Block context">
-                <ConfigVariableList variables={variables} canInsertVariable={canInsertVariable} loopVariablesAvailable={loopVariablesAvailable} onInsertVariable={onInsertVariable} />
+                <ConfigVariableList variables={variables} taskUrl={taskUrl} canInsertVariable={canInsertVariable} loopVariablesAvailable={loopVariablesAvailable} onInsertVariable={onInsertVariable} />
                 <section className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-4" aria-live="polite">
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">

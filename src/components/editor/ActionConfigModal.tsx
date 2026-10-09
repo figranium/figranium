@@ -144,7 +144,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
             action.selector, action.targetSelector, action.value, action.key, action.varName,
             action.conditionValue, action.headers, action.body
         ];
-        const regex = /\{\$([\w.]+)\}/g;
+        const regex = /\{\$([\w.^-]+)\}/g;
         const referenced = new Set<string>();
         for (const text of fieldsToScan) {
             if (!text) continue;
@@ -152,7 +152,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
             let match;
             while ((match = regex.exec(text)) !== null) {
                 const name = match[1];
-                if (name !== 'now' && name !== 'block.output') referenced.add(name);
+                if (name !== 'now' && name !== 'block.output' && name !== 'password' && name !== 'uname' && !name.startsWith('passwords.') && !name.startsWith('unames.')) referenced.add(name);
             }
         }
         // Create missing variables
@@ -195,7 +195,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
 
         return (
             <div className={useTwoColumnLayout
-                ? 'grid grid-cols-1 content-start items-start gap-x-8 gap-y-10 md:grid-cols-2'
+                ? 'grid grid-cols-1 content-start items-stretch gap-x-8 gap-y-10 md:grid-cols-2'
                 : 'space-y-10'}>
                 {/* Selector field */}
                 {(action.type === 'click' || action.type === 'check' || action.type === 'uncheck' || action.type === 'drag_and_drop' || action.type === 'select' || action.type === 'type' || action.type === 'hover' || action.type === 'wait_selector' || action.type === 'scroll' || action.type === 'upload') && (
@@ -231,7 +231,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     title="Pick Selector in Browser"
                                     aria-label="Pick Selector in Browser"
                                 >
-                                    <TablerIcon name="my_location" className="text-lg" />
+                                    <TablerIcon name="color-picker" className="text-lg" />
                                 </button>
                             )}
                         </div>
@@ -255,7 +255,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                 title="Pick Target Selector in Browser"
                                 aria-label="Pick Target Selector in Browser"
                             >
-                                <TablerIcon name="my_location" className="text-lg" />
+                                <TablerIcon name="color-picker" className="text-lg" />
                             </button>
                         )}
                     </div>
@@ -436,7 +436,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                                 title="Pick Selector in Browser"
                                                 aria-label="Pick Selector in Browser"
                                             >
-                                                <TablerIcon name="my_location" className="text-lg" />
+                                                <TablerIcon name="color-picker" className="text-lg" />
                                             </button>
                                         )}
                                     </div>
@@ -782,6 +782,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 )}
                 action={action}
                 actions={task.actions}
+                taskUrl={task.url}
                 variables={variables}
                 canInsertVariable={canInsertVariable}
                 isTesting={isTesting}

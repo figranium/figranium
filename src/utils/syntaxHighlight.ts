@@ -28,12 +28,12 @@ const highlightVariables = (text: string, variables?: Record<string, any>) => {
     // ⚡ Bolt: Fast-path for text that doesn't contain variable placeholders.
     if (!text.includes('{$')) return escapeHtml(text);
 
-    const regex = /\{\$([\w.]+)\}/g;
+    const regex = /\{\$([\w.^-]+)\}/g;
     let html = '';
     let lastIndex = 0;
     let match;
 
-    const varExists = (name: string) => !!getReservedVariable(name) || (!!variables && name in variables);
+    const varExists = (name: string) => !!getReservedVariable(name) || /^(passwords|unames)\.[a-z0-9-]+(?:\^[a-z0-9-]+)*$/i.test(name) || (!!variables && name in variables);
     const hasValue = (name: string) => {
         const reserved = getReservedVariable(name);
         if (reserved) return !!reserved.hasValue;

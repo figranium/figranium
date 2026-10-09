@@ -148,7 +148,10 @@ Task-level `variables` are user/caller inputs and configuration defaults. Runtim
 
 Reserved:
 - `{$now}` resolves to ISO timestamp
+- `{$password}` resolves to the 1Password Login password whose website hostname matches the task URL. Missing or ambiguous matches fail the run; the value is redacted from results and logs. The name `password` is reserved and cannot be used as an ordinary task variable.
+- `{$uname}` resolves to the username from that same task-website Login. The name `uname` is reserved and cannot be used as an ordinary task variable. Usernames are redacted from results and logs.
 - `{$passwords.example^com}` resolves to the password from the 1Password Login item whose website hostname is exactly `example.com`. Replace dots in the hostname with `^`; for example, `{$passwords.login^example^com}` targets `login.example.com`. Passwords are resolved server-side from the Figranium vault. A missing or ambiguous website match fails the run rather than silently substituting an empty value.
+- `{$unames.example^com}` resolves to the username from the Login item for that exact hostname and follows the same `^` hostname encoding, missing-match, and ambiguity rules as `{$passwords.example^com}`.
 - `block.output` contains last block output
 - `loop.index`, `loop.count`, `loop.item`, `loop.text`, `loop.html` during foreach
 
@@ -201,11 +204,12 @@ CSV example:
 ```
 
 ## 6) Output — push results to Baserow
-Set the `output` field to automatically append `result.data` to a Baserow table after each run.
+Set the `output` field to append `result.data` to an existing Baserow table after each run. Connect a Baserow database token with read and create-row access, then select the database and table in the Output Providers tab. Create fields in Baserow whose names match the JSON object keys; the tab lists known missing fields. Figranium does not create databases, tables, or fields.
 
 - `provider`: always `"baserow"` for now.
 - `credentialId`: ID of a saved credential (manage via **Settings → Output** in the UI or `POST /api/credentials`).
-- `tableId`: numeric Baserow table ID (visible in the table URL).
+- `databaseId`: numeric Baserow database ID selected from the token's accessible tables.
+- `tableId`: numeric Baserow table ID selected from that database.
 - `onError`: `"ignore"` (suppress errors) or `"fail"` (log errors prominently in the server console).
 
 The extraction script's return value must be a **JSON object** (→ one row) or **JSON array of objects** (→ batch rows). Object keys must match Baserow field names exactly. `extractionFormat` must be `"json"` when using output (CSV is not supported for push).
@@ -218,6 +222,7 @@ Example:
   "output": {
     "provider": "baserow",
     "credentialId": "cred_abc123",
+    "databaseId": "17",
     "tableId": "42",
     "onError": "fail"
   }

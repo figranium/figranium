@@ -1,0 +1,30 @@
+const assert = require('node:assert/strict');
+const capture = require('../src/server/headful-password-capture');
+const { JSDOM } = require('jsdom');
+
+const page = new JSDOM('<form><input type="email" value="user@example.com"><input type="password" value="secret"><div class="ui submit button">Login</div></form>', { url: 'https://semantic-ui.com/examples/login.html' });
+const submitted = [];
+page.window.__figraniumOfferPassword = candidate => { submitted.push(candidate); return Promise.resolve(); };
+const previousWindow = global.window;
+const previousDocument = global.document;
+global.window = page.window;
+global.document = page.window.document;
+capture.installPageCapture();
+page.window.document.querySelector('.submit').click();
+assert.deepEqual(submitted, [{ username: 'user@example.com', password: 'secret' }]);
+global.window = previousWindow;
+global.document = previousDocument;
+
+capture.offer(1, 'https://semantic-ui.com/examples/login.html', { username: 'user@example.com', password: 'secret' });
+const candidate = capture.peek(1);
+assert.deepEqual(candidate && Object.keys(candidate).sort(), ['domain', 'id', 'username']);
+assert.equal(candidate.domain, 'semantic-ui.com');
+assert.equal(candidate.username, 'user@example.com');
+assert.equal(capture.peek(2), null);
+assert.equal(capture.take(1, 'wrong'), null);
+assert.equal(capture.take(1, candidate.id).password, 'secret');
+assert.equal(capture.peek(1), null);
+capture.offer(2, 'https://signup.example.com', { username: 'new@example.com', password: 'new-secret' });
+capture.clear(2);
+assert.equal(capture.peek(2), null);
+console.log('Headful password capture lifecycle passed');

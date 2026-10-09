@@ -15,6 +15,8 @@ const API_KEYS_FILE = path.join(DATA_DIR, 'api_keys.json');
 const API_KEY_ARCHIVE_SECRET_FILE = path.join(DATA_DIR, 'api_key_archive_secret.txt');
 const COOKIE_STATES_FILE = path.join(DATA_DIR, 'cookie_states.json');
 const ONEPASSWORD_FILE = path.join(DATA_DIR, 'onepassword.json');
+const PASSWORD_CACHE_FILE = path.join(DATA_DIR, 'password_cache.json');
+const PASSWORD_CACHE_KEY_FILE = path.join(DATA_DIR, 'password_cache.key');
 const THEME_FILE = path.join(DATA_DIR, 'theme.json');
 const DEFAULT_THEME_ID = 'auto';
 const CAPTCHA_SETTINGS_FILE = path.join(DATA_DIR, 'captcha_settings.json');
@@ -55,6 +57,8 @@ module.exports = {
     API_KEY_ARCHIVE_SECRET_FILE,
     COOKIE_STATES_FILE,
     ONEPASSWORD_FILE,
+    PASSWORD_CACHE_FILE,
+    PASSWORD_CACHE_KEY_FILE,
     THEME_FILE,
     DEFAULT_THEME_ID,
     CAPTCHA_SETTINGS_FILE,

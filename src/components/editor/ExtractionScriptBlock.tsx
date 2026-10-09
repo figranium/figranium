@@ -157,7 +157,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                     title="Pick Selector in Browser"
                                                     aria-label="Pick Selector in Browser"
                                                 >
-                                                    <TablerIcon name="my_location" className="text-lg" />
+                                                    <TablerIcon name="color-picker" className="text-lg" />
                                                 </button>
                                             )}
                                         </div>
@@ -252,7 +252,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                         title="Pick Row Container in Browser"
                                                         aria-label="Pick Row Container in Browser"
                                                     >
-                                                        <TablerIcon name="my_location" className="text-lg" />
+                                                        <TablerIcon name="color-picker" className="text-lg" />
                                                     </button>
                                                 )}
                                             </div>
@@ -309,7 +309,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                                                     title="Pick Selector in Browser (within row)"
                                                                     aria-label="Pick Selector in Browser (within row)"
                                                                 >
-                                                                    <TablerIcon name="my_location" className="text-lg" />
+                                                                    <TablerIcon name="color-picker" className="text-lg" />
                                                                 </button>
                                                             )}
                                                         </div>
@@ -398,7 +398,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                     </div>
                 </div>
                 <aside className="min-w-0" aria-label="Extraction context">
-                    <ConfigVariableList variables={task.variables} canInsertVariable={canInsertVariable} onInsertVariable={insertVariable} />
+                    <ConfigVariableList variables={task.variables} taskUrl={task.url} canInsertVariable={canInsertVariable} onInsertVariable={insertVariable} />
                 </aside>
             </div>
         </ConfigModalShell>
@@ -433,7 +433,8 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                 onClick={() => setIsOpen(true)}
                 onContextMenu={(e) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY }); }}
                 data-interactive-target="true"
-                className="bg-black min-w-[280px] w-full max-w-sm mx-auto border border-white/20 p-5 rounded-2xl group/item relative transition-all duration-150 select-none touch-none cursor-pointer hover:border-white/40 hover:bg-white/[0.02]"
+                className="min-w-[280px] w-full max-w-sm mx-auto border border-white/20 p-5 rounded-2xl group/item relative transition-all duration-150 select-none touch-none cursor-pointer hover:border-white/40"
+                style={{ backgroundColor: 'var(--app-surface-2)' }}
             >
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">

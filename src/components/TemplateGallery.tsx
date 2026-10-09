@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import TablerIcon from './TablerIcon';
+import UrlVariableDisplay, { getUrlSummary } from './UrlVariableDisplay';
 
 export interface MarketplaceTemplate {
     id: string;
@@ -131,7 +132,8 @@ export default function TemplateGallery({ templates, onImport, featured = false 
     return <>
         {importError ? <p className="template-gallery-error" role="alert">{importError}</p> : null}
         <div className={`templates-grid ${featured ? 'templates-grid-featured' : ''}`}>{templates.map((template) => {
-            const hostname = getHostname(template.target_url || template.configuration?.url);
+            const targetUrl = template.target_url || template.configuration?.url;
+            const urlSummary = getUrlSummary(targetUrl);
             const creatorName = creatorDisplayName(template);
             const avatarUrl = creatorAvatarUrl(template);
             const verified = isVerifiedCreator(template);
@@ -141,7 +143,7 @@ export default function TemplateGallery({ templates, onImport, featured = false 
                 <div className="flex items-start justify-between gap-3"><div className="template-site-icon">{iconUrl ? <img src={iconUrl} alt="" /> : <span>F</span>}</div><span className="template-category"><TablerIcon name={categoryIcon(template.category)} /> {template.category || 'Other'}</span></div>
                 <h2>{template.title}</h2>
                 <p className="template-description">{template.description || 'A community automation template.'}</p>
-                <div className="template-meta"><span><TablerIcon name="public" /> {hostname || 'Web automation'}</span><span><TablerIcon name="format_list_numbered" /> {actionCount} steps</span></div>
+                <div className="template-meta"><span className="min-w-0 max-w-full"><TablerIcon name="public" /> <UrlVariableDisplay value={urlSummary} emptyLabel="Web automation" /></span><span><TablerIcon name="format_list_numbered" /> {actionCount} steps</span></div>
                 <div className="template-card-footer"><span className="template-creator">{avatarUrl ? <img src={avatarUrl} alt="" /> : <span className="template-creator-fallback">{creatorInitials(creatorName)}</span>}<span>{creatorName}</span><TablerIcon name={verified ? 'rosette_discount_check' : 'shield'} className={verified ? 'text-blue-500' : 'theme-text-faint'} /><span className="sr-only">{verified ? 'Verified creator' : 'Creator not verified'}</span></span><button type="button" onClick={(event) => { event.stopPropagation(); importTemplate(template); }} disabled={importingId === template.id} className="app-button-primary template-import-button">{importingId === template.id ? <TablerIcon name="progress_activity" className="animate-spin" /> : <TablerIcon name="download" />} Import</button></div>
             </article>;
         })}</div>

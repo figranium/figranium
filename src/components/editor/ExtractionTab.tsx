@@ -139,7 +139,7 @@ const ExtractionTab: React.FC<ExtractionTabProps> = ({ currentTask, onUpdateTask
                                                                     title="Pick Selector in Browser"
                                                                     aria-label="Pick Selector in Browser"
                                                                 >
-                                                                    <TablerIcon name="my_location" className="text-lg" />
+                                                                    <TablerIcon name="color-picker" className="text-lg" />
                                                                 </button>
                                                             )}
                                                         </div>
@@ -234,7 +234,7 @@ const ExtractionTab: React.FC<ExtractionTabProps> = ({ currentTask, onUpdateTask
                                                                         title="Pick Row Container in Browser"
                                                                         aria-label="Pick Row Container in Browser"
                                                                     >
-                                                                        <TablerIcon name="my_location" className="text-lg" />
+                                                                        <TablerIcon name="color-picker" className="text-lg" />
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -291,7 +291,7 @@ const ExtractionTab: React.FC<ExtractionTabProps> = ({ currentTask, onUpdateTask
                                                                                     title="Pick Selector in Browser (within row)"
                                                                                     aria-label="Pick Selector in Browser (within row)"
                                                                                 >
-                                                                                    <TablerIcon name="my_location" className="text-lg" />
+                                                                                    <TablerIcon name="color-picker" className="text-lg" />
                                                                                 </button>
                                                                             )}
                                                                         </div>

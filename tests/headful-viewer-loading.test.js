@@ -48,6 +48,7 @@ async function main() {
         } else {
             assert.ok(rfbListeners.connect, 'viewer initializes after successful module load');
             rfbListeners.connect();
+            assert.equal(messages.at(-1).type, 'figranium-headful-viewer-ready');
             listeners.pagehide();
             assert.equal(disconnected, true);
             assert.ok(!requests.some(url => url === '/headful/stop'), 'unloading an old viewer must not stop a new session');

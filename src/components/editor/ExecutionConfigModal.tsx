@@ -80,7 +80,7 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                 </div>
 
                 <aside className="min-w-0" aria-label="Execution context">
-                    <ConfigVariableList variables={task.variables} canInsertVariable={canInsertVariable} onInsertVariable={insertVariable} />
+                    <ConfigVariableList variables={task.variables} taskUrl={task.url} canInsertVariable={canInsertVariable} onInsertVariable={insertVariable} />
                 </aside>
             </div>
         </ConfigModalShell>

@@ -4,16 +4,19 @@ const onepassword = require('../../server/onepassword');
 
 const TEMPLATE_TOKEN = /\{\$([\w.^-]+)\}/g;
 const PASSWORD_VARIABLE = /^passwords\.([a-z0-9-]+(?:\^[a-z0-9-]+)*)$/i;
+const USERNAME_VARIABLE = /^unames\.([a-z0-9-]+(?:\^[a-z0-9-]+)*)$/i;
+const TASK_LOGIN_VARIABLES = new Set(['password', 'uname']);
 
-function collectPasswordVariables(value, variables = new Set()) {
+function collectCredentialVariables(value, variables = new Set()) {
     if (typeof value === 'string') {
         for (const match of value.matchAll(TEMPLATE_TOKEN)) {
-            if (match[1].toLowerCase().startsWith('passwords.')) variables.add(match[1].toLowerCase());
+            const name = match[1].toLowerCase();
+            if (name.startsWith('passwords.') || name.startsWith('unames.') || TASK_LOGIN_VARIABLES.has(name)) variables.add(name);
         }
     } else if (Array.isArray(value)) {
-        value.forEach(item => collectPasswordVariables(item, variables));
+        value.forEach(item => collectCredentialVariables(item, variables));
     } else if (value && typeof value === 'object') {
-        Object.values(value).forEach(item => collectPasswordVariables(item, variables));
+        Object.values(value).forEach(item => collectCredentialVariables(item, variables));
     }
     return variables;
 }
@@ -35,29 +38,43 @@ function createSecretRedactor(secrets) {
 
 async function createRuntimeContext(source, options = {}) {
     const runtimeVars = { ...(source.taskVariables || source.variables || {}) };
+    if (Object.keys(runtimeVars).some(name => TASK_LOGIN_VARIABLES.has(name.toLowerCase()))) {
+        throw new TaskInputError('password and uname are reserved for the task website Login. Rename the task variable.');
+    }
     let lastBlockOutput = null;
     runtimeVars['block.output'] = lastBlockOutput;
-    const passwordValues = new Map();
+    const credentialValues = new Map();
     const getPasswordForDomain = options.getPasswordForDomain || onepassword.getPasswordForDomain;
-    const passwordVariables = collectPasswordVariables(source);
-    for (const name of passwordVariables) {
-        const match = name.match(PASSWORD_VARIABLE);
-        if (!match) throw new TaskInputError(`Invalid password variable: {$${name}}.`);
-        const domain = match[1].replace(/\^/g, '.').toLowerCase();
+    const getUsernameForDomain = options.getUsernameForDomain || onepassword.getUsernameForDomain;
+    const credentialVariables = collectCredentialVariables(source);
+    for (const name of credentialVariables) {
+        const passwordMatch = name.match(PASSWORD_VARIABLE);
+        const usernameMatch = name.match(USERNAME_VARIABLE);
+        const isPassword = name === 'password' || Boolean(passwordMatch);
+        if (!TASK_LOGIN_VARIABLES.has(name) && !passwordMatch && !usernameMatch) throw new TaskInputError(`Invalid credential variable: {$${name}}.`);
+        let domain;
+        if (TASK_LOGIN_VARIABLES.has(name)) {
+            try {
+                const url = String(source.url || '').replace(TEMPLATE_TOKEN, (_token, key) => String(runtimeVars[key] ?? ''));
+                domain = new URL(url).hostname.toLowerCase();
+                if (!domain) throw new Error('Missing hostname');
+            } catch { throw new TaskInputError(`A valid task website URL is required for {$${name}}.`); }
+        } else domain = (passwordMatch || usernameMatch)[1].replace(/\^/g, '.').toLowerCase();
         try {
-            passwordValues.set(name, await getPasswordForDomain(domain));
+            credentialValues.set(name, isPassword ? await getPasswordForDomain(domain) : await getUsernameForDomain(domain));
         } catch (error) {
             const messages = {
                 ONEPASSWORD_NOT_CONFIGURED: 'Configure 1Password before using password variables.',
                 INVALID_PASSWORD_DOMAIN: `Invalid domain in password variable {$${name}}.`,
                 PASSWORD_DOMAIN_NOT_FOUND: `No 1Password Login item is mapped to ${domain}.`,
                 PASSWORD_NOT_FOUND: `The 1Password Login item for ${domain} has no password.`,
+                USERNAME_NOT_FOUND: `The 1Password Login item for ${domain} has no username.`,
                 AMBIGUOUS_PASSWORD_DOMAIN: `Multiple 1Password Login items match ${domain}.`,
             };
-            throw new TaskInputError(messages[error.code] || `Unable to resolve password variable for ${domain}.`);
+            throw new TaskInputError(messages[error.code] || `Unable to resolve credential variable for ${domain}.`);
         }
     }
-    const redactSensitive = createSecretRedactor([...passwordValues.values()]);
+    const redactSensitive = createSecretRedactor([...credentialValues.values()]);
 
     const setBlockOutput = (value) => {
         lastBlockOutput = value;
@@ -67,9 +84,9 @@ async function createRuntimeContext(source, options = {}) {
     const resolveTemplate = (input) => {
         if (typeof input !== 'string' || !input.includes('{$')) return input;
         return input.replace(TEMPLATE_TOKEN, (_match, name) => {
-            if (name.toLowerCase().startsWith('passwords.')) {
-                const value = passwordValues.get(name.toLowerCase());
-                if (value === undefined) throw new TaskInputError(`Password variable {$${name}} was not present when the task started.`);
+            if (TASK_LOGIN_VARIABLES.has(name.toLowerCase()) || name.toLowerCase().startsWith('passwords.') || name.toLowerCase().startsWith('unames.')) {
+                const value = credentialValues.get(name.toLowerCase());
+                if (value === undefined) throw new TaskInputError(`Credential variable {$${name}} was not present when the task started.`);
                 return value;
             }
             if (name === 'now') return new Date().toISOString();
@@ -115,4 +132,4 @@ function normalizeActions(actions) {
     return actions;
 }
 
-module.exports = { createRuntimeContext, normalizeActions, collectPasswordVariables, createSecretRedactor };
+module.exports = { createRuntimeContext, normalizeActions, collectCredentialVariables, collectPasswordVariables: collectCredentialVariables, createSecretRedactor };

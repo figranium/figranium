@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Variable } from '../../types';
 import TablerIcon from '../TablerIcon';
-import { BLOCK_OUTPUT_VARIABLE, MORE_RESERVED_VARIABLES, ReservedVariableDefinition } from '../../utils/reservedVariables';
+import { BLOCK_OUTPUT_VARIABLE, MORE_RESERVED_VARIABLES, ReservedVariableDefinition, TASK_LOGIN_VARIABLES } from '../../utils/reservedVariables';
 import { clearActiveVariableDragToken, setActiveVariableDragToken } from '../../utils/variableDrag';
 
 interface ConfigVariableListProps {
     variables: Record<string, Variable>;
+    taskUrl?: string;
     canInsertVariable?: boolean;
     loopVariablesAvailable?: boolean;
     onInsertVariable?: (name: string) => void;
@@ -24,8 +25,13 @@ const formatValue = (value: unknown) => {
     try { return JSON.stringify(value, null, 2); } catch { return String(value); }
 };
 
+const hostnameFromUrl = (value?: string) => {
+    try { return value ? new URL(value).hostname.toLowerCase() : ''; } catch { return ''; }
+};
+
 const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
     variables,
+    taskUrl,
     canInsertVariable = false,
     loopVariablesAvailable = false,
     onInsertVariable,
@@ -38,6 +44,7 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
     const dragImageRef = useRef<HTMLElement | null>(null);
     const dragFrameRef = useRef<number | null>(null);
     const dragActiveRef = useRef(false);
+    const taskHostname = hostnameFromUrl(taskUrl);
 
     useEffect(() => {
         let cancelled = false;
@@ -60,18 +67,19 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
                     if (!item.hasPassword) continue;
                     for (const domain of item.domains || []) {
                         const normalizedDomain = String(domain).toLowerCase();
+                        if (!taskHostname || (normalizedDomain !== taskHostname && !normalizedDomain.endsWith(`.${taskHostname}`))) continue;
                         const name = `passwords.${normalizedDomain.replace(/\./g, '^')}`;
                         const existing = variables.get(name) || { domain: normalizedDomain, titles: new Set<string>() };
                         existing.titles.add(item.title);
                         variables.set(name, existing);
                     }
                 }
-                setPasswordVariables([...variables].map(([name, variable]) => ({
+                setPasswordVariables([...variables].sort(([left], [right]) => left.localeCompare(right)).slice(0, Math.max(0, 6 - TASK_LOGIN_VARIABLES.length)).map(([name, variable]) => ({
                     name,
                     label: name,
                     description: variable.titles.size > 1
-                        ? `Multiple 1Password Login items match ${variable.domain}; resolve the duplicate website mapping in 1Password.`
-                        : `Password for ${variable.domain} from ${[...variable.titles][0]}.`,
+                        ? 'Multiple matching Login items.'
+                        : [...variable.titles][0],
                     icon: 'key',
                 })));
                 setPasswordVariablesStatus('ready');
@@ -80,7 +88,7 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
                 if (!cancelled) setPasswordVariablesStatus('error');
             });
         return () => { cancelled = true; };
-    }, []);
+    }, [taskHostname]);
 
     const insertOrDragProps = (name: string, unavailable = false) => ({
         draggable: !unavailable,
@@ -184,15 +192,19 @@ const ConfigVariableList: React.FC<ConfigVariableListProps> = ({
                 {activeTab === 'variables' && entries.length === 0 && (
                     <p className="py-4 text-center text-xs text-[var(--app-text-faint)]">No task variables defined</p>
                 )}
+                {activeTab === 'passwords' && TASK_LOGIN_VARIABLES.map(reservedVariableRow)}
                 {activeTab === 'passwords' && passwordVariables.map(reservedVariableRow)}
                 {activeTab === 'passwords' && passwordVariablesStatus === 'loading' && (
-                    <p className="text-xs text-[var(--app-text-faint)]">Loading 1Password variables…</p>
+                    <p className="flex items-center gap-2 text-xs text-[var(--app-text-faint)]"><TablerIcon name="progress_activity" className="animate-spin" /> Loading matching Login passwords…</p>
                 )}
                 {activeTab === 'passwords' && passwordVariablesStatus === 'unconfigured' && (
                     <p className="text-xs text-[var(--app-text-faint)]">Connect 1Password in Settings to use password variables.</p>
                 )}
-                {activeTab === 'passwords' && passwordVariablesStatus === 'ready' && passwordVariables.length === 0 && (
-                    <p className="text-xs text-[var(--app-text-faint)]">No Login passwords with website domains were found in the Figranium vault.</p>
+                {activeTab === 'passwords' && passwordVariablesStatus === 'ready' && !taskHostname && (
+                    <p className="text-xs text-[var(--app-text-faint)]">Set a concrete task URL to show matching Login passwords.</p>
+                )}
+                {activeTab === 'passwords' && passwordVariablesStatus === 'ready' && taskHostname && passwordVariables.length === 0 && (
+                    <p className="text-xs text-[var(--app-text-faint)]">No Login passwords match {taskHostname} or its subdomains.</p>
                 )}
                 {activeTab === 'passwords' && passwordVariablesStatus === 'error' && (
                     <p role="alert" className="text-xs text-red-400">Could not load 1Password variables.</p>

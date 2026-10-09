@@ -14,23 +14,28 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     const useNovnc = useHeadfulStatus();
     const executeAbortRef = useRef<AbortController | null>(null);
     const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const headfulBusyRef = useRef(false);
 
     const stopHeadful = async () => {
+        if (headfulBusyRef.current) return;
+        headfulBusyRef.current = true;
         try {
             await fetch('/headful/stop', { method: 'POST' });
         } catch (e) {
             console.error('Failed to stop headful session', e);
         } finally {
             setIsHeadfulOpen(false);
+            headfulBusyRef.current = false;
         }
     };
 
     const openHeadful = async (url: string, targetActionId?: string, taskSnapshot?: Task, variables?: any) => {
+        if (headfulBusyRef.current) return;
         if (isHeadfulOpen) {
             await stopHeadful();
             return;
         }
-        setIsHeadfulOpen(true);
+        headfulBusyRef.current = true;
         try {
             const res = await fetch('/headful', {
                 method: 'POST',
@@ -42,10 +47,14 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 const msg = data?.details || data?.error || 'Failed to start headful session';
                 showAlert(msg, 'error');
                 setIsHeadfulOpen(false);
+            } else {
+                setIsHeadfulOpen(true);
             }
         } catch (e: any) {
             showAlert('Failed to start headful session', 'error');
             setIsHeadfulOpen(false);
+        } finally {
+            headfulBusyRef.current = false;
         }
     };
 

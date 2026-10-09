@@ -16,7 +16,7 @@ router.get('/', requireAuth, async (_req, res) => {
 
 router.post('/', csrfProtection, dataRateLimiter, requireAuth, async (req, res) => {
     const { name, permissions, taskIds } = req.body || {};
-    if (!Array.isArray(permissions) || permissions.length === 0) return res.status(400).json({ error: 'PERMISSIONS_REQUIRED' });
+    if (!Array.isArray(permissions) || !permissions.some(permission => API_KEY_PERMISSIONS.includes(permission))) return res.status(400).json({ error: 'PERMISSIONS_REQUIRED' });
     try {
         const { key, secret } = await createApiKey({ name, permissions, taskIds });
         res.status(201).json({ key: publicKey(key), secret });

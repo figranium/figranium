@@ -328,7 +328,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     </div>
                             </div>
                         </div>
-                        <div className="flex flex-col items-center mt-3">
+                        {blockEnd + 1 < endIndex && <div className="flex flex-col items-center mt-3">
                             <div className="w-px h-2 bg-white/25" />
                             <button
                                 onClick={() => openActionPalette(undefined, blockEnd + 1)}
@@ -339,7 +339,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <TablerIcon name="add" className="canvas-insert-icon text-sm transition-colors" />
                             </button>
                             <div className="w-px h-2 bg-white/25" />
-                        </div>
+                        </div>}
                     </div>
                 );
                 i = blockEnd + 1;
@@ -415,7 +415,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                             )}
                         </div>
 
-                        <div className="relative z-10 flex flex-col items-center">
+                        {blockEnd + 1 < endIndex && <div className="relative z-10 flex flex-col items-center">
                             <button
                                 onClick={() => openActionPalette(undefined, blockEnd + 1)}
                                 className="relative z-20 w-8 h-8 canvas-insert-button border border-dashed rounded-lg transition-all flex items-center justify-center group cursor-pointer focus:outline-none focus-visible:ring-2"
@@ -425,7 +425,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <TablerIcon name="add" className="canvas-insert-icon text-sm transition-colors" />
                             </button>
                             <div className="h-2 border-l border-white/25" />
-                        </div>
+                        </div>}
                     </div>
                 );
                 i = blockEnd + 1;
@@ -565,7 +565,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                         )}
                     </div>
                     {currentTask.mode === 'scrape' && <div className="canvas-connector w-px h-10 bg-white/25" />}
-                    {currentTask.mode === 'agent' && (
+                    {currentTask.mode === 'agent' && currentTask.actions.length > 0 && (
                         <div className="flex flex-col items-center pointer-events-auto">
                             <div className="canvas-connector w-px h-2 bg-white/25" />
                             <button

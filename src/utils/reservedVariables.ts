@@ -13,6 +13,11 @@ export const BLOCK_OUTPUT_VARIABLE: ReservedVariableDefinition = {
     icon: 'output',
 };
 
+export const TASK_LOGIN_VARIABLES: ReservedVariableDefinition[] = [
+    { name: 'password', label: 'Website password', description: 'Password connected to this task website in 1Password', icon: 'key' },
+    { name: 'uname', label: 'Website username', description: 'Username connected to this task website in 1Password', icon: 'user-circle' },
+];
+
 export const MORE_RESERVED_VARIABLES: ReservedVariableDefinition[] = [
     { name: 'now', label: 'Current time', description: 'Current ISO-8601 timestamp', icon: 'schedule', hasValue: true },
     { name: 'loop.index', label: 'Loop index', description: 'Zero-based index in a foreach loop', icon: 'format_list_numbered' },
@@ -22,7 +27,6 @@ export const MORE_RESERVED_VARIABLES: ReservedVariableDefinition[] = [
     { name: 'loop.html', label: 'Loop HTML', description: 'HTML of the current foreach item', icon: 'code' },
 ];
 
-const RESERVED_VARIABLES = [BLOCK_OUTPUT_VARIABLE, ...MORE_RESERVED_VARIABLES];
+const RESERVED_VARIABLES = [BLOCK_OUTPUT_VARIABLE, ...TASK_LOGIN_VARIABLES, ...MORE_RESERVED_VARIABLES];
 
 export const getReservedVariable = (name: string) => RESERVED_VARIABLES.find((variable) => variable.name === name);
-

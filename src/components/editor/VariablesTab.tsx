@@ -30,6 +30,7 @@ const VariablesTab: React.FC<VariablesTabProps> = ({ currentTask, addVariable, u
                                                     type="text"
                                                     defaultValue={name}
                                                     onBlur={(e) => {
+                                                        if (['password', 'uname'].includes(e.target.value.trim().toLowerCase())) { e.target.value = name; return; }
                                                         if (e.target.value !== name) updateVariable(name, e.target.value, def.type, def.value);
                                                     }}
                                                     placeholder="Name"

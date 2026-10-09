@@ -4,6 +4,7 @@ const { selectUserAgent } = require('./user-agent-settings');
 const { validateUrl, setupNavigationProtection } = require('./url-utils');
 const { parseBooleanFlag } = require('./common-utils');
 const { installPageTranslation } = require('./src/agent/translate');
+const passwordCapture = require('./src/server/headful-password-capture');
 
 const SEVERE_PERFORMANCE_STYLE_ID = '__figranium_severe_stream_performance';
 const { Mutex } = require('./src/server/utils');
@@ -76,6 +77,7 @@ async function monitorHeadfulSession(session) {
         }
     } finally {
         if (session.interval) clearInterval(session.interval);
+        passwordCapture.clear(session.startedAt);
         if (!session.stopping && session.context && session.cookieStateId) {
             await updateCookieState(session.cookieStateId, await session.context.storageState({ indexedDB: true })).catch(() => {});
         }
@@ -86,6 +88,7 @@ async function monitorHeadfulSession(session) {
 const teardownActiveSession = async () => {
     if (!activeSession) return;
     const session = activeSession;
+    passwordCapture.clear(session.startedAt);
     session.stopping = true;
     try {
         if (session.interval) clearInterval(session.interval);
@@ -220,6 +223,13 @@ async function runHeadful(data, options = {}) {
             browser = await chromium.launch({ headless: isHeadless, args, ...(cleanProxy ? { proxy: cleanProxy } : {}) });
             context = await browser.newContext(contextOptions);
         }
+
+        await context.exposeBinding('__figraniumOfferPassword', (source, candidate) => {
+            if (activeSession?.startedAt !== startingSession.startedAt) return;
+            passwordCapture.offer(startingSession.startedAt, source.frame.url(), candidate);
+        });
+        const passwordCaptureInit = passwordCapture.installPageCapture;
+        await context.addInitScript(passwordCaptureInit);
 
         const inspectInitFn = () => {
             Object.defineProperty(window, 'open', { writable: true, configurable: true, value: () => null });
@@ -566,6 +576,7 @@ async function runHeadful(data, options = {}) {
             }
         } else {
             try { await page.evaluate(inspectInitFn); } catch (e) { }
+            try { await page.evaluate(passwordCaptureInit); } catch (e) { }
             try {
                 await page.evaluate(() => {
                     if (window.__figraniumInspectInit) window.__figraniumInspectInit();
@@ -697,6 +708,18 @@ function getActiveSession() {
     return activeSession;
 }
 
+function getPendingPasswordCapture() {
+    return activeSession?.status === 'running' ? passwordCapture.peek(activeSession.startedAt) : null;
+}
+
+function takePendingPasswordCapture(id) {
+    return activeSession?.status === 'running' ? passwordCapture.take(activeSession.startedAt, id) : null;
+}
+
+function readPendingPasswordCapture(id) {
+    return activeSession?.status === 'running' ? passwordCapture.get(activeSession.startedAt, id) : null;
+}
+
 const { setHeadfulViewerProfile, toggleInspectMode } = require('./src/server/headful-control-handlers')({
     getActiveSession, withTimeout, severePerformanceStyleId: SEVERE_PERFORMANCE_STYLE_ID
 });
@@ -771,6 +794,9 @@ module.exports = {
     toggleInspectMode,
     headfulEventEmitter,
     getActiveSession,
+    getPendingPasswordCapture,
+    readPendingPasswordCapture,
+    takePendingPasswordCapture,
     launchApiSession,
     setHeadfulViewerProfile,
     ensureSessionId

@@ -23,14 +23,53 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
     const headfulFrameRef = useRef<HTMLDivElement | null>(null);
     const viewerRef = useRef<HTMLIFrameElement | null>(null);
     const [viewerError, setViewerError] = useState<string | null>(null);
+    const [viewerReady, setViewerReady] = useState(false);
+    const [viewerAttempt, setViewerAttempt] = useState(0);
+    const [passwordCandidate, setPasswordCandidate] = useState<{ id: string; domain: string; username: string } | null>(null);
+    const [passwordSaveError, setPasswordSaveError] = useState('');
+    const [passwordSaving, setPasswordSaving] = useState(false);
 
-    useEffect(() => { setViewerError(null); }, [isHeadfulOpen]);
+    useEffect(() => { setViewerError(null); setViewerReady(false); setPasswordCandidate(null); if (isHeadfulOpen) setViewerAttempt(v => v + 1); }, [isHeadfulOpen]);
+    useEffect(() => {
+        if (!isHeadfulOpen) return;
+        let cancelled = false;
+        const check = async () => {
+            try {
+                const response = await fetch('/api/passwords/capture', { cache: 'no-store' });
+                if (!response.ok) return;
+                const data = await response.json();
+                if (!cancelled && data.candidate) setPasswordCandidate(data.candidate);
+            } catch { /* The browser viewer remains usable if password capture is unavailable. */ }
+        };
+        check();
+        const timer = window.setInterval(check, 1500);
+        return () => { cancelled = true; window.clearInterval(timer); };
+    }, [isHeadfulOpen]);
+    const answerPasswordPrompt = async (decision: 'save' | 'dismiss') => {
+        if (!passwordCandidate || passwordSaving) return;
+        setPasswordSaving(true);
+        setPasswordSaveError('');
+        try {
+            const response = await fetch('/api/passwords/capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: passwordCandidate.id, decision }) });
+            if (!response.ok) throw new Error('Could not save this Login in 1Password.');
+            setPasswordCandidate(null);
+        } catch (error) { setPasswordSaveError(error instanceof Error ? error.message : 'Could not save this Login.'); }
+        finally { setPasswordSaving(false); }
+    };
+    useEffect(() => {
+        if (!isHeadfulOpen || !useNovnc || viewerReady || viewerError) return;
+        const timeout = window.setTimeout(() => setViewerError('Browser viewer timed out. Retry the connection.'), 25000);
+        return () => window.clearTimeout(timeout);
+    }, [isHeadfulOpen, useNovnc, viewerReady, viewerError, viewerAttempt]);
 
     useEffect(() => {
         const handleViewerFailure = (event: MessageEvent) => {
             if (event.origin !== window.location.origin || event.source !== viewerRef.current?.contentWindow) return;
             if (event.data?.type === 'figranium-headful-viewer-failed') {
                 setViewerError(typeof event.data.message === 'string' ? event.data.message : 'Browser viewer unavailable');
+            } else if (event.data?.type === 'figranium-headful-viewer-ready') {
+                setViewerReady(true);
+                setViewerError(null);
             }
         };
         window.addEventListener('message', handleViewerFailure);
@@ -41,7 +80,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
 
     const { origin, hostname } = window.location;
     const theme = document.documentElement.dataset.theme || 'dark';
-    const headfulUrl = `${origin}/novnc.html?host=${hostname}&path=websockify&theme=${encodeURIComponent(theme)}`;
+    const headfulUrl = `${origin}/novnc.html?host=${hostname}&path=websockify&theme=${encodeURIComponent(theme)}&attempt=${viewerAttempt}`;
 
     const requestFullscreen = () => {
         const target = headfulFrameRef.current;
@@ -118,6 +157,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                         </div>
                     ) : (
                         <iframe
+                            key={viewerAttempt}
                             ref={viewerRef}
                             src={headfulUrl}
                             className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-300"
@@ -126,9 +166,16 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                     )}
                     {viewerError && (
                         <div role="alert" className="absolute inset-0 theme-surface flex items-center justify-center p-8 text-center theme-text">
-                            {viewerError}
+                            <div><p>{viewerError}</p><button type="button" className="app-button-primary mt-4" onClick={() => { setViewerError(null); setViewerReady(false); setViewerAttempt(v => v + 1); }}>Retry viewer</button></div>
                         </div>
                     )}
+                    {useNovnc && !viewerReady && !viewerError && <div className="absolute inset-0 pointer-events-none flex items-center justify-center theme-surface-3 theme-text-muted text-sm">Connecting to browser…</div>}
+                    {passwordCandidate && <div role="dialog" aria-label="Save website password" className="absolute bottom-4 left-1/2 z-20 w-[min(90%,420px)] -translate-x-1/2 rounded-2xl border theme-border-strong theme-surface p-4 shadow-2xl">
+                        <p className="text-sm font-semibold theme-text">Save password for {passwordCandidate.domain}?</p>
+                        <p className="mt-1 text-xs theme-text-muted">{passwordCandidate.username || 'No username detected'} · Save or update a Login in the Figranium 1Password vault.</p>
+                        {passwordSaveError && <p role="alert" className="mt-2 text-xs text-red-500">{passwordSaveError}</p>}
+                        <div className="mt-4 flex justify-end gap-2"><button type="button" disabled={passwordSaving} className="app-button-secondary" onClick={() => answerPasswordPrompt('dismiss')}>Not now</button><button type="button" disabled={passwordSaving} className="app-button-primary" onClick={() => answerPasswordPrompt('save')}>{passwordSaving ? 'Saving…' : 'Save password'}</button></div>
+                    </div>}
                 </div>
             </div>
         </div>

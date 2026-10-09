@@ -267,6 +267,9 @@
 .app-list-row:last-child { border-bottom: 0; }
 .app-list-row:hover { background: var(--app-glass-card-hover); }
 
+.url-variable-token { color: var(--app-text-muted); font-family: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .94em; font-weight: 600; }
+.template-meta .url-variable-display { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .app-badge {
     display: inline-flex;
     align-items: center;
@@ -356,6 +359,18 @@
 .glass-card:hover {
     background: var(--app-glass-card-hover);
     border-color: var(--app-border-strong);
+}
+
+.app-toast {
+    background: color-mix(in srgb, var(--app-surface) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--app-border-strong) 78%, transparent);
+    backdrop-filter: blur(24px) saturate(1.15);
+    -webkit-backdrop-filter: blur(24px) saturate(1.15);
+}
+
+.app-toast-close,
+.app-toast-close:hover {
+    background: transparent;
 }
 
 .shine-effect {

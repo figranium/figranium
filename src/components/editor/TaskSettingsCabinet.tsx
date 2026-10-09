@@ -26,6 +26,7 @@ interface TaskSettingsCabinetProps {
     isOpen: boolean;
     onClose: () => void;
     currentTask: Task;
+    lastResultData?: unknown;
     onUpdateTask: (updates: Partial<Task>) => void;
     proxyListLoaded: boolean;
     proxyList: { id: string }[];
@@ -49,6 +50,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
     isOpen,
     onClose,
     currentTask,
+    lastResultData,
     onUpdateTask,
     proxyListLoaded,
     proxyList,
@@ -71,18 +73,18 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const [newCred, setNewCred] = React.useState({ name: '', baseUrl: 'https://api.baserow.io', token: '' });
         const [showNewCredForm, setShowNewCredForm] = React.useState(false);
         const [credSaving, setCredSaving] = React.useState(false);
-        const [workspaces, setWorkspaces] = React.useState<{ id: string; name: string }[]>([]);
-        const [workspaceId, setWorkspaceId] = React.useState('');
-        const [provisioning, setProvisioning] = React.useState(false);
-        const [provisionError, setProvisionError] = React.useState('');
+        const [outputTables, setOutputTables] = React.useState<{ id: string; name: string; databaseId: string; databaseName: string }[]>([]);
+        const [tableFields, setTableFields] = React.useState<{ name: string; type: string }[]>([]);
+        const [tablesLoading, setTablesLoading] = React.useState(false);
+        const [fieldsLoading, setFieldsLoading] = React.useState(false);
+        const [tablesError, setTablesError] = React.useState('');
+        const [fieldsError, setFieldsError] = React.useState('');
         const [versionContextMenu, setVersionContextMenu] = React.useState<{ id: string; x: number; y: number } | null>(null);
         const [cabinets, setCabinets] = React.useState<{ id: string; name: string; isDefault?: boolean }[]>([]);
         const [cookieStates, setCookieStates] = React.useState<{ id: string; name: string; cookies: number }[]>([]);
 
-        React.useEffect(() => {
-            if (isOpen) {
-                setActiveTab(initialTab);
-            }
+        React.useLayoutEffect(() => {
+            if (isOpen) setActiveTab(initialTab);
         }, [isOpen, initialTab]);
 
         React.useEffect(() => {
@@ -113,30 +115,45 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         React.useEffect(() => {
             const credentialId = currentTask.output?.credentialId;
             if (!credentialId || !isOpen || activeTab !== 'output') return;
-            fetch(`/api/credentials/${credentialId}/proxy/baserow/workspaces`)
-                .then(async r => r.ok ? r.json() : [])
-                .then(setWorkspaces).catch(() => setWorkspaces([]));
+            let cancelled = false;
+            setTablesLoading(true);
+            setTablesError('');
+            setOutputTables([]);
+            fetch(`/api/credentials/${credentialId}/proxy/baserow/tables`)
+                .then(async r => { const data = await r.json(); if (!r.ok) throw new Error(data.detail || data.error); return data; })
+                .then(data => { if (!cancelled) setOutputTables(data); })
+                .catch(error => { if (!cancelled) setTablesError(error.message || 'Could not load Baserow tables.'); })
+                .finally(() => { if (!cancelled) setTablesLoading(false); });
+            return () => { cancelled = true; };
         }, [currentTask.output?.credentialId, isOpen, activeTab]);
 
-        const provisionDestination = async () => {
-            if (!currentTask.id || !currentTask.output?.credentialId || !workspaceId || provisioning) return;
-            setProvisioning(true);
-            setProvisionError('');
-            try {
-                const response = await fetch(`/api/credentials/${currentTask.output.credentialId}/proxy/baserow/provision`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ workspaceId, taskId: currentTask.id, taskName: currentTask.name })
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.detail || result.error || 'Provisioning failed');
-                onUpdateTask({ output: { ...currentTask.output, databaseId: result.databaseId, tableId: result.tableId, dedicated: true } });
-            } catch (error) {
-                setProvisionError(error instanceof Error ? error.message : 'Provisioning failed');
-            } finally {
-                setProvisioning(false);
-            }
-        };
+        React.useEffect(() => {
+            const credentialId = currentTask.output?.credentialId;
+            const tableId = currentTask.output?.tableId;
+            if (!credentialId || !tableId || !isOpen || activeTab !== 'output') { setTableFields([]); setFieldsLoading(false); return; }
+            let cancelled = false;
+            setFieldsError('');
+            setTableFields([]);
+            setFieldsLoading(true);
+            fetch(`/api/credentials/${credentialId}/proxy/baserow/tables/${tableId}/fields`)
+                .then(async r => { const data = await r.json(); if (!r.ok) throw new Error(data.detail || data.error); return data; })
+                .then(data => { if (!cancelled) setTableFields(data); })
+                .catch(error => { if (!cancelled) setFieldsError(error.message || 'Could not inspect table fields.'); })
+                .finally(() => { if (!cancelled) setFieldsLoading(false); });
+            return () => { cancelled = true; };
+        }, [currentTask.output?.credentialId, currentTask.output?.tableId, isOpen, activeTab]);
+
+        const outputKeys = React.useMemo(() => {
+            let sample: unknown = lastResultData;
+            if (typeof sample === 'string') { try { sample = JSON.parse(sample); } catch { sample = null; } }
+            const rows = Array.isArray(sample) ? sample : [sample];
+            const sampledKeys = rows.flatMap(row => row && typeof row === 'object' && !Array.isArray(row) ? Object.keys(row) : []);
+            if (sampledKeys.length) return [...new Set(sampledKeys)];
+            if (currentTask.extractionMode === 'javascript') return [];
+            return [...new Set([...(currentTask.extractionFields || []).map(field => field.name), ...(currentTask.extractionGroups || []).map(group => group.name)].filter(Boolean))];
+        }, [lastResultData, currentTask.extractionMode, currentTask.extractionFields, currentTask.extractionGroups]);
+        const missingFields = outputKeys.filter(key => !tableFields.some(field => field.name === key));
+        const selectedDatabaseId = currentTask.output?.databaseId || outputTables.find(table => table.id === currentTask.output?.tableId)?.databaseId || '';
 
         const saveNewCredential = async () => {
             if (!newCred.name || !newCred.token) return;
@@ -174,6 +191,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const rotateProxiesDisabled = proxyListLoaded && proxyList.length === 1 && proxyList[0]?.id === 'host';
 
         const updateVariable = (oldName: string, name: string, type: VarType, value: any) => {
+            if (['password', 'uname'].includes(name.trim().toLowerCase())) return;
             const nextVars = { ...currentTask.variables };
             if (oldName !== name) delete nextVars[oldName];
             nextVars[name] = { type, value };
@@ -549,7 +567,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                             ) : (
                                                 <CustomSelect
                                                     value={currentTask.output.credentialId}
-                                                    onChange={(credentialId) => onUpdateTask({ output: { ...currentTask.output as TaskOutput, credentialId } })}
+                                                    onChange={(credentialId) => onUpdateTask({ output: { ...currentTask.output as TaskOutput, credentialId, databaseId: undefined, tableId: '' } })}
                                                     options={[{ value: '', label: 'Select credential…' }, ...filtered.map((credential) => ({ value: credential.id, label: credential.name }))]}
                                                     ariaLabel="Output credential"
                                                 />
@@ -576,18 +594,22 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
 
                                     {currentTask.output.credentialId && (
                                         <div className="space-y-2 rounded-xl border border-[var(--app-border)] p-3">
-                                            <p className="text-xs font-medium text-[var(--app-text)]">Dedicated Baserow destination</p>
-                                            <p className="text-xs text-[var(--app-text-muted)]">Create a separate database and Results table for this task. Existing tables cannot be selected. Requires a Baserow token with workspace creation permissions.</p>
-                                            <CustomSelect value={workspaceId} onChange={setWorkspaceId}
-                                                options={[{ value: '', label: 'Choose workspace…' }, ...workspaces.map(w => ({ value: w.id, label: w.name }))]}
-                                                ariaLabel="Baserow workspace" />
-                                            <button type="button" disabled={!workspaceId || !currentTask.id || provisioning}
-                                                onClick={provisionDestination}
-                                                className="rounded-lg bg-[var(--app-accent)] px-3 py-2 text-xs font-bold text-[var(--app-accent-text)] disabled:opacity-40">
-                                                {provisioning ? 'Creating…' : 'Create dedicated database and table'}
-                                            </button>
-                                            {provisionError && <p role="alert" className="text-xs text-red-400">{provisionError}</p>}
-                                            {currentTask.output.tableId && <p className="text-xs text-[var(--app-text-muted)]">Current table: {currentTask.output.tableId}</p>}
+                                            <p className="text-xs font-medium text-[var(--app-text)]">Existing Baserow destination</p>
+                                            <p className="text-xs text-[var(--app-text-muted)]">Use a Baserow database token with read and create-row access. Create the database, table, and fields in Baserow first.</p>
+                                            <CustomSelect value={selectedDatabaseId}
+                                                onChange={databaseId => onUpdateTask({ output: { ...currentTask.output as TaskOutput, databaseId, tableId: '' } })}
+                                                options={[{ value: '', label: tablesLoading ? 'Loading databases…' : 'Choose database…' }, ...[...new Map(outputTables.map(t => [t.databaseId, { value: t.databaseId, label: t.databaseName }])).values()], ...(selectedDatabaseId && !outputTables.some(t => t.databaseId === selectedDatabaseId) ? [{ value: selectedDatabaseId, label: `Saved database ${selectedDatabaseId}` }] : [])]}
+                                                ariaLabel="Baserow database" />
+                                            {selectedDatabaseId && <CustomSelect value={currentTask.output.tableId}
+                                                onChange={tableId => onUpdateTask({ output: { ...currentTask.output as TaskOutput, databaseId: selectedDatabaseId, tableId, dedicated: false } })}
+                                                options={[{ value: '', label: 'Choose table…' }, ...outputTables.filter(t => t.databaseId === selectedDatabaseId).map(t => ({ value: t.id, label: t.name })), ...(currentTask.output.tableId && !outputTables.some(t => t.id === currentTask.output?.tableId && t.databaseId === selectedDatabaseId) ? [{ value: currentTask.output.tableId, label: `Saved table ${currentTask.output.tableId}` }] : [])]}
+                                                ariaLabel="Baserow table" />}
+                                            {tablesError && <p role="alert" className="text-xs text-red-400">{tablesError}</p>}
+                                            {!tablesLoading && !tablesError && outputTables.length === 0 && <p className="text-xs text-[var(--app-text-muted)]">No accessible tables found. Check the token's read permission in Baserow.</p>}
+                                            {currentTask.output.tableId && <div className="space-y-1 text-xs text-[var(--app-text-muted)]">
+                                                <p className="font-medium text-[var(--app-text)]">Fields to create in the selected table</p>
+                                                {fieldsLoading ? <p>Loading table fields…</p> : fieldsError ? <p role="alert" className="text-red-400">{fieldsError}</p> : outputKeys.length === 0 ? <p>Run the task once with JSON output to identify the fields from its extraction script.</p> : missingFields.length ? <p>{missingFields.join(', ')}. Use field types compatible with the JSON values; Long text works for text and nested JSON.</p> : <p>All known output fields are present.</p>}
+                                            </div>}
                                         </div>
                                     )}
 

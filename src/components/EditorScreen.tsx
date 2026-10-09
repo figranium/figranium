@@ -679,6 +679,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
 
             <TaskSettingsCabinet
                 isOpen={isCabinetOpen}
+                lastResultData={results?.data}
                 onClose={() => setIsCabinetOpen(false)}
                 currentTask={currentTask}
                 onUpdateTask={(updates) => {

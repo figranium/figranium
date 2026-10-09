@@ -1,15 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import TablerIcon from './TablerIcon';
-import { copyToClipboard } from '../utils/clipboard';
 
-type Item = { id: string; vaultId: string; vault: string; title: string; username: string; hasPassword: boolean };
+type Item = { id: string; vaultId: string; vault: string; title: string; username: string; hasPassword: boolean; domains: string[] };
 
-export default function PasswordsScreen({ onNotify, embedded = false }: { onNotify: (message: string, tone?: 'success' | 'error') => void; embedded?: boolean }) {
+export default function PasswordsScreen({ embedded = false }: { embedded?: boolean }) {
     const [items, setItems] = useState<Item[]>([]);
     const [configured, setConfigured] = useState<boolean | null>(null);
-    const load = async () => { const status = await fetch('/api/passwords/status').then((response) => response.json()); setConfigured(!!status.configured); if (status.configured) { const response = await fetch('/api/passwords'); const data = await response.json(); setItems(data.items || []); } };
-    useEffect(() => { load().catch(() => setConfigured(false)); }, []);
-    const copy = async (item: Item) => { const response = await fetch(`/api/passwords/${encodeURIComponent(item.vaultId)}/${encodeURIComponent(item.id)}/copy`, { method: 'POST' }); const data = await response.json(); if (response.ok && data.value) { await copyToClipboard(data.value); onNotify('Password copied.', 'success'); } else onNotify('Password could not be copied.', 'error'); };
-    const content = configured === null ? <section className="app-panel w-full p-6" aria-busy="true"><div className="h-4 w-32 animate-pulse rounded bg-[var(--app-surface-3)]" /></section> : !configured ? <section className="app-panel w-full p-6"><h2 className="text-sm font-bold theme-text">Connect 1Password</h2><p className="mt-1 text-xs theme-text-faint">Add your service account token in <a href="/settings/connections" className="text-[var(--app-accent)] hover:underline">Settings → Connections</a>.</p></section> : <section className="app-panel w-full overflow-hidden">{items.map((item) => <article key={`${item.vaultId}-${item.id}`} className="app-list-row flex items-center justify-between gap-4 px-5 py-4"><div><h2 className="text-sm font-bold theme-text">{item.title}</h2><p className="mt-1 text-[11px] theme-text-faint">{item.username || 'No username'} · {item.vault}</p><p className="mt-2 font-mono text-xs theme-text-muted">••••••••••••</p></div><button disabled={!item.hasPassword} onClick={() => copy(item)} className="app-button-secondary"><TablerIcon name="content_copy" /> Copy password</button></article>)}{!items.length && <div className="app-empty-state"><TablerIcon name="key_off" className="text-3xl" /><p className="text-xs theme-text-faint">No Login items are available to this service account.</p></div>}</section>;
+    const [loadingItems, setLoadingItems] = useState(false);
+    const [loadError, setLoadError] = useState(false);
+    const load = useCallback(async () => {
+        setConfigured(null); setLoadError(false);
+        const statusResponse = await fetch('/api/passwords/status'); const status = await statusResponse.json();
+        if (!statusResponse.ok || !status.configured) { setConfigured(false); return; }
+        setConfigured(true); setLoadingItems(true);
+        try {
+            const response = await fetch('/api/passwords'); const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not load Login items.');
+            setItems(data.items || []);
+        } catch { setLoadError(true); } finally { setLoadingItems(false); }
+    }, []);
+    useEffect(() => { void load().catch(() => setConfigured(false)); }, [load]);
+    const loadingContent = <section className="app-panel flex h-28 w-full items-center px-6" aria-busy="true"><p className="flex items-center gap-2 text-xs theme-text-faint"><TablerIcon name="progress_activity" className="animate-spin" /> Loading Login items from 1Password…</p></section>;
+    const content = configured === null || loadingItems ? loadingContent : !configured ? <section className="app-panel w-full p-6"><h2 className="text-sm font-bold theme-text">Connect 1Password</h2><p className="mt-1 text-xs theme-text-faint">Add your service account token in <a href="/settings/connections" className="text-[var(--app-accent)] hover:underline">Settings → Connections</a>.</p></section> : loadError ? <section className="app-panel w-full p-6"><p role="alert" className="text-xs text-red-400">Could not load Login items.</p><button type="button" onClick={() => void load()} className="app-button-secondary mt-4"><TablerIcon name="refresh" /> Try again</button></section> : <section className="app-panel w-full overflow-hidden">{items.map((item) => <article key={`${item.vaultId}-${item.id}`} className="app-list-row grid grid-cols-[minmax(0,1fr)_minmax(11rem,0.55fr)] gap-x-8 px-5 py-4"><div className="min-w-0"><h2 className="truncate text-sm font-bold theme-text">{item.title}</h2><p className="mt-1 truncate text-[11px] theme-text-faint">{item.domains.length ? item.domains.join(', ') : 'No website saved'}</p></div><div className="min-w-0"><p className="truncate text-[11px] theme-text-faint">{item.username || 'No username'}</p><p className="mt-1 text-[11px] theme-text-faint">{item.vault}</p></div></article>)}{!items.length && <div className="app-empty-state"><TablerIcon name="key_off" className="text-3xl" /><p className="text-xs theme-text-faint">No Login items are available to this service account.</p></div>}</section>;
     return embedded ? <div className="w-full">{content}</div> : <main className="app-page custom-scrollbar"><div className="app-page-inner"><header className="app-page-header"><div><h1 className="app-page-title">Passwords</h1><p className="app-page-subtitle">1Password Login items</p></div></header>{content}</div></main>;
 }

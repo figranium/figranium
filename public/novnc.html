@@ -329,6 +329,7 @@
 
         rfb.addEventListener('connect', () => {
           if (rfb !== activeRfb) return;
+          window.parent?.postMessage({ type: 'figranium-headful-viewer-ready' }, window.location.origin);
           clearConnectTimer();
           connectedAt = Date.now();
           retryCount = 0;

@@ -242,10 +242,12 @@ async function loadApiKeys() {
 }
 
 async function createApiKey({ name, permissions, taskIds }) {
+    const validPermissions = [...new Set((Array.isArray(permissions) ? permissions : []).filter(p => API_KEY_PERMISSIONS.includes(p)))];
+    if (!validPermissions.length) throw new Error('PERMISSIONS_REQUIRED');
     const secret = crypto.randomBytes(32).toString('base64url');
     const hashed = await hashApiKey(secret);
     const key = { id: `key_${crypto.randomBytes(8).toString('hex')}`, name: String(name || 'API key').trim().slice(0, 120) || 'API key', ...hashed, exportSecret: await encryptExportSecret(secret),
-        permissions: [...new Set((permissions || []).filter(p => API_KEY_PERMISSIONS.includes(p)))],
+        permissions: validPermissions,
         taskIds: [...new Set((taskIds || []).map(String))], createdAt: new Date().toISOString() };
     const keys = await loadApiKeys();
     await persistApiKeys([...keys, key]);

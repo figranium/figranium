@@ -7,6 +7,7 @@ import CustomSelect from './common/CustomSelect';
 import CreateTaskSplitButton from './CreateTaskSplitButton';
 import type { MarketplaceTemplate } from './TemplateGallery';
 import FeaturedTemplates from './FeaturedTemplates';
+import UrlVariableDisplay from './UrlVariableDisplay';
 
 interface DashboardScreenProps {
     tasks: Task[];
@@ -192,7 +193,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, o
                             {tasks.map((task) => task.id ? (
                                 <button key={task.id} onClick={() => toggleExportSelection(task.id!)} className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-4 ${selectedTaskIds.includes(task.id) ? 'bg-blue-500/10 border-blue-500/30' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
                                     <div className={`w-5 h-5 rounded flex items-center justify-center border ${selectedTaskIds.includes(task.id) ? 'bg-blue-500 border-blue-400 text-white' : 'border-white/20'}`}>{selectedTaskIds.includes(task.id) ? <TablerIcon name="check" className="text-[14px]" /> : null}</div>
-                                    <div className="flex-1 min-w-0"><div className="text-sm font-bold text-white truncate">{task.name || 'Untitled'}</div><div className="text-xs text-white/40 truncate">{task.url || 'No URL'}</div></div>
+                                    <div className="flex-1 min-w-0"><div className="text-sm font-bold text-white truncate">{task.name || 'Untitled'}</div><div className="text-xs text-white/40 truncate"><UrlVariableDisplay value={task.url} emptyLabel="No URL" /></div></div>
                                 </button>
                             ) : null)}
                         </div>
