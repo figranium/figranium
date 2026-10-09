@@ -151,7 +151,8 @@ async function runQualificationSuite() {
         { name: 'scheduler', path: './suite/06-scheduler-cron.test.js' },
         { name: 'ui', path: './suite/07-ui-editor.test.js' },
         { name: 'container', path: './suite/08-container-runtime.test.js' },
-        { name: 'performance', path: './suite/09-performance-regression.test.js' }
+        { name: 'performance', path: './suite/09-performance-regression.test.js' },
+        { name: 'reliability', path: './suite/11-reliability-stress.test.js' }
     ];
 
     const testResults = [];
@@ -161,8 +162,9 @@ async function runQualificationSuite() {
         for (const suite of suites) {
             if (options.layer && !suite.name.includes(options.layer)) continue;
             const modPath = path.join(__dirname, suite.path);
-            if (!fs.existsSync(modPath)) continue;
+            if (!fs.existsSync(modPath)) throw new Error(`Required qualification suite missing: ${modPath}`);
             const mod = require(modPath);
+            if (!Array.isArray(mod.tests) || mod.tests.length === 0) throw new Error(`Qualification suite has no tests: ${modPath}`);
 
             try {
                 if (typeof mod.setup === 'function') await mod.setup({ seed: options.seed });
@@ -235,6 +237,8 @@ async function runQualificationSuite() {
     } finally {
         Math.random = originalRandom;
     }
+
+    if (testResults.length === 0) throw new Error('Qualification selected zero tests; refusing a false PASS');
 
     const endTime = new Date();
     const durationSec = ((endTime - startTime) / 1000).toFixed(2);
