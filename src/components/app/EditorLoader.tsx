@@ -30,6 +30,7 @@ interface EditorLoaderProps {
     onStop?: () => void;
     onTaskLoaded?: (task: Task) => void;
     isHeadfulOpen?: boolean;
+    isHeadfulStarting?: boolean;
     onOpenHeadful?: (url: string, targetActionId?: string, taskSnapshot?: Task, variables?: any) => void;
     onStopHeadful?: () => void;
     useNovnc?: boolean | null;

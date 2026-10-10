@@ -51,6 +51,7 @@ interface EditorScreenProps {
     runId?: string | null;
     onStop?: () => void;
     isHeadfulOpen?: boolean;
+    isHeadfulStarting?: boolean;
     onOpenHeadful?: (url: string, targetActionId?: string, taskSnapshot?: Task, variables?: any) => void;
     onStopHeadful?: () => void;
     useNovnc?: boolean | null;
@@ -76,6 +77,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
     runId,
     onStop,
     isHeadfulOpen,
+    isHeadfulStarting,
     onOpenHeadful,
     onStopHeadful,
     useNovnc,
@@ -671,6 +673,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 isExecuting={isExecuting}
                 isStopping={isStopping}
                 isHeadfulOpen={isHeadfulOpen || false}
+                isHeadfulStarting={isHeadfulStarting || false}
                 onRun={() => { setIsResultsOpen(true); onRun(); }}
                 onStop={onStop}
                 onOpenHeadful={() => onOpenHeadful?.(currentTask.url || 'https://www.google.com', undefined, currentTask, currentTask.variables)}

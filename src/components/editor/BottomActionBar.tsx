@@ -5,6 +5,7 @@ interface BottomActionBarProps {
     isExecuting: boolean;
     isStopping: boolean;
     isHeadfulOpen: boolean;
+    isHeadfulStarting: boolean;
     onRun: () => void;
     onStop?: () => void;
     onOpenHeadful: () => void;
@@ -15,6 +16,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
     isExecuting,
     isStopping,
     isHeadfulOpen,
+    isHeadfulStarting,
     onRun,
     onStop,
     onOpenHeadful,
@@ -24,7 +26,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
         <div className="editor-action-bar fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 p-2 rounded-3xl backdrop-blur-xl">
             <button
                 onClick={onRun}
-                disabled={isExecuting || isHeadfulOpen}
+                disabled={isExecuting || isHeadfulOpen || isHeadfulStarting}
                 className="editor-action-primary px-8 py-4 rounded-2xl font-bold text-xs tracking-[0.3em] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] focus:outline-none focus-visible:ring-2"
                 title="Run Task (Ctrl + Enter)"
                 aria-label="Run Task (Ctrl + Enter)"
@@ -55,15 +57,16 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
                         onOpenHeadful();
                     }
                 }}
-                disabled={isExecuting}
-                className={`px-4 h-12 rounded-2xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed ${isHeadfulOpen
+                disabled={isExecuting || isHeadfulStarting}
+                aria-busy={isHeadfulStarting}
+                className={`px-4 h-12 rounded-2xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 ${isHeadfulStarting ? 'cursor-wait' : 'disabled:opacity-30 disabled:cursor-not-allowed'} ${isHeadfulOpen
                     ? 'border-blue-500/30 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
                     : 'editor-action-secondary'
                     }`}
-                title={isHeadfulOpen ? 'Stop headful browser' : 'Open browser to log in'}
+                title={isHeadfulStarting ? 'Opening browser' : isHeadfulOpen ? 'Stop headful browser' : 'Open browser to log in'}
             >
-                <TablerIcon name={isHeadfulOpen ? 'stop' : 'open_in_browser'} className="text-base" />
-                {isHeadfulOpen ? 'Close Browser' : 'Open Browser'}
+                {isHeadfulStarting ? <span className="editor-action-spinner w-4 h-4 border-2 rounded-full animate-spin" /> : <TablerIcon name={isHeadfulOpen ? 'stop' : 'open_in_browser'} className="text-base" />}
+                {isHeadfulStarting ? 'Opening Browser...' : isHeadfulOpen ? 'Close Browser' : 'Open Browser'}
             </button>
         </div>
     );

@@ -61,6 +61,7 @@ export default function App() {
         isExecuting,
         isStopping,
         isHeadfulOpen,
+        isHeadfulStarting,
         results,
         setResults,
         activeRunId,
@@ -349,6 +350,7 @@ export default function App() {
                                 runId={currentTaskRunId}
                                 onStop={() => stopTask()}
                                 isHeadfulOpen={isHeadfulOpen}
+                                isHeadfulStarting={isHeadfulStarting}
                                 onOpenHeadful={(url, targetActionId, taskSnapshot, variables) => openHeadful(url, targetActionId, taskSnapshot, variables)}
                                 onStopHeadful={stopHeadful}
                                 useNovnc={useNovnc}
@@ -383,6 +385,7 @@ export default function App() {
                                 onStop={() => stopTask()}
                                 onTaskLoaded={markTaskAsSaved}
                                 isHeadfulOpen={isHeadfulOpen}
+                                isHeadfulStarting={isHeadfulStarting}
                                 onOpenHeadful={(url, targetActionId, taskSnapshot, variables) => openHeadful(url, targetActionId, taskSnapshot, variables)}
                                 onStopHeadful={stopHeadful}
                                 useNovnc={useNovnc}

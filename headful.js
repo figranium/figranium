@@ -124,8 +124,12 @@ async function runHeadful(data, options = {}) {
     }
 
     const url = data.url || 'https://www.google.com';
-
-    await validateUrl(url);
+    const cookieStateId = resolveCookieStateId(data);
+    const [, selectedUA, attachedCookieState] = await Promise.all([
+        validateUrl(url),
+        selectUserAgent(false),
+        cookieStateId ? getCookieState(String(cookieStateId)) : Promise.resolve(null)
+    ]);
 
     const rotateProxiesRaw = data.rotateProxies;
     const rotateProxies = String(rotateProxiesRaw).toLowerCase() === 'true' || rotateProxiesRaw === true;
@@ -140,12 +144,9 @@ async function runHeadful(data, options = {}) {
     };
     activeSession = startingSession;
 
-    const selectedUA = await selectUserAgent(false);
-
     let browser;
     let context;
     let page;
-    let cookieStateId = resolveCookieStateId(data);
     let navigated = false;
 
     try {
@@ -213,7 +214,6 @@ async function runHeadful(data, options = {}) {
 
             const isHeadless = parseBooleanFlag(data.headless) || parseBooleanFlag(process.env.HEADLESS);
 
-            const attachedCookieState = cookieStateId ? await getCookieState(String(cookieStateId)) : null;
             if (attachedCookieState) contextOptions.storageState = attachedCookieState.state;
 
             // A persistent Chromium profile also restores tab/session and service-worker
@@ -224,12 +224,14 @@ async function runHeadful(data, options = {}) {
             context = await browser.newContext(contextOptions);
         }
 
-        await context.exposeBinding('__figraniumOfferPassword', (source, candidate) => {
-            if (activeSession?.startedAt !== startingSession.startedAt) return;
-            passwordCapture.offer(startingSession.startedAt, source.frame.url(), candidate);
-        });
         const passwordCaptureInit = passwordCapture.installPageCapture;
-        await context.addInitScript(passwordCaptureInit);
+        await Promise.all([
+            context.exposeBinding('__figraniumOfferPassword', (source, candidate) => {
+                if (activeSession?.startedAt !== startingSession.startedAt) return;
+                passwordCapture.offer(startingSession.startedAt, source.frame.url(), candidate);
+            }),
+            context.addInitScript(passwordCaptureInit)
+        ]);
 
         const inspectInitFn = () => {
             Object.defineProperty(window, 'open', { writable: true, configurable: true, value: () => null });
@@ -543,25 +545,24 @@ async function runHeadful(data, options = {}) {
             });
         };
 
-        await setupNavigationProtection(context);
-        await context.addInitScript(inspectInitFn);
-
-        await context.exposeBinding('__figraniumIsInspectEnabled', () => {
-            return activeSession ? !!activeSession.inspectModeEnabled : false;
-        });
-
-        await context.exposeBinding('__figraniumGetInspectState', () => {
-            if (!activeSession) return { enabled: false, scopeSelector: null, revision: 0 };
-            return {
-                enabled: !!activeSession.inspectModeEnabled,
-                scopeSelector: activeSession.inspectScopeSelector || null,
-                revision: Number(activeSession.inspectRevision) || 0
-            };
-        });
-
-        await context.exposeBinding('__figraniumOnElementSelected', (source, selector) => {
-            headfulEventEmitter.emit('selectorSelected', selector);
-        });
+        await Promise.all([
+            setupNavigationProtection(context),
+            context.addInitScript(inspectInitFn),
+            context.exposeBinding('__figraniumIsInspectEnabled', () => {
+                return activeSession ? !!activeSession.inspectModeEnabled : false;
+            }),
+            context.exposeBinding('__figraniumGetInspectState', () => {
+                if (!activeSession) return { enabled: false, scopeSelector: null, revision: 0 };
+                return {
+                    enabled: !!activeSession.inspectModeEnabled,
+                    scopeSelector: activeSession.inspectScopeSelector || null,
+                    revision: Number(activeSession.inspectRevision) || 0
+                };
+            }),
+            context.exposeBinding('__figraniumOnElementSelected', (source, selector) => {
+                headfulEventEmitter.emit('selectorSelected', selector);
+            })
+        ]);
 
         if (!page) {
             // Persistent context auto-creates a blank page; reuse it or open a new one

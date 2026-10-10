@@ -8,6 +8,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     const [isExecuting, setIsExecuting] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
     const [isHeadfulOpen, setIsHeadfulOpen] = useState(false);
+    const [isHeadfulStarting, setIsHeadfulStarting] = useState(false);
     const [results, setResults] = useState<Results | null>(null);
     const [activeRunId, setActiveRunId] = useState<string | null>(null);
     const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             return;
         }
         headfulBusyRef.current = true;
+        setIsHeadfulStarting(true);
         try {
             const res = await fetch('/headful', {
                 method: 'POST',
@@ -54,6 +56,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             showAlert('Failed to start headful session', 'error');
             setIsHeadfulOpen(false);
         } finally {
+            setIsHeadfulStarting(false);
             headfulBusyRef.current = false;
         }
     };
@@ -264,6 +267,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
         isExecuting,
         isStopping,
         isHeadfulOpen,
+        isHeadfulStarting,
         results,
         setResults,
         activeRunId,

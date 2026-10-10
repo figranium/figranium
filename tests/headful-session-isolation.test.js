@@ -1,8 +1,6 @@
 const assert = require('assert');
 const EventEmitter = require('events');
-const fs = require('fs');
 const Module = require('module');
-const path = require('path');
 
 const originalRequire = Module.prototype.require;
 let persistentLaunches = 0;
@@ -58,25 +56,21 @@ Module.prototype.require = function (request) {
     if (request === './src/agent/translate') {
         return { installPageTranslation: async () => {} };
     }
+    if (request === './src/server/cookie-states') {
+        return {
+            resolveCookieStateId: () => 'cookies_default',
+            getCookieState: async () => ({ state: {
+                cookies: [{ name: 'valid', value: 'yes', domain: 'example.com', path: '/', expires: -1 }],
+                origins: [{ origin: 'https://example.com', localStorage: [{ name: 'theme', value: 'dark' }] }]
+            } }),
+            updateCookieState: async () => {}
+        };
+    }
     return originalRequire.apply(this, arguments);
 };
 
 (async () => {
-    const statePath = path.join(__dirname, '../data/headful-storage-state.json');
-    const stateDir = path.dirname(statePath);
-    const stateDirExisted = fs.existsSync(stateDir);
-    const previousState = fs.existsSync(statePath) ? fs.readFileSync(statePath) : null;
-
     try {
-        fs.mkdirSync(stateDir, { recursive: true });
-        fs.writeFileSync(statePath, JSON.stringify({
-            cookies: [
-                { name: 'valid', value: 'yes', domain: 'example.com', path: '/', expires: -1 },
-                { name: 'expired', value: 'no', domain: 'example.com', path: '/', expires: 1 }
-            ],
-            origins: [{ origin: 'https://example.com', localStorage: [{ name: 'theme', value: 'dark' }] }]
-        }));
-
         const { runHeadful } = require('../headful');
         const response = {
             json() {
@@ -93,11 +87,6 @@ Module.prototype.require = function (request) {
         console.log('Headful session isolation test passed.');
     } finally {
         Module.prototype.require = originalRequire;
-        if (previousState) fs.writeFileSync(statePath, previousState);
-        else if (fs.existsSync(statePath)) fs.unlinkSync(statePath);
-        if (!stateDirExisted) {
-            try { fs.rmdirSync(stateDir); } catch { }
-        }
     }
 })().catch((error) => {
     console.error(error);
