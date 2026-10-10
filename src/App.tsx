@@ -355,7 +355,7 @@ export default function App() {
                                 onStopHeadful={stopHeadful}
                                 useNovnc={useNovnc}
                             />
-                        ) : <LoadingScreen title="Initializing" subtitle="Preparing task workspace" />
+                        ) : <LoadingScreen title="Loading workspace" subtitle="Preparing task workspace" />
                     } />
                     <Route
                         path="/tasks/:id"
