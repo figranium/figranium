@@ -6,7 +6,7 @@ import OutcomeIcon from './OutcomeIcon';
 import ResultsPane from './editor/ResultsPane';
 import { useHeadfulStatus } from '../hooks/useHeadfulStatus';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
-import { PageSkeleton } from './common/Skeleton';
+import { ExecutionDetailSkeleton } from './common/Skeleton';
 
 interface ExecutionDetailScreenProps {
     onConfirm: (request: string | ConfirmRequest) => Promise<boolean>;
@@ -103,7 +103,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
 
     if (loading) {
         return (
-            <PageSkeleton rows={5} />
+            <ExecutionDetailSkeleton />
         );
     }
 
