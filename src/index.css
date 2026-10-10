@@ -235,3 +235,8 @@ select:disabled,
 input:disabled {
     cursor: not-allowed;
 }
+
+.app-skeleton { position: relative; overflow: hidden; border-radius: 6px; background: var(--app-input); }
+.app-skeleton::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--app-surface) 76%, transparent), transparent); animation: app-skeleton-shimmer 1.35s ease-in-out infinite; }
+@keyframes app-skeleton-shimmer { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .app-skeleton::after { animation: none; } }
