@@ -127,22 +127,38 @@ async function readSecretFile(file, context, fallback) {
   try { value = JSON.parse(await fs.promises.readFile(file, 'utf8')); }
   catch (error) { if (error.code === 'ENOENT') return fallback; throw error; }
   if (value?.__figraniumEncrypted === true) {
-    const key = await masterKey();
+    // Existing encrypted data must remain readable before any plaintext migration.
+    // Do not create a new master key merely to read an old encrypted file.
+    const key = process.env.MASTER_KEY ? await masterKey() : (await legacyFileMasterKey() || sessionDerivedKey());
+    if (!key) {
+      const error = new Error('Encrypted data exists but its original master key is unavailable; restore the key before migrating to unencrypted storage.');
+      error.code = 'FIGRANIUM_MASTER_KEY_MISSING';
+      throw error;
+    }
+    let decrypted;
     try {
-      return open(value.envelope, key, context);
+      decrypted = open(value.envelope, key, context);
     } catch (error) {
       // A configured MASTER_KEY takes precedence for new writes, but v0.21
       // may have encrypted this file with the former local master key.
       const legacyKey = process.env.MASTER_KEY ? await legacyFileMasterKey() : null;
       if (!legacyKey || legacyKey.equals(key)) throw error;
-      return open(value.envelope, legacyKey, context);
+      decrypted = open(value.envelope, legacyKey, context);
     }
+    // Without an explicitly configured MASTER_KEY, migrate legacy encrypted
+    // data only after successful authenticated decryption.
+    if (!process.env.MASTER_KEY) await writeSecretFile(file, context, decrypted);
+    return decrypted;
   }
-  await writeSecretFile(file, context, value);
+  if (process.env.MASTER_KEY) await writeSecretFile(file, context, value);
   return value;
 }
 async function writeSecretFile(file, context, value) {
-  const payload = { __figraniumEncrypted: true, envelope: seal(value, await masterKey(), context) };
+  // Encryption is opt-in. An absent MASTER_KEY must not silently generate
+  // a new encryption key or make stored credentials depend on session state.
+  const payload = process.env.MASTER_KEY
+    ? { __figraniumEncrypted: true, envelope: seal(value, await masterKey(), context) }
+    : value;
   await fs.promises.mkdir(path.dirname(file), { recursive: true });
   const temp = file + '.' + process.pid + '.' + crypto.randomBytes(6).toString('hex') + '.tmp';
   try {
