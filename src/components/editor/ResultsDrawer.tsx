@@ -40,7 +40,7 @@ const ResultsDrawer: React.FC<ResultsDrawerProps> = ({
         >
             <button
                 onClick={onToggle}
-                className={`editor-results-grip absolute top-1/2 -left-12 -translate-y-1/2 w-10 h-24 bg-[#111] border border-r-0 border-white/10 rounded-l-xl flex items-center justify-center cursor-pointer shadow-[-8px_0_15px_rgba(0,0,0,0.5)] transition-all hover:bg-white/5 hover:w-11 hover:-left-14 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50`}
+                className={`editor-results-grip absolute top-1/2 -left-12 -translate-y-1/2 w-10 h-24 bg-[var(--app-surface-2)] border border-r-0 border-white/10 rounded-l-xl flex items-center justify-center cursor-pointer shadow-[-8px_0_15px_rgba(0,0,0,0.5)] transition-all hover:bg-[var(--app-surface-3)] hover:w-11 hover:-left-14 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50`}
                 aria-label={isOpen ? "Close Results Drawer" : "Open Results Drawer"}
                 title={isOpen ? "Close Results Drawer" : "Open Results Drawer"}
             >
