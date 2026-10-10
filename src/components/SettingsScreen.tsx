@@ -539,7 +539,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                         </div>
                     </header>
 
-                    {section === 'api-keys' && <ScopedApiKeysPanel onNotify={onNotify} />}
+                    {section === 'api-keys' && <ScopedApiKeysPanel onNotify={onNotify} onConfirm={onConfirm} />}
                     {section === 'connections' && <ConnectionsPanel onNotify={onNotify} />}
                     {section === 'user-agent' && (
                         <UserAgentPanel

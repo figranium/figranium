@@ -746,6 +746,7 @@ module.exports = {
     importApiKeys: identityStorage.importApiKeys,
     exportApiKeys: identityStorage.exportApiKeys,
     publicApiKeyMetadata: identityStorage.publicApiKeyMetadata,
+    verifyApiKey: identityStorage.verifyApiKey,
     loadCredentials: identityStorage.loadCredentials,
     saveCredentials: identityStorage.saveCredentials,
     saveSession,
