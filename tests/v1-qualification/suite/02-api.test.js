@@ -287,7 +287,7 @@ const tests = [
                 if (taskId) await fetch(`${base}/api/tasks/${taskId}`, { method: 'DELETE', headers: h });
             }
         }
-    }
+    },
 
     {
         id: 'API-010',
