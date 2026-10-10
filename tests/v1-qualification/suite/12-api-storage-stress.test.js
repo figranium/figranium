@@ -68,6 +68,7 @@ const tests = [
                 try { const pool=await db.initDB(); const original=pool.connect.bind(pool);
                 pool.connect=async()=>{const client=await original();const query=client.query.bind(client);
                 client.query=(...args)=>String(args[0]).startsWith('INSERT INTO api_keys')?Promise.reject(Error('injected write failure')):query(...args);
+                const release=client.release.bind(client);client.release=(...args)=>{client.query=query;client.release=release;return release(...args)};
                 return client;};
                 try {await storage.createApiKey({name:'must fail',permissions:['tasks:read'],taskIds:[]});throw Error('write unexpectedly succeeded');}
                 catch(e){if(!/injected write failure/.test(e.message))throw e;}
@@ -88,7 +89,8 @@ const tests = [
                 const storage=require('./src/server/storage'),db=require('./src/server/db');
                 (async()=>{const before=await storage.loadTasks();const pool=await db.initDB();const original=pool.connect.bind(pool);
                 pool.connect=async()=>{const client=await original();const query=client.query.bind(client);
-                client.query=(...args)=>String(args[0]).includes('TRUNCATE tasks')?Promise.reject(Error('injected task write failure')):query(...args);return client;};
+                client.query=(...args)=>String(args[0]).includes('TRUNCATE tasks')?Promise.reject(Error('injected task write failure')):query(...args);
+                const release=client.release.bind(client);client.release=(...args)=>{client.query=query;client.release=release;return release(...args)};return client;};
                 try{await storage.saveTasks([...before,{id:'should-not-persist',name:'failure'}]);throw Error('write unexpectedly succeeded');}
                 catch(e){if(!/injected task write failure/.test(e.message))throw e;}
                 pool.connect=original;
