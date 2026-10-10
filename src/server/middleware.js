@@ -141,7 +141,7 @@ const requireApiKey = async (req, res, next) => {
 
 const requireApiPermission = (permission, { taskParam = null } = {}) => (req, res, next) => {
     if (!req.apiKey) return res.status(401).json({ error: 'INVALID_API_KEY' });
-    if (!req.apiKey.permissions?.includes(permission)) return res.status(403).json({ error: 'API_KEY_FORBIDDEN' });
+    if (!(req.apiKey.permissions?.includes(permission) || (permission === 'results:read' && req.apiKey.permissions?.includes('tasks:run')) || (permission === 'tasks:run' && req.apiKey.permissions?.includes('results:read')))) return res.status(403).json({ error: 'API_KEY_FORBIDDEN' });
     const taskId = taskParam ? String(req.params[taskParam] || '') : '';
     if (taskId && req.apiKey.taskIds?.length && !req.apiKey.taskIds.includes(taskId)) return res.status(403).json({ error: 'TASK_NOT_ALLOWED' });
     next();
