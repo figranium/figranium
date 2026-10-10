@@ -1,23 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import CookiesScreen from './components/CookiesScreen';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Task, ViewMode, Results } from './types';
 
 import Sidebar from './components/Sidebar';
 import AuthScreen from './components/AuthScreen';
 import DashboardScreen from './components/DashboardScreen';
-import EditorScreen from './components/EditorScreen';
-import SettingsScreen from './components/SettingsScreen';
-import LoadingScreen from './components/LoadingScreen';
-import ExecutionsScreen from './components/ExecutionsScreen';
-import ExecutionDetailScreen from './components/ExecutionDetailScreen';
-import CabinetsScreen from './components/CabinetsScreen';
-import TemplatesScreen, { MarketplaceTemplate } from './components/TemplatesScreen';
-import NotFoundScreen from './components/NotFoundScreen';
+import LoadingScreen, { type LoadingScreenVariant } from './components/LoadingScreen';
 import CenterAlert from './components/app/CenterAlert';
 import CenterConfirm from './components/app/CenterConfirm';
-import EditorLoader from './components/app/EditorLoader';
 import ReleaseNotesModal from './components/app/ReleaseNotesModal';
+import type { MarketplaceTemplate } from './components/TemplateGallery';
 
 import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
@@ -25,6 +17,29 @@ import { useExecution } from './hooks/useExecution';
 import { useUI } from './hooks/useUI';
 import { useTheme } from './hooks/useTheme';
 import { serializeTaskSnapshot } from './utils/taskUtils';
+import { lazyWithRetry } from './utils/lazyWithRetry';
+
+const CookiesScreen = lazyWithRetry(() => import('./components/CookiesScreen'));
+const EditorScreen = lazyWithRetry(() => import('./components/EditorScreen'));
+const SettingsScreen = lazyWithRetry(() => import('./components/SettingsScreen'));
+const ExecutionsScreen = lazyWithRetry(() => import('./components/ExecutionsScreen'));
+const ExecutionDetailScreen = lazyWithRetry(() => import('./components/ExecutionDetailScreen'));
+const CabinetsScreen = lazyWithRetry(() => import('./components/CabinetsScreen'));
+const TemplatesScreen = lazyWithRetry(() => import('./components/TemplatesScreen'));
+const NotFoundScreen = lazyWithRetry(() => import('./components/NotFoundScreen'));
+const EditorLoader = lazyWithRetry(() => import('./components/app/EditorLoader'));
+
+const getLoadingVariant = (pathname: string): LoadingScreenVariant => {
+    if (pathname.startsWith('/tasks/')) return 'editor';
+    if (pathname.startsWith('/templates')) return 'templates';
+    if (pathname.startsWith('/vault') || pathname.startsWith('/cookies') || pathname.startsWith('/passwords')) return 'vault';
+    if (pathname.startsWith('/settings')) return 'settings';
+    if (pathname.startsWith('/executions/')) return 'execution-detail';
+    if (pathname.startsWith('/executions')) return 'executions';
+    if (pathname.startsWith('/cabinets')) return 'cabinets';
+    if (pathname === '/' || pathname.startsWith('/dashboard')) return 'dashboard';
+    return 'not-found';
+};
 
 export default function App() {
     const navigate = useNavigate();
@@ -317,7 +332,8 @@ export default function App() {
                     currentScreen={getCurrentScreen()}
                 />
 
-                <Routes>
+                <Suspense fallback={<LoadingScreen variant={getLoadingVariant(location.pathname)} title="Loading page" subtitle="Preparing your workspace" />}>
+                    <Routes>
                     <Route path="/login" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/signup" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
@@ -411,7 +427,8 @@ export default function App() {
                     <Route path="/cabinets" element={<CabinetsScreen onConfirm={requestConfirm} onNotify={showAlert} />} />
                     <Route path="/cabinets/:cabinetId" element={<CabinetsScreen onConfirm={requestConfirm} onNotify={showAlert} />} />
                     <Route path="*" element={<NotFoundScreen onBack={() => navigate('/dashboard')} />} />
-                </Routes>
+                    </Routes>
+                </Suspense>
             </div>
         );
     }

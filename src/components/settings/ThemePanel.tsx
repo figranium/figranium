@@ -29,9 +29,6 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ currentThemeId, onSelect }) => 
                 title="Use your device theme"
             >
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl theme-surface-2 theme-border border">
-                        <TablerIcon name="adjustments_horizontal" className="text-lg theme-text" />
-                    </div>
                     <div>
                         <div className="text-sm font-bold theme-text">Auto</div>
                         <div className="mt-0.5 text-xs theme-text-faint">Use your device’s Light or Dark appearance.</div>

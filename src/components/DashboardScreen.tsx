@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Execution, Task } from '../types';
 import TablerIcon from './TablerIcon';
 import TaskCard from './TaskCard';
@@ -6,9 +6,9 @@ import { normalizeTaskOutcome } from '../utils/taskOutcome';
 import CustomSelect from './common/CustomSelect';
 import CreateTaskSplitButton from './CreateTaskSplitButton';
 import type { MarketplaceTemplate } from './TemplateGallery';
-import FeaturedTemplates from './FeaturedTemplates';
 import UrlVariableDisplay from './UrlVariableDisplay';
-import { TaskListSkeleton } from './common/Skeleton';
+import LoadingScreen from './LoadingScreen';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 interface DashboardScreenProps {
     tasks: Task[];
@@ -23,6 +23,8 @@ interface DashboardScreenProps {
 }
 
 type TaskSort = 'recent' | 'name' | 'mode' | 'actions';
+
+const FeaturedTemplates = lazyWithRetry(() => import('./FeaturedTemplates'));
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, onNewTask, onEditTask, onDeleteTask, onExportTasks, onImportTasks, onCreateFromTemplate, onImportTemplate }) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -100,6 +102,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, o
         setSelectedTaskIds((previous) => previous.includes(taskId) ? previous.filter((id) => id !== taskId) : [...previous, taskId]);
     };
 
+    if (!tasksLoaded) return <LoadingScreen variant="dashboard" title="Loading dashboard" subtitle="Preparing your task overview" />;
+
     return (
         <>
             <main className="app-page custom-scrollbar animate-in fade-in duration-500">
@@ -161,10 +165,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, o
                             <div>
                                 {visibleTasks.map((task) => <TaskCard key={task.id} task={task} onEditTask={onEditTask} onDeleteTask={onDeleteTask} />)}
                             </div>
-                        ) : !tasksLoaded && !tasks.length ? (
-                            <div className="p-5"><TaskListSkeleton rows={4} /></div>
                         ) : !tasks.length ? (
-                            <FeaturedTemplates onImport={onImportTemplate} onStartFromScratch={onNewTask} />
+                            <Suspense fallback={<div className="featured-templates" role="status"><p className="featured-templates-message">Loading popular templates…</p></div>}>
+                                <FeaturedTemplates onImport={onImportTemplate} onStartFromScratch={onNewTask} />
+                            </Suspense>
                         ) : (
                             <div className="app-empty-state">
                                 <div className="app-empty-icon"><TablerIcon name={tasks.length ? 'search_off' : 'account_tree'} className="text-2xl" /></div>

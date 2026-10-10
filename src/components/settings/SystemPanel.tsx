@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import TablerIcon from '../TablerIcon';
 import { ConfirmRequest } from '../../types';
 import CustomSelect from '../common/CustomSelect';
+import { FIPTCHA_VERSION } from '../../utils/appInfo';
 
 type SystemData = {
     retentionDays: number | null;
@@ -15,6 +16,23 @@ const RETENTION_OPTIONS = [
     { value: '14', label: '14 days' }, { value: '30', label: '30 days' }, { value: '90', label: '90 days' },
     { value: '365', label: '365 days' }, { value: 'never', label: 'Never' }
 ] as const;
+
+export function CaptchaAssistancePanel({ onNotify }: { onNotify: (message: string, tone?: 'success' | 'error') => void }) {
+    const [captcha, setCaptcha] = useState<NonNullable<SystemData['captcha']> | null>(null);
+
+    useEffect(() => {
+        fetch('/api/settings/system', { credentials: 'include' })
+            .then((response) => response.ok ? response.json() : Promise.reject())
+            .then((data) => setCaptcha(data.captcha || null))
+            .catch(() => onNotify('Failed to load CAPTCHA assistance status.', 'error'));
+    }, [onNotify]);
+
+    return <section className="app-panel p-7">
+        <h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3>
+        <p className="text-xs theme-text-faint mt-1">Optional local help for supported CAPTCHA challenges. It is only used when a task reaches a CAPTCHA; normal browser and scrape tasks are unaffected.</p>
+        <div className="mt-5 text-xs theme-text-muted">Fiptcha v{FIPTCHA_VERSION} · Local solver: <span className="font-bold theme-text">{captcha?.activeTier || 'Unavailable'}</span>{captcha?.backend ? ` · ${captcha.backend}/${captcha.device || 'auto'}` : ''}<p className="mt-2 theme-text-faint">Running Figranium through npm does not require any extra CAPTCHA setup. “Unavailable” means local solving is disabled; remote solver services or human handoff can still be used when configured.</p></div>
+    </section>;
+}
 
 export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfirm: (request: string | ConfirmRequest) => Promise<boolean>; onNotify: (message: string, tone?: 'success' | 'error') => void; onLogout: () => void }) {
     const [data, setData] = useState<SystemData | null>(null);
@@ -153,10 +171,6 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
             <h3 className="text-sm font-bold theme-text">Data retention</h3><p className="text-xs theme-text-faint mt-1">Captures and execution history older than this period are deleted automatically.</p>
             <div className="mt-5 flex flex-wrap gap-3 items-center"><CustomSelect value={choice} options={RETENTION_OPTIONS} onChange={setChoice} ariaLabel="Data retention period" disabled={saving} className="min-w-36" /><button type="button" disabled={saving} onClick={saveRetention} className="app-button-primary disabled:opacity-50">Save retention</button></div>
             <p className="mt-4 text-xs theme-text-faint">Last cleanup: {data?.cleanup?.lastRunAt ? new Date(data.cleanup.lastRunAt).toLocaleString() : 'not run yet'} · {data?.cleanup?.deletedCaptures ?? 0} captures and {data?.cleanup?.deletedExecutions ?? 0} executions removed.</p>
-        </section>
-        <section className="app-panel p-7">
-            <div><h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3><p className="text-xs theme-text-faint mt-1">Optional local help for supported CAPTCHA challenges. It is only used when a task reaches a CAPTCHA; normal browser and scrape tasks are unaffected.</p></div>
-            <div className="mt-5 text-xs theme-text-muted">Local solver: <span className="font-bold theme-text">{data?.captcha?.activeTier || 'Unavailable'}</span>{data?.captcha?.backend ? ` · ${data.captcha.backend}/${data.captcha.device || 'auto'}` : ''}<p className="mt-2 theme-text-faint">Running Figranium through npm does not require any extra CAPTCHA setup. “Unavailable” means local solving is disabled; remote solver services or human handoff can still be used when configured.</p></div>
         </section>
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Export data</h3>

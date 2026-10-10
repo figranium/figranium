@@ -7,8 +7,8 @@ import ProxiesPanel from './settings/ProxiesPanel';
 import UserAgentPanel from './settings/UserAgentPanel';
 import VersionPanel from './settings/VersionPanel';
 import ThemePanel from './settings/ThemePanel';
-import SystemPanel from './settings/SystemPanel';
-import { APP_VERSION } from '@/utils/appInfo';
+import SystemPanel, { CaptchaAssistancePanel } from './settings/SystemPanel';
+import { APP_VERSION, PLAYWRIGHT_VERSION } from '@/utils/appInfo';
 import TablerIcon from './TablerIcon';
 import { useTheme } from '../hooks/useTheme';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -557,7 +557,15 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     )}
                     {section === 'advanced' && <SystemPanel onConfirm={onConfirm} onNotify={onNotify} onLogout={onLogout} />}
                     {section === 'about' && (
-                        <VersionPanel version={APP_VERSION} />
+                        <div className="space-y-5">
+                            <VersionPanel version={APP_VERSION} />
+                            <section className="app-panel p-7">
+                                <h3 className="text-sm font-bold theme-text">Runtime</h3>
+                                <p className="mt-1 text-xs theme-text-faint">Browser automation engine used by Figranium.</p>
+                                <p className="mt-5 text-xs theme-text-muted">Playwright <span className="font-bold theme-text">v{PLAYWRIGHT_VERSION}</span></p>
+                            </section>
+                            <CaptchaAssistancePanel onNotify={onNotify} />
+                        </div>
                     )}
                     {section === 'proxies' && (
                     <ProxiesPanel

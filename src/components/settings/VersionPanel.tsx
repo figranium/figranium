@@ -1,4 +1,3 @@
-import TablerIcon from '../TablerIcon';
 import { useState } from 'react';
 
 interface VersionPanelProps {
@@ -35,9 +34,6 @@ const VersionPanel = ({ version }: VersionPanelProps) => {
     return (
         <div className="app-panel p-7 space-y-6">
             <div className="flex items-center gap-4 mb-2">
-                <div className="w-10 h-10 rounded-xl theme-input border theme-border flex items-center justify-center theme-text-faint">
-                    <TablerIcon name="content_copy" className="text-xl" />
-                </div>
                 <div>
                     <h3 className="text-sm font-bold theme-text">Version</h3>
                     <p className="text-xs theme-text-faint mt-1">Package metadata</p>
