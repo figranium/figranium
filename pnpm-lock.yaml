@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@1password/sdk':
+        specifier: ^0.5.0
+        version: 0.5.0
       '@fontsource/questrial':
         specifier: ^5.3.0
         version: 5.3.0
@@ -15,7 +18,7 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@tabler/icons-react':
-        specifier: ^3.46.0
+        specifier: ^3.49.0
         version: 3.49.0(react@19.2.4)
       bcryptjs:
         specifier: ^3.0.3
@@ -27,8 +30,8 @@ importers:
         specifier: ^0.5.8
         version: 0.5.12(playwright-core@1.64.0)
       cookie:
-        specifier: ^1.0.2
-        version: 1.1.1
+        specifier: ^2.0.0
+        version: 2.0.1
       cookie-signature:
         specifier: ^1.2.2
         version: 1.2.2
@@ -60,7 +63,7 @@ importers:
         specifier: ^8.16.3
         version: 8.23.1
       playwright:
-        specifier: ^1.64.0
+        specifier: ^1.63.0
         version: 1.64.0
       playwright-extra:
         specifier: ^4.3.6
@@ -131,6 +134,12 @@ importers:
         version: 8.3.3(@types/node@25.9.9)(esbuild@0.27.4)(jiti@2.6.1)
 
 packages:
+
+  '@1password/sdk-core@0.5.0':
+    resolution: {integrity: sha512-9g7LWOKRKdePZ85evVgE9xEom3DAg3hRIyQdOwLPvpL/F7KpDXmUHMi72rsqJxKaDbWApXmrYjDExMSPqUg7xw==}
+
+  '@1password/sdk@0.5.0':
+    resolution: {integrity: sha512-k6kov3pcA7PRg2tev9CgTfEf/3JSyAp11BPQNCEsqAD32QbqM032OXC1rfjyC8Ba0sfH+NHYZxcifUZToyGyYA==}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -1111,6 +1120,10 @@ packages:
   cookie@1.1.1:
     resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
     engines: {node: '>=18'}
+
+  cookie@2.0.1:
+    resolution: {integrity: sha512-yuToqVvRrj6pfDXREyQAAv8SkAEk/8GS3jQRTiUMm66TVtBYmqQeoEjL2Lmq8Rpo6271vH76InTChTitEAm65w==}
+    engines: {node: '>=22'}
 
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
@@ -2760,6 +2773,12 @@ packages:
 
 snapshots:
 
+  '@1password/sdk-core@0.5.0': {}
+
+  '@1password/sdk@0.5.0':
+    dependencies:
+      '@1password/sdk-core': 0.5.0
+
   '@alloc/quick-lru@5.2.0': {}
 
   '@babel/runtime@7.28.6': {}
@@ -3428,6 +3447,8 @@ snapshots:
   cookie@0.7.2: {}
 
   cookie@1.1.1: {}
+
+  cookie@2.0.1: {}
 
   core-util-is@1.0.3: {}
 
