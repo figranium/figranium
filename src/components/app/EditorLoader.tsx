@@ -100,7 +100,7 @@ const EditorLoader: React.FC<EditorLoaderProps> = ({
     }
 
     if (loading || !currentTask || String(currentTask.id) !== String(id)) {
-        return <LoadingScreen title="Loading Mission Data" subtitle="Syncing task payload" />;
+        return <LoadingScreen title="Loading task" subtitle="Getting task ready" />;
     }
 
     return <EditorScreen currentTask={currentTask} setCurrentTask={setCurrentTask} tasks={tasks} {...props} />;
