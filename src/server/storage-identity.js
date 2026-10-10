@@ -170,7 +170,12 @@ async function saveCredentials(credentials) {
 // add a second encryption key solely to retain it for exports: DB-backed
 // deployments may intentionally have no writable local filesystem.
 let apiKeysCache = null;
-const API_KEY_PERMISSIONS = ['tasks:read', 'tasks:run', 'results:read', 'tasks:manage'];
+const API_KEY_PERMISSIONS = ['tasks:read', 'tasks:run', 'tasks:manage'];
+
+function normalizePermissions(permissions) {
+    const values = Array.isArray(permissions) ? permissions : [];
+    return [...new Set(values.map(p => p === 'results:read' ? 'tasks:run' : p).filter(p => API_KEY_PERMISSIONS.includes(p)))];
+}
 
 function hashApiKey(value, salt = crypto.randomBytes(16).toString('hex')) {
     return new Promise((resolve, reject) => crypto.scrypt(value, salt, 64, (err, derived) => {
@@ -214,7 +219,7 @@ async function persistApiKeys(keys) {
 async function loadApiKeys() {
     if (apiKeysCache) return apiKeysCache;
     const keys = await readApiKeys();
-    if (keys.length) return (apiKeysCache = keys);
+    if (keys.length) return (apiKeysCache = keys.map(key => ({ ...key, permissions: normalizePermissions(key.permissions) })));
     const legacy = await loadApiKey();
     if (!legacy) return (apiKeysCache = []);
     const hashed = await hashApiKey(legacy);
@@ -225,7 +230,7 @@ async function loadApiKeys() {
 }
 
 async function createApiKey({ name, permissions, taskIds }) {
-    const validPermissions = [...new Set((Array.isArray(permissions) ? permissions : []).filter(p => API_KEY_PERMISSIONS.includes(p)))];
+    const validPermissions = normalizePermissions(permissions);
     if (!validPermissions.length) throw new Error('PERMISSIONS_REQUIRED');
     const secret = crypto.randomBytes(32).toString('base64url');
     const hashed = await hashApiKey(secret);
@@ -251,7 +256,7 @@ function publicApiKeyMetadata(key) {
     return {
         id: key.id,
         name: key.name,
-        permissions: Array.isArray(key.permissions) ? key.permissions.filter(permission => API_KEY_PERMISSIONS.includes(permission)) : [],
+        permissions: Array.isArray(key.permissions) ? normalizePermissions(key.permissions) : [],
         taskIds: Array.isArray(key.taskIds) ? key.taskIds.map(String) : [],
         createdAt: key.createdAt,
         legacy: !!key.legacy
