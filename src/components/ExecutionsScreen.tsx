@@ -6,6 +6,7 @@ import { Execution, ConfirmRequest } from '../types';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
 import { formatLabel } from '../utils/taskUtils';
+import { ListSkeleton } from './common/Skeleton';
 
 const EXECUTION_ITEM_SIZE = 94;
 const EXECUTION_LIST_MAX_VISIBLE = 7;
@@ -186,7 +187,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                         </div>
                     </div>
                     {loading ? (
-                        <div className="app-empty-state min-h-[220px]"><TablerIcon name="sync" className="text-2xl theme-text-faint animate-spin" /><p className="text-xs theme-text-faint">Loading executions…</p></div>
+                        <div className="p-5"><ListSkeleton rows={4} /></div>
                     ) : filtered.length ? (
                         <FixedSizeList height={Math.min(Math.max(EXECUTION_ITEM_SIZE, filtered.length * EXECUTION_ITEM_SIZE), EXECUTION_ITEM_SIZE * EXECUTION_LIST_MAX_VISIBLE)} itemCount={filtered.length} itemSize={EXECUTION_ITEM_SIZE} width="100%" overscanCount={EXECUTION_OVERSCAN} itemData={itemData} className="custom-scrollbar">
                             {renderExecutionRow}

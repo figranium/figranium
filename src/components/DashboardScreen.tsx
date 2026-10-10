@@ -8,6 +8,7 @@ import CreateTaskSplitButton from './CreateTaskSplitButton';
 import type { MarketplaceTemplate } from './TemplateGallery';
 import FeaturedTemplates from './FeaturedTemplates';
 import UrlVariableDisplay from './UrlVariableDisplay';
+import { ListSkeleton } from './common/Skeleton';
 
 interface DashboardScreenProps {
     tasks: Task[];
@@ -161,7 +162,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, o
                                 {visibleTasks.map((task) => <TaskCard key={task.id} task={task} onEditTask={onEditTask} onDeleteTask={onDeleteTask} />)}
                             </div>
                         ) : !tasksLoaded && !tasks.length ? (
-                            <div className="app-empty-state"><div className="app-empty-icon"><TablerIcon name="progress_activity" className="text-2xl animate-spin" /></div><p className="text-xs theme-text-faint">Loading tasks…</p></div>
+                            <div className="p-5"><ListSkeleton rows={4} /></div>
                         ) : !tasks.length ? (
                             <FeaturedTemplates onImport={onImportTemplate} onStartFromScratch={onNewTask} />
                         ) : (

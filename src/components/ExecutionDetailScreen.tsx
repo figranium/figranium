@@ -6,6 +6,7 @@ import OutcomeIcon from './OutcomeIcon';
 import ResultsPane from './editor/ResultsPane';
 import { useHeadfulStatus } from '../hooks/useHeadfulStatus';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
+import { PageSkeleton } from './common/Skeleton';
 
 interface ExecutionDetailScreenProps {
     onConfirm: (request: string | ConfirmRequest) => Promise<boolean>;
@@ -102,9 +103,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
 
     if (loading) {
         return (
-            <main className="app-page custom-scrollbar animate-in fade-in duration-500">
-                <div className="app-page-inner"><div className="app-panel app-empty-state min-h-[260px]"><TablerIcon name="sync" className="text-2xl theme-text-faint animate-spin" /><p className="text-xs theme-text-faint">Loading execution…</p></div></div>
-            </main>
+            <PageSkeleton rows={5} />
         );
     }
 

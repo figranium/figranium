@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import TablerIcon from '../TablerIcon';
+import { ListSkeleton } from './Skeleton';
 
 interface PanelShellProps {
     icon?: string;
@@ -32,7 +33,8 @@ export function PanelShell({ icon, title, description, headerActions, children }
 }
 
 export function LoadingState({ label }: { label: string }) {
-    return <div className="text-xs theme-text-faint tracking-widest">Loading {label}...</div>;
+    void label;
+    return <ListSkeleton rows={3} />;
 }
 
 export function EmptyState({ label }: { label: string }) {
