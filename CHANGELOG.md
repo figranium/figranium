@@ -2,12 +2,20 @@
 
 ## [0.21.1] - 2026-10-09
 
-### Cloud secret storage reliability
-- Fixed scoped API-key creation on database-backed deployments with read-only local filesystems by keeping scoped key secrets one-time only instead of persisting an additional local encryption key.
-- Store 1Password configuration as an encrypted database record when PostgreSQL is configured, avoiding a local-file dependency in cloud deployments.
-- Automatically migrate the existing v0.21 encrypted 1Password configuration into PostgreSQL on the first upgraded read, including configurations encrypted with the former local master key.
-- Added `MASTER_KEY` for cloud deployments and a stable session-secret-derived fallback when the local master-key path is unavailable.
-- Allow password management to continue when the optional encrypted local password cache cannot be written.
+### API reliability and qualification
+- Propagate task database and filesystem read failures instead of silently returning empty task lists.
+- Update task caches only after successful persistent writes, and make scoped API-key database replacement transactional.
+- Return structured JSON for unhandled API failures instead of default HTML error pages.
+- Expand V1 qualification with encryption-integrity checks, master-key restart tests, concurrent API and storage reads, scoped-key lifecycle and persistence tests, and injected PostgreSQL read/write failures.
+- Reject missing or empty qualification suites, and run V1 qualification on pushes to `main`.
+
+### Secret storage and cloud compatibility
+- Make shared secret-store encryption opt-in via `MASTER_KEY`. Without an explicitly configured key, new file-backed secret writes use plaintext JSON rather than generating an implicit master key.
+- Preserve access to existing encrypted files through authenticated decryption with their original key; migrate to plaintext only after successful decryption when `MASTER_KEY` is unset.
+- Refuse to overwrite encrypted data when its original key is missing.
+- Keep named scoped API keys salted and hashed, independently of optional reversible secret encryption.
+- Store 1Password configuration in PostgreSQL on database-backed deployments, avoiding reliance on a writable local secret file.
+- Allow password management to continue if its optional encrypted local cache cannot be written.
 
 ## [0.21.0] - 2026-10-09
 
