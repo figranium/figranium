@@ -305,7 +305,7 @@ export default function App() {
     if (authStatus === 'login' || authStatus === 'setup') {
         content = <AuthScreen status={authStatus} onSubmit={handleAuthSubmit} error={authError} busy={authBusy} />;
     } else if (authStatus === 'checking') {
-        content = <LoadingScreen title="Authenticating" subtitle="Verifying session state" />;
+        content = <LoadingScreen variant="auth" title="Authenticating" subtitle="Verifying session state" />;
     } else {
         content = (
             <div className="h-full flex flex-row overflow-hidden" style={{ backgroundColor: 'var(--app-bg)' }}>
@@ -355,7 +355,7 @@ export default function App() {
                                 onStopHeadful={stopHeadful}
                                 useNovnc={useNovnc}
                             />
-                        ) : <LoadingScreen title="Loading workspace" subtitle="Preparing task workspace" />
+                        ) : <LoadingScreen variant="editor" title="Loading workspace" subtitle="Preparing task workspace" />
                     } />
                     <Route
                         path="/tasks/:id"
