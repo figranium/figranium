@@ -313,11 +313,10 @@ async function loadTasks() {
             console.error('[STORAGE] loadTasks file error:', e.message);
             throw e;
         }
-        tasksLoadPromise = null;
         return tasksCache;
     })();
 
-    return await tasksLoadPromise;
+    try { return await tasksLoadPromise; } finally { tasksLoadPromise = null; }
 }
 
 async function saveTasks(tasks) {
