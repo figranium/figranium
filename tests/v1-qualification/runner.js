@@ -152,7 +152,8 @@ async function runQualificationSuite() {
         { name: 'ui', path: './suite/07-ui-editor.test.js' },
         { name: 'container', path: './suite/08-container-runtime.test.js' },
         { name: 'performance', path: './suite/09-performance-regression.test.js' },
-        { name: 'reliability', path: './suite/11-reliability-stress.test.js' }
+        { name: 'reliability', path: './suite/11-reliability-stress.test.js' },
+        { name: 'stress', path: './suite/12-api-storage-stress.test.js' }
     ];
 
     const testResults = [];
