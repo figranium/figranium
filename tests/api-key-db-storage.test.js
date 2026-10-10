@@ -4,6 +4,9 @@ const createIdentityStorage = require('../src/server/storage-identity');
 
 const queries = [];
 const pool = {
+    async connect() {
+        return { query: (...args) => this.query(...args), release() {} };
+    },
     async query(sql, values) {
         queries.push({ sql, values });
         if (sql.startsWith('SELECT data FROM api_keys')) return { rows: [] };
@@ -30,7 +33,9 @@ storage.createApiKey({ name: 'DB-only', permissions: ['tasks:read'], taskIds: []
     .then(({ key, secret }) => {
         assert.ok(secret);
         assert.equal(key.exportSecret, undefined);
+        assert.ok(queries.some(({ sql }) => sql === 'BEGIN'));
         assert.ok(queries.some(({ sql }) => sql.startsWith('INSERT INTO api_keys')));
+        assert.ok(queries.some(({ sql }) => sql === 'COMMIT'));
         console.log('API key creation works without a local archive encryption file');
     })
     .catch(error => { console.error(error); process.exitCode = 1; })

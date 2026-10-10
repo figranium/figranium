@@ -1,7 +1,6 @@
 const fs = require('fs');
 const assert = require('assert');
-const path = require('path');
-const { API_KEY_FILE } = require('../src/server/constants');
+const { API_KEY_FILE, API_KEYS_FILE } = require('../src/server/constants');
 const { loadApiKey, saveApiKey } = require('../src/server/storage');
 const { requireApiKey } = require('../src/server/middleware');
 
@@ -13,6 +12,7 @@ let mockApiKeyFileContent = null;
 
 // Mock to simulate legacy file state
 fs.promises.readFile = async (filePath) => {
+    if (filePath === API_KEYS_FILE) throw new Error('ENOENT');
     if (filePath === API_KEY_FILE) {
         if (mockApiKeyFileContent === null) throw new Error('ENOENT');
         return mockApiKeyFileContent;
@@ -55,6 +55,7 @@ async function verifyLegacyCompatibility() {
     };
 
     let res = {
+        locals: {},
         statusCode: 200,
         status: (code) => { res.statusCode = code; return res; },
         json: (data) => { res.body = data; return res; }
@@ -67,6 +68,7 @@ async function verifyLegacyCompatibility() {
 
     assert.strictEqual(nextCalled, true, 'Middleware should accept the legacy key');
     assert.strictEqual(res.statusCode, 200, 'Status should be 200 (OK)');
+    assert.strictEqual(req.apiKey.legacy, true, 'Legacy key should migrate to a scoped verifier');
     console.log('✓ Middleware successfully authenticated legacy key');
 
     console.log('--- Verification Passed: Legacy keys are compatible ---');

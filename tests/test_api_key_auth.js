@@ -1,7 +1,6 @@
 const fs = require('fs');
 const assert = require('assert');
-const path = require('path');
-const { API_KEY_FILE, USERS_FILE } = require('../src/server/constants');
+const { API_KEY_FILE, API_KEYS_FILE, USERS_FILE } = require('../src/server/constants');
 
 // --- Mock Setup ---
 const originalReadFilePromise = fs.promises.readFile;
@@ -11,6 +10,7 @@ const originalWriteFileSync = fs.writeFileSync;
 const originalExistsSync = fs.existsSync;
 
 let mockApiKeyFileContent = JSON.stringify({ apiKey: 'test-secret-key' });
+let mockApiKeysFileContent = null;
 let mockUsersFileContent = JSON.stringify([]);
 let mockFsEnabled = true;
 
@@ -22,11 +22,23 @@ fs.promises.readFile = async (filePath, encoding) => {
         if (mockApiKeyFileContent === null) throw new Error('ENOENT');
         return mockApiKeyFileContent;
     }
+    if (filePath === API_KEYS_FILE) {
+        if (mockApiKeysFileContent === null) throw new Error('ENOENT');
+        return mockApiKeysFileContent;
+    }
     if (filePath === USERS_FILE) {
         return mockUsersFileContent;
     }
     // Fallback for other files (e.g. node_modules)
     return originalReadFilePromise.call(fs.promises, filePath, encoding);
+};
+
+fs.promises.writeFile = async (filePath, content, ...args) => {
+    if (filePath === API_KEYS_FILE) {
+        mockApiKeysFileContent = content;
+        return;
+    }
+    return originalWriteFilePromise.call(fs.promises, filePath, content, ...args);
 };
 
 // Mock fs.readFileSync
@@ -78,7 +90,7 @@ async function runTests() {
     // Invalidate cache by setting it to undefined via saveApiKey (mocked fs handles write)
     // Actually saveApiKey sets cache to the value passed.
     // If we pass undefined, cache becomes undefined, so next loadApiKey will read from file.
-    saveApiKey(undefined);
+    await saveApiKey(undefined);
 
     mockApiKeyFileContent = null;
     mockUsersFileContent = JSON.stringify([]);
@@ -100,6 +112,7 @@ async function runTests() {
         ip: '127.0.0.1'
     };
     let res = {
+        locals: {},
         status: (code) => {
             res.statusCode = code;
             return res;
@@ -132,7 +145,7 @@ async function runTests() {
 
     // Test 5: Verify Caching (Performance)
     console.log('Test 5: Caching verification');
-    saveApiKey(undefined); // Clear cache
+    await saveApiKey(undefined); // Clear cache
     mockApiKeyFileContent = JSON.stringify({ apiKey: 'cached-key' });
     let readFileCalls = 0;
     const trackedReadFilePromise = fs.promises.readFile;
@@ -141,14 +154,11 @@ async function runTests() {
         return trackedReadFilePromise(path, enc);
     };
 
-    // reset module state if needed? (can't easily)
-    // If we haven't implemented caching yet, this should call readFile every time.
     await loadApiKey();
     await loadApiKey();
 
-    console.log(`readFile called ${readFileCalls} times`);
-    // Currently (before fix), expected 2 calls. After fix, expected 1 call.
-    // We won't assert here yet, but this is useful for manual verification.
+    assert.strictEqual(readFileCalls, 1, 'Legacy key should be read only once after cache reset');
+    console.log('PASS');
 
     console.log('--- All Tests Passed ---');
 }
