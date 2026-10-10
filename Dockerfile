@@ -9,7 +9,7 @@ COPY package*.json ./
 COPY scripts ./scripts
 ENV FIGRANIUM_SKIP_PLAYWRIGHT_INSTALL=1 \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-RUN npm ci --include=dev
+RUN npm ci --include=dev --legacy-peer-deps
 
 # Build frontend
 COPY . .
@@ -50,7 +50,7 @@ COPY package*.json ./
 COPY scripts ./scripts
 ENV FIGRANIUM_SKIP_PLAYWRIGHT_INSTALL=1 \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-RUN npm ci --omit=dev \
+RUN npm ci --omit=dev --legacy-peer-deps \
     && npx playwright install --with-deps chromium firefox webkit
 
 # Copy server and built assets
