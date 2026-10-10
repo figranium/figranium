@@ -4,10 +4,16 @@
 
 ### API reliability and qualification
 - Propagate task database and filesystem read failures instead of silently returning empty task lists.
+- Clear failed filesystem task-load attempts so later API requests can retry instead of repeatedly returning 500.
 - Update task caches only after successful persistent writes, and make scoped API-key database replacement transactional.
 - Return structured JSON for unhandled API failures instead of default HTML error pages.
 - Expand V1 qualification with encryption-integrity checks, master-key restart tests, concurrent API and storage reads, scoped-key lifecycle and persistence tests, and injected PostgreSQL read/write failures.
 - Reject missing or empty qualification suites, and run V1 qualification on pushes to `main`.
+
+### API keys
+- Restore authentication for key-protected endpoints by exporting the scoped API-key verifier to the request middleware, with regression coverage for valid and invalid keys.
+- Combine task-running and result-reading access under `tasks:run`, while accepting and normalizing existing `results:read` keys.
+- Require confirmation before revoking an API key and remove the border around the newly created key's Copy icon.
 
 ### Secret storage and cloud compatibility
 - Make shared secret-store encryption opt-in via `MASTER_KEY`. Without an explicitly configured key, new file-backed secret writes use plaintext JSON rather than generating an implicit master key.
@@ -16,6 +22,10 @@
 - Keep named scoped API keys salted and hashed, independently of optional reversible secret encryption.
 - Store 1Password configuration in PostgreSQL on database-backed deployments, avoiding reliance on a writable local secret file.
 - Allow password management to continue if its optional encrypted local cache cannot be written.
+
+### Maintenance
+- Migrate publishing, qualification, screenshot, and related GitHub Actions workflows to Blacksmith runners.
+- Refresh the README screenshot.
 
 ## [0.21.0] - 2026-10-09
 
