@@ -134,8 +134,8 @@ Figranium automatically generates a cryptographically random session secret on f
 | Variable | Purpose | Default |
 |----------|---------|---------|
 | `SESSION_SECRET` | Optional override for the automatically generated, persisted session-cookie signing secret. | Auto-generated |
-| `MASTER_KEY` | Preferred 256-bit encryption key for cloud/read-only deployments. Provide 32 bytes as base64url or 64 hexadecimal characters. | — |
-| `MASTER_KEY_FILE` | Optional path to the persistent 256-bit master key used to encrypt stored 1Password configuration and file-backed credentials. Keep this file persistent and restrict access; use a separately protected mount for stronger isolation. If neither key source can be written, Figranium derives a stable, domain-separated key from `SESSION_SECRET`. | `data/master.key` (auto-generated) |
+| `MASTER_KEY` | Optional 256-bit key enabling encrypted at-rest secret files. Without it, the shared secret-store writes plaintext JSON. Supply 32 bytes encoded as base64url or 64 hexadecimal characters. | Unset (no shared secret-store encryption) |
+| `MASTER_KEY_FILE` | Optional location of a legacy local master key used to decrypt previously encrypted files during migration. Does not enable encryption for new writes without `MASTER_KEY`. Retain the original key until migration completes. | `data/master.key` (legacy key location) |
 | `PASSWORD_CACHE_KEY` | Secret used to encrypt the server-side 1Password cache. Set this to keep the encryption key outside the Figranium data directory. | Auto-generated and stored at `data/password_cache.key` |
 | `PASSWORD_CACHE_ENABLED` | Enable encrypted server-side caching of 1Password Login metadata and resolved passwords. Set to `false` to always fetch from 1Password. | `true` |
 | `FIGRANIUM_TELEMETRY_ENABLED` | Send anonymous installation environment details and daily UI/API usage flags to Figranium telemetry. Set to `false` to disable. | `true` |
@@ -154,9 +154,11 @@ Figranium automatically generates a cryptographically random session secret on f
 | `CLOAKBROWSER_LICENSE_KEY` | CloakBrowser license key for the latest binary. | — |
 | `MAX_CONCURRENT_EXECUTIONS` | Override the automatic browser-execution limit. | host-aware |
 
+
 ## Upgrading to 0.21.1
 
-For cloud or read-only deployments, set a stable `MASTER_KEY` before upgrading. On its first 0.21.1 read, a PostgreSQL-backed instance imports the existing encrypted 1Password configuration from `data/onepassword.json` into Postgres and re-encrypts it with `MASTER_KEY`. If the prior version used the automatic `data/master.key`, keep that file mounted for the first upgraded start so the migration can decrypt the existing configuration.
+At-rest encryption in the shared secret store is now **opt-in**. Without `MASTER_KEY`, new file-backed secret writes use plaintext JSON; configure `MASTER_KEY` to keep them encrypted. Existing encrypted files are decrypted and migrated only when their original key is available. Preserve `data/master.key` (or the configured legacy `MASTER_KEY_FILE`) until migration is complete; missing keys never trigger destructive resets. Named API keys remain salted and hashed, not stored as plaintext. Separate 1Password password-cache encryption settings remain independent of `MASTER_KEY`.
+
 | `MAX_EXECUTION_QUEUE` | Maximum waiting executions before new work receives 503. | `50` |
 | `EXECUTION_QUEUE_TIMEOUT_MS` | Maximum time an execution may wait for capacity. | `600000` |
 | `EXECUTION_TIMEOUT_MS` | Maximum non-headful execution runtime. | `900000` |
