@@ -54,7 +54,8 @@ const {
     requireApiKey,
     requireApiPermission,
     requireAuthOrApiKey,
-    requireScopedPermission
+    requireScopedPermission,
+    requireUnscopedGlobalAccess
 } = require('./src/server/middleware');
 
 // Feature Modules (Legacy/Existing)
@@ -542,15 +543,15 @@ app.use('/file-icons', express.static(path.join(__dirname, 'public', 'file-icons
     immutable: true,
     etag: true
 }));
-app.get('/captures/:legacyName', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), dataRateLimiter, async (req, res, next) => {
+app.get('/captures/:legacyName', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), requireUnscopedGlobalAccess, dataRateLimiter, async (req, res, next) => {
     try {
         const entry = await require('./src/server/cabinets').resolveLegacyPath(req.params.legacyName);
         if (!entry) return next();
         return res.download(entry.path, entry.item.name);
     } catch { return next(); }
 });
-app.use('/captures', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), express.static(capturesDir), express.static(srcCapturesDir));
-app.use('/screenshots', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), express.static(capturesDir), express.static(srcCapturesDir));
+app.use('/captures', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), requireUnscopedGlobalAccess, express.static(capturesDir), express.static(srcCapturesDir));
+app.use('/screenshots', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), requireUnscopedGlobalAccess, express.static(capturesDir), express.static(srcCapturesDir));
 // The SPA shell and unhashed bootstrap files must always be revalidated. Safari can
 // otherwise restore a stale app shell after the browser is closed and reopened,
 // leaving it pointing at assets from a different build. Hashed Vite assets are

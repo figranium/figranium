@@ -1,7 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { requireAuth, requireAuthOrApiKey, requireScopedPermission, dataRateLimiter } = require('../middleware');
+const { requireAuth, requireAuthOrApiKey, requireScopedPermission, requireUnscopedGlobalAccess, dataRateLimiter } = require('../middleware');
 const { getStorageStateFile } = require('../storage');
 const { DATA_DIR } = require('../constants');
 
@@ -49,7 +49,7 @@ const readCapturesDir = async (dir, runId) => {
     return entries.filter(Boolean);
 };
 
-router.get('/captures', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), dataRateLimiter, async (_req, res) => {
+router.get('/captures', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), requireUnscopedGlobalAccess, dataRateLimiter, async (_req, res) => {
     const runId = String(_req.query?.runId || '').trim();
     const seen = new Set();
     const entries = [];
@@ -64,7 +64,7 @@ router.get('/captures', requireAuthOrApiKey, requireScopedPermission('tasks:mana
     res.json({ captures: entries });
 });
 
-router.get('/screenshots', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), dataRateLimiter, async (_req, res) => {
+router.get('/screenshots', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), requireUnscopedGlobalAccess, dataRateLimiter, async (_req, res) => {
     const seen = new Set();
     const entries = [];
     for (const dir of CAPTURES_DIRS) {

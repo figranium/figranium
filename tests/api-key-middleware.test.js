@@ -19,7 +19,7 @@ fs.promises.readFile = async (file, ...args) => {
     return readFile.call(fs.promises, file, ...args);
 };
 
-const { requireApiKey, requireApiPermission, requireScopedPermission } = require('../src/server/middleware');
+const { requireApiKey, requireApiPermission, requireScopedPermission, requireUnscopedGlobalAccess } = require('../src/server/middleware');
 
 async function check(value, expectedStatus) {
     const req = {
@@ -76,6 +76,31 @@ function checkManageOnlyRoute(permissions, expectedStatus) {
             assert.equal(continued, allowed);
             assert.equal(res.statusCode || 200, allowed ? 200 : 403);
             if (!allowed) assert.equal(res.body.error, 'TASK_NOT_ALLOWED');
+        }
+        // Global captures, Cabinets and browser control have no Task ownership.
+        for (const [apiKey, allowed] of [
+            [{ permissions: ['tasks:manage'], taskIds: ['task_allowed'] }, false],
+            [{ permissions: ['tasks:manage'], taskIds: [] }, true],
+            [null, true] // UI session; preceding authentication remains required.
+        ]) {
+            const req = { apiKey };
+            const res = { status(code) { this.statusCode = code; return this; }, json(value) { this.body = value; return this; } };
+            let continued = false;
+            requireUnscopedGlobalAccess(req, res, () => { continued = true; });
+            assert.equal(continued, allowed);
+            assert.equal(res.statusCode || 200, allowed ? 200 : 403);
+            if (!allowed) assert.equal(res.body.error, 'TASK_NOT_ALLOWED');
+        }
+        // Guard route wiring, not only the middleware function.
+        for (const [file, routeCount] of [
+            ['src/server/routes/data.js', 2],
+            ['src/server/routes/cabinets.js', 3],
+            ['src/server/routes/browser.js', 2],
+            ['server.js', 3]
+        ]) {
+            const source = fs.readFileSync(require('node:path').join(__dirname, '..', file), 'utf8');
+            const matches = source.match(/requireScopedPermission\('tasks:manage'\), requireUnscopedGlobalAccess,/g) || [];
+            assert.equal(matches.length, routeCount, file + ' must guard every global API-key route');
         }
         console.log('API key middleware accepts valid keys and rejects invalid keys');
     } finally {

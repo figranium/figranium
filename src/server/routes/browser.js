@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuthOrApiKey, requireScopedPermission } = require('../middleware');
+const { requireAuthOrApiKey, requireScopedPermission, requireUnscopedGlobalAccess } = require('../middleware');
 const { launchApiSession, getActiveSession, ensureSessionId } = require('../../../headful');
 
 const router = express.Router();
@@ -186,7 +186,7 @@ async function inspectTargetInPage(page, targetHint) {
  * Body: { url, mode? ('headful'), devTools?, headless? }
  * Returns: { sessionId, status, wsEndpoint }
  */
-router.post('/browser/open', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), async (req, res) => {
+router.post('/browser/open', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), requireUnscopedGlobalAccess, async (req, res) => {
     try {
         const { url, mode = 'headful', devTools = false, headless } = req.body || {};
         const session = await launchApiSession({ url, mode, devTools, headless });
@@ -226,7 +226,7 @@ router.post('/browser/open', requireAuthOrApiKey, requireScopedPermission('tasks
  * Body: { sessionId?, url?, targetHint? }
  * Returns: { success, selectors: [{css, xpath, confidence}], snapshot? }
  */
-router.post('/inspector/highlight', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), async (req, res) => {
+router.post('/inspector/highlight', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), requireUnscopedGlobalAccess, async (req, res) => {
     try {
         const { sessionId, url, targetHint } = req.body || {};
         let session = getActiveSession();
