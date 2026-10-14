@@ -68,6 +68,15 @@ function checkManageOnlyRoute(permissions, expectedStatus) {
         checkManageOnlyRoute(['tasks:read'], 403);
         checkManageOnlyRoute(['tasks:run'], 403);
         checkManageOnlyRoute(['tasks:manage'], 200);
+        for (const [body, allowed] of [[{ id: 'task_allowed' }, true], [{ id: 'task_other' }, false], [{}, false]]) {
+            const req = { apiKey: { permissions: ['tasks:manage'], taskIds: ['task_allowed'] }, params: {}, body };
+            const res = { status(code) { this.statusCode = code; return this; }, json(value) { this.body = value; return this; } };
+            let continued = false;
+            requireScopedPermission('tasks:manage', { taskBody: 'id' })(req, res, () => { continued = true; });
+            assert.equal(continued, allowed);
+            assert.equal(res.statusCode || 200, allowed ? 200 : 403);
+            if (!allowed) assert.equal(res.body.error, 'TASK_NOT_ALLOWED');
+        }
         console.log('API key middleware accepts valid keys and rejects invalid keys');
     } finally {
         fs.promises.readFile = readFile;
