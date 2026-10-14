@@ -54,7 +54,7 @@ router.get('/list', requireApiKey, requireScopedPermission('tasks:read'), async 
     res.json({ tasks: summary });
 });
 
-router.post('/', requireAuthOrApiKey, requireScopedPermission('tasks:manage'), async (req, res) => {
+router.post('/', requireAuthOrApiKey, requireScopedPermission('tasks:manage', { taskBody: 'id' }), async (req, res) => {
     await taskMutex.lock();
     try {
         const tasks = await loadTasks();
