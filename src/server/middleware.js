@@ -149,6 +149,12 @@ const requireApiPermission = (permission, { taskParam = null, taskBody = null } 
     next();
 };
 
+// Task-allowlisted keys cannot administer or read global resources that lack a Task owner.
+const requireUnscopedGlobalAccess = (req, res, next) => {
+    if (req.apiKey?.taskIds?.length) return res.status(403).json({ error: 'TASK_NOT_ALLOWED' });
+    next();
+};
+
 const requireScopedPermission = (permission, options = {}) => (req, res, next) => {
     if (!req.apiKey) return next();
     return requireApiPermission(permission, options)(req, res, next);
@@ -164,6 +170,7 @@ module.exports = {
     requireApiKey,
     requireApiPermission,
     requireScopedPermission,
+    requireUnscopedGlobalAccess,
     requireAuthOrApiKey,
     isIpAllowed
 };
