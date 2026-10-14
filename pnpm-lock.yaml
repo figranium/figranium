@@ -63,7 +63,7 @@ importers:
         specifier: ^8.16.3
         version: 8.23.1
       playwright:
-        specifier: ^1.63.0
+        specifier: ^1.64.0
         version: 1.64.0
       playwright-extra:
         specifier: ^4.3.6
