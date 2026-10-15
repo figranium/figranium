@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@1password/sdk':
+        specifier: ^0.5.0
+        version: 0.5.0
       '@fontsource/questrial':
         specifier: ^5.3.0
         version: 5.3.0
@@ -15,7 +18,7 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@tabler/icons-react':
-        specifier: ^3.46.0
+        specifier: ^3.49.0
         version: 3.49.0(react@19.2.4)
       bcryptjs:
         specifier: ^3.0.3
@@ -25,7 +28,7 @@ importers:
         version: 1.2.0
       cloakbrowser:
         specifier: ^0.5.8
-        version: 0.5.12(playwright-core@1.64.0)
+        version: 0.5.12(playwright-core@1.64.1)
       cookie:
         specifier: ^1.0.2
         version: 1.1.1
@@ -60,14 +63,14 @@ importers:
         specifier: ^8.16.3
         version: 8.23.1
       playwright:
-        specifier: ^1.64.0
-        version: 1.64.0
+        specifier: ^1.63.0
+        version: 1.64.1
       playwright-extra:
         specifier: ^4.3.6
-        version: 4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0)
+        version: 4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0)
       puppeteer-extra-plugin-stealth:
         specifier: ^2.11.2
-        version: 2.11.2(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0)
+        version: 2.11.2(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0)
       react:
         specifier: ^19.2.3
         version: 19.2.4
@@ -131,6 +134,12 @@ importers:
         version: 8.3.3(@types/node@25.9.9)(esbuild@0.27.4)(jiti@2.6.1)
 
 packages:
+
+  '@1password/sdk-core@0.5.0':
+    resolution: {integrity: sha512-9g7LWOKRKdePZ85evVgE9xEom3DAg3hRIyQdOwLPvpL/F7KpDXmUHMi72rsqJxKaDbWApXmrYjDExMSPqUg7xw==}
+
+  '@1password/sdk@0.5.0':
+    resolution: {integrity: sha512-k6kov3pcA7PRg2tev9CgTfEf/3JSyAp11BPQNCEsqAD32QbqM032OXC1rfjyC8Ba0sfH+NHYZxcifUZToyGyYA==}
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -2152,8 +2161,8 @@ packages:
   platform@1.3.6:
     resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
 
-  playwright-core@1.64.0:
-    resolution: {integrity: sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==}
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -2169,8 +2178,8 @@ packages:
       playwright-core:
         optional: true
 
-  playwright@1.64.0:
-    resolution: {integrity: sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg==}
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -2759,6 +2768,12 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
+
+  '@1password/sdk-core@0.5.0': {}
+
+  '@1password/sdk@0.5.0':
+    dependencies:
+      '@1password/sdk-core': 0.5.0
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -3395,11 +3410,11 @@ snapshots:
 
   chownr@3.0.0: {}
 
-  cloakbrowser@0.5.12(playwright-core@1.64.0):
+  cloakbrowser@0.5.12(playwright-core@1.64.1):
     dependencies:
       tar: 7.5.11
     optionalDependencies:
-      playwright-core: 1.64.0
+      playwright-core: 1.64.1
 
   clone-deep@0.2.4:
     dependencies:
@@ -4712,20 +4727,20 @@ snapshots:
 
   platform@1.3.6: {}
 
-  playwright-core@1.64.0: {}
+  playwright-core@1.64.1: {}
 
-  playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0):
+  playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0):
     dependencies:
       debug: 4.4.3(supports-color@7.2.0)
     optionalDependencies:
-      playwright: 1.64.0
-      playwright-core: 1.64.0
+      playwright: 1.64.1
+      playwright-core: 1.64.1
     transitivePeerDependencies:
       - supports-color
 
-  playwright@1.64.0:
+  playwright@1.64.1:
     dependencies:
-      playwright-core: 1.64.0
+      playwright-core: 1.64.1
 
   postcss-value-parser@4.2.0: {}
 
@@ -4781,45 +4796,45 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  puppeteer-extra-plugin-stealth@2.11.2(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0):
+  puppeteer-extra-plugin-stealth@2.11.2(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
       debug: 4.4.3(supports-color@7.2.0)
-      puppeteer-extra-plugin: 3.2.3(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0)
-      puppeteer-extra-plugin-user-preferences: 2.4.1(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0)
+      puppeteer-extra-plugin: 3.2.3(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0)
+      puppeteer-extra-plugin-user-preferences: 2.4.1(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0)
     optionalDependencies:
-      playwright-extra: 4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0)
+      playwright-extra: 4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  puppeteer-extra-plugin-user-data-dir@2.4.1(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0):
+  puppeteer-extra-plugin-user-data-dir@2.4.1(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
       debug: 4.4.3(supports-color@7.2.0)
       fs-extra: 10.1.0
-      puppeteer-extra-plugin: 3.2.3(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0)
+      puppeteer-extra-plugin: 3.2.3(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0)
       rimraf: 3.0.2
     optionalDependencies:
-      playwright-extra: 4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0)
+      playwright-extra: 4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  puppeteer-extra-plugin-user-preferences@2.4.1(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0):
+  puppeteer-extra-plugin-user-preferences@2.4.1(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
       debug: 4.4.3(supports-color@7.2.0)
       deepmerge: 4.3.1
-      puppeteer-extra-plugin: 3.2.3(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0)
-      puppeteer-extra-plugin-user-data-dir: 2.4.1(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0)
+      puppeteer-extra-plugin: 3.2.3(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0)
+      puppeteer-extra-plugin-user-data-dir: 2.4.1(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0)
     optionalDependencies:
-      playwright-extra: 4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0)
+      playwright-extra: 4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  puppeteer-extra-plugin@3.2.3(playwright-extra@4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0))(supports-color@7.2.0):
+  puppeteer-extra-plugin@3.2.3(playwright-extra@4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.4.3(supports-color@7.2.0)
       merge-deep: 3.0.3
     optionalDependencies:
-      playwright-extra: 4.3.6(playwright-core@1.64.0)(playwright@1.64.0)(supports-color@7.2.0)
+      playwright-extra: 4.3.6(playwright-core@1.64.1)(playwright@1.64.1)(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
