@@ -7,9 +7,7 @@
   <a href="https://github.com/figranium/figranium/pkgs/container/figranium" target="_blank"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffigranium%2Ffigranium%2Fmain%2Fghcr-stats.json&amp;query=%24.downloads_compact&amp;label=Pulls&amp;color=2496ED&amp;style=for-the-badge&amp;logo=docker&amp;logoColor=white" alt="Docker Pulls"></a>
   <a href="https://discord.gg/kPmfbgu9Xn" target="_blank"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
 
-  <p><strong>Visual browser automation, turned into reusable tools.</strong></p>
-
-  <p>Build browser Tasks visually. Run them through an API, schedules, SDKs, workflow automation platforms, or MCP.</p>
+  <p><strong>Stack blocks visually to build complex browser workflows and execute them via API.</strong></p>
 
   <p>
     <a href="https://figranium.dev/docs" target="_blank"><strong>Documentation</strong></a>
@@ -25,13 +23,6 @@
 </div>
 
 # What You Get
-
-## Built for real browser work
-
-- **Operations** — log into portals, move data between systems, process back-office queues, and produce auditable runs.
-- **Research & data** — collect structured web data, monitor changing pages, and export results on a schedule.
-- **Product & engineering** — turn browser workflows into internal APIs, test repeatable flows, and hand tools to teammates.
-- **AI agents** — let MCP-compatible agents discover, create, schedule, and run browser Tasks without rebuilding every integration.
 
 - **Block‑based automation** — build flows with actions like click, type, wait, hover, and execute JavaScript against modern pages.
 - **Task API** — trigger saved tasks via HTTP API, pass variables at runtime, and secure runs with the API key you control.
