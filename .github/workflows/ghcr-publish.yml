@@ -49,6 +49,8 @@ jobs:
 
       - name: Setup Blacksmith Builder
         uses: useblacksmith/setup-docker-builder@v2
+        with:
+          cache-key: Dockerfile
 
       - name: Log in to GHCR
         uses: docker/login-action@v4
