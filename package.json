@@ -53,10 +53,21 @@
     "!public/screenshots",
     "!dist/screenshots"
   ],
-  "keywords": [],
+  "keywords": [
+    "browser-automation",
+    "visual-automation",
+    "playwright",
+    "web-scraping",
+    "workflow-automation",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "self-hosted",
+    "figranium"
+  ],
   "author": "",
   "license": "GPL-3.0-only",
-  "description": "Stack blocks visually to build complex browser workflows and execute them via API",
+  "description": "Open-source visual browser automation: build reusable browser Tasks visually and run them through an API, schedules, SDKs, or MCP.",
   "dependencies": {
     "@1password/sdk": "^0.5.0",
     "@fontsource/questrial": "^5.3.0",
@@ -101,5 +112,13 @@
     "tailwindcss": "^4.0.0",
     "typescript": "^7.0.0",
     "vite": "^8.3.2"
+  },
+  "homepage": "https://figranium.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/figranium/figranium.git"
+  },
+  "bugs": {
+    "url": "https://github.com/figranium/figranium/issues"
   }
 }
