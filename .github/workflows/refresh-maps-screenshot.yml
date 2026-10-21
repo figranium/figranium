@@ -3,7 +3,6 @@ name: Refresh Maps Screenshot
 on:
   push:
     branches:
-      - chatgpt/refresh-maps-screenshot
       - fix/editor-header-centered-title-remove-output
   workflow_dispatch:
 
