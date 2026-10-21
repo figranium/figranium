@@ -12,7 +12,6 @@ interface EditorTopBarProps {
     onOpenBehavior: () => void;
     onOpenHistory: () => void;
     onOpenStates: () => void;
-    onOpenOutput: () => void;
 }
 
 const EditorTopBar: React.FC<EditorTopBarProps> = ({
@@ -25,22 +24,21 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
     onOpenBehavior,
     onOpenHistory,
     onOpenStates,
-    onOpenOutput,
 }) => {
     return (
         <div className="fixed top-0 left-0 right-0 z-40 w-full pointer-events-none">
-            <div className="glass-card editor-top-bar flex items-center justify-between p-1 px-6 border-b border-white/10 backdrop-blur-xl pointer-events-auto">
-                <div className="absolute left-1/2 -translate-x-1/2 w-full max-w-[400px] px-6">
+            <div className="glass-card editor-top-bar relative flex items-center justify-between p-1 px-6 border-b border-white/10 backdrop-blur-xl pointer-events-auto">
+                <div className="absolute inset-x-0 mx-auto w-full max-w-[400px] px-6 pointer-events-none">
                     <input
                         type="text"
                         value={currentTask.name || ''}
                         onChange={(e) => onUpdateTaskName(e.target.value)}
                         onBlur={() => onAutoSave()}
                         placeholder="Task name"
-                        className="bg-transparent border-none text-xs font-bold text-white tracking-[0.08em] focus:outline-none w-full text-center placeholder:text-white/20 py-1"
+                        className="bg-transparent border-none text-xs font-bold text-white tracking-[0.08em] focus:outline-none w-full pointer-events-auto text-center placeholder:text-white/20 py-1"
                     />
                 </div>
-                <div className="ml-auto flex items-center gap-1">
+                <div className="relative z-10 ml-auto flex items-center gap-1">
                     <button
                         onClick={onOpenApi}
                         className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
@@ -80,14 +78,6 @@ const EditorTopBar: React.FC<EditorTopBarProps> = ({
                         aria-label="States"
                     >
                         <TablerIcon name="polygon" className="text-base" />
-                    </button>
-                    <button
-                        onClick={onOpenOutput}
-                        className="editor-top-bar-control w-8 h-8 border-0 bg-transparent shadow-none flex items-center justify-center text-white/30 hover:bg-transparent transition-colors focus:outline-none"
-                        title="Output"
-                        aria-label="Output"
-                    >
-                        <TablerIcon name="outbound" className="text-base" />
                     </button>
                     <button
                         onClick={onOpenHistory}
