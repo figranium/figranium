@@ -365,7 +365,6 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 onOpenBehavior={() => handleOpenCabinet('behavior')}
                 onOpenHistory={() => handleOpenCabinet('history')}
                 onOpenStates={() => handleOpenCabinet('cabinets')}
-                onOpenOutput={() => handleOpenCabinet('output')}
             />
 
             <CanvasView
