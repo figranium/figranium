@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.21.2] - 2026-10-22
+
+### API access and security
+- Make task run access include read access, and task management include read and run access. Simplify API key creation to a single descriptive access level.
+- Enforce scoped task allowlists on full task saves and restrict sensitive browser, credential, cabinet, capture, and screenshot routes to management access.
+- Prevent API-key task runs from replacing extraction scripts and safely handle runtime values in extraction script templates.
+- Improve API key authentication and legacy-key regression coverage.
+
+### Execution and interface
+- Improve execution error handling and result reporting, including interrupted connections and headful startup status.
+- Replace generic loading indicators with contextual skeletons and retry failed lazy-loaded components.
+- Improve URL variable display, make the Results drawer handle opaque, and center the editor title while removing its Output shortcut.
+
+### Maintenance
+- Update Playwright and its Docker image to 1.64.1 and make Docker installs tolerate bundled peer dependencies.
+- Refresh package discovery metadata, documentation, and the README screenshot; adjust qualification and screenshot workflow triggers.
+
 ## [0.21.1] - 2026-10-09
 
 ### API reliability and qualification

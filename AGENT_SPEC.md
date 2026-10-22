@@ -185,6 +185,8 @@ return { title };
 ```
 
 ## 5) Extraction scripts (task-level)
+API-key runs use the saved task’s extraction script and reject request-level `extractionScript` overrides. Runtime values in extraction script placeholders are treated as data rather than executable source.
+
 Use `extractionScript` and `extractionFormat` at the task level for final structured output. Final table parsing/extraction only works as task output when it is implemented in `extractionScript`. The extraction script runs **after** the page is processed and uses the same page-context rules as `javascript` actions (no `page` object).
 
 Minimal example:
