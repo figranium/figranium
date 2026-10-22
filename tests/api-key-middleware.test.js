@@ -77,6 +77,26 @@ function checkManageOnlyRoute(permissions, expectedStatus) {
             assert.equal(res.statusCode || 200, allowed ? 200 : 403);
             if (!allowed) assert.equal(res.body.error, 'TASK_NOT_ALLOWED');
         }
+        for (const [granted, expected] of [
+            ['tasks:read', [200, 403, 403]],
+            ['tasks:run', [200, 200, 403]],
+            ['tasks:manage', [200, 200, 200]],
+            ['results:read', [200, 200, 403]]
+        ]) {
+            ['tasks:read', 'tasks:run', 'tasks:manage'].forEach((permission, index) => {
+                const req = { apiKey: { permissions: [granted], taskIds: ['allowed'] }, params: { id: 'allowed' } };
+                const res = { status(code) { this.statusCode = code; return this; }, json(body) { this.body = body; return this; } };
+                let continued = false;
+                requireApiPermission(permission, { taskParam: 'id' })(req, res, () => { continued = true; });
+                assert.equal(res.statusCode || 200, expected[index], `${granted} -> ${permission}`);
+                assert.equal(continued, expected[index] === 200);
+                if (continued) {
+                    req.params.id = 'other';
+                    requireApiPermission(permission, { taskParam: 'id' })(req, res, () => assert.fail('task restriction bypassed'));
+                    assert.equal(res.body.error, 'TASK_NOT_ALLOWED');
+                }
+            });
+        }
         console.log('API key middleware accepts valid keys and rejects invalid keys');
     } finally {
         fs.promises.readFile = readFile;
