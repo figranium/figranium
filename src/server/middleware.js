@@ -141,7 +141,13 @@ const requireApiKey = async (req, res, next) => {
 
 const requireApiPermission = (permission, { taskParam = null, taskBody = null } = {}) => (req, res, next) => {
     if (!req.apiKey) return res.status(401).json({ error: 'INVALID_API_KEY' });
-    if (!(req.apiKey.permissions?.includes(permission) || (permission === 'results:read' && req.apiKey.permissions?.includes('tasks:run')) || (permission === 'tasks:run' && req.apiKey.permissions?.includes('results:read')))) return res.status(403).json({ error: 'API_KEY_FORBIDDEN' });
+    const grants = req.apiKey.permissions || [];
+    const allowed = grants.includes(permission) ||
+        (['tasks:read', 'tasks:run', 'results:read'].includes(permission) && grants.includes('tasks:manage')) ||
+        (permission === 'tasks:read' && (grants.includes('tasks:run') || grants.includes('results:read'))) ||
+        (permission === 'results:read' && grants.includes('tasks:run')) ||
+        (permission === 'tasks:run' && grants.includes('results:read'));
+    if (!allowed) return res.status(403).json({ error: 'API_KEY_FORBIDDEN' });
     const taskId = taskParam ? String(req.params[taskParam] || '') : taskBody ? String(req.body?.[taskBody] || '') : '';
     // Scoped keys cannot create unlisted tasks or overwrite another task through a body ID.
     if (taskBody && req.apiKey.taskIds?.length && !taskId) return res.status(403).json({ error: 'TASK_NOT_ALLOWED' });
