@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireAuth, csrfProtection, dataRateLimiter } = require('../middleware');
-const { loadApiKeys, loadApiKey, createApiKey, revokeApiKey, API_KEY_PERMISSIONS } = require('../storage');
+const { loadApiKeys, loadApiKey, createApiKey, renameApiKey, revokeApiKey, API_KEY_PERMISSIONS } = require('../storage');
 
 const router = express.Router();
 const publicKey = ({ hash, salt, exportSecret, ...key }) => key;
@@ -21,6 +21,16 @@ router.post('/', csrfProtection, dataRateLimiter, requireAuth, async (req, res) 
         const { key, secret } = await createApiKey({ name, permissions, taskIds });
         res.status(201).json({ key: publicKey(key), secret });
     } catch { res.status(500).json({ error: 'API_KEY_CREATE_FAILED' }); }
+});
+
+router.patch('/:id', csrfProtection, dataRateLimiter, requireAuth, async (req, res) => {
+    try {
+        const key = await renameApiKey(req.params.id, req.body?.name);
+        res.json({ key: publicKey(key) });
+    } catch (error) {
+        const statuses = { INVALID_API_KEY_NAME: 400, API_KEY_NOT_FOUND: 404, LEGACY_API_KEY: 403 };
+        res.status(statuses[error.message] || 500).json({ error: statuses[error.message] ? error.message : 'API_KEY_RENAME_FAILED' });
+    }
 });
 
 router.delete('/:id', csrfProtection, dataRateLimiter, requireAuth, async (req, res) => {

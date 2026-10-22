@@ -740,6 +740,7 @@ module.exports = {
     saveApiKey: identityStorage.saveApiKey,
     loadApiKeys: identityStorage.loadApiKeys,
     createApiKey: identityStorage.createApiKey,
+    renameApiKey: identityStorage.renameApiKey,
     revokeApiKey: identityStorage.revokeApiKey,
     API_KEY_PERMISSIONS: identityStorage.API_KEY_PERMISSIONS,
     importApiKeyMetadata: identityStorage.importApiKeyMetadata,

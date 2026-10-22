@@ -250,6 +250,17 @@ async function revokeApiKey(id) {
     return true;
 }
 
+async function renameApiKey(id, name) {
+    if (typeof name !== 'string' || !name.trim() || name.trim().length > 120) throw new Error('INVALID_API_KEY_NAME');
+    const keys = await loadApiKeys();
+    const key = keys.find(entry => entry.id === id);
+    if (!key) throw new Error('API_KEY_NOT_FOUND');
+    if (key.legacy) throw new Error('LEGACY_API_KEY');
+    const updated = { ...key, name: name.trim() };
+    await persistApiKeys(keys.map(entry => entry.id === id ? updated : entry));
+    return updated;
+}
+
 async function clearApiKeys() { await persistApiKeys([]); }
 
 function publicApiKeyMetadata(key) {
@@ -322,5 +333,5 @@ async function verifyApiKey(secret) {
 }
 
 
-return { loadApiKey, saveApiKey, loadApiKeys, createApiKey, revokeApiKey, clearApiKeys, importApiKeyMetadata, importApiKeys, exportApiKeys, publicApiKeyMetadata, verifyApiKey, loadCredentials, saveCredentials, API_KEY_PERMISSIONS };
+return { loadApiKey, saveApiKey, loadApiKeys, createApiKey, renameApiKey, revokeApiKey, clearApiKeys, importApiKeyMetadata, importApiKeys, exportApiKeys, publicApiKeyMetadata, verifyApiKey, loadCredentials, saveCredentials, API_KEY_PERMISSIONS };
 };
