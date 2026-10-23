@@ -395,6 +395,15 @@
     background: transparent;
 }
 
+.auth-screen {
+    overflow-y: auto;
+    background-image: radial-gradient(circle, var(--app-dot) 0.8px, transparent 0);
+    background-size: 22px 22px;
+}
+
+.auth-screen .glass-card.auth-card-opaque,
+.auth-screen .glass-card.auth-card-opaque:hover { background: var(--app-surface); }
+
 .shine-effect {
     position: relative;
     overflow: hidden;
@@ -405,9 +414,9 @@
     position: absolute;
     top: -50%;
     left: -100%;
-    width: 33.333333%;
+    width: 50%;
     height: 200%;
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
     transform: rotate(25deg);
     pointer-events: none;
     transition: none;

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import CanvasDotGrid from './editor/CanvasDotGrid';
 import TablerIcon from './TablerIcon';
 
 interface AuthScreenProps {
@@ -9,6 +10,7 @@ interface AuthScreenProps {
 }
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy = false }) => {
+    const viewportRef = useRef<HTMLDivElement>(null!);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [pass, setPass] = useState('');
@@ -34,8 +36,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
     const inputClass = "w-full theme-input border theme-border rounded-2xl px-5 py-4 text-sm theme-text focus:outline-none focus:border-[var(--app-border-strong)] focus-visible:ring-2 focus-visible:ring-white/50 transition-all placeholder:text-gray-600";
 
     return (
-        <div className="fixed inset-0 z-[100] theme-bg flex items-center justify-center">
-            <div className="w-[400px] glass-card p-10 rounded-[48px] space-y-8 relative">
+        <div ref={viewportRef} className="auth-screen fixed inset-0 z-[100] theme-bg flex items-center justify-center">
+            <CanvasDotGrid canvasOffset={{ x: 0, y: 0 }} canvasScale={1} viewportRef={viewportRef} />
+            <div className="w-[400px] max-w-[calc(100%-40px)] glass-card auth-card-opaque p-10 rounded-[48px] space-y-8 relative">
                 <div className="text-center space-y-3">
                     <img src="/figranium_logo.svg" alt="Figranium" className="h-24 mx-auto object-contain theme-logo" style={{ color: 'var(--app-logo)' }} />
                 </div>
