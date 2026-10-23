@@ -6,6 +6,7 @@ import VariableTablesTab from './tabs/VariableTablesTab';
 import SchedulesDropsTab from './tabs/SchedulesDropsTab';
 import InfrastructureTab from './tabs/InfrastructureTab';
 import { FleetTab, FleetWorkerState, ProxyPreset } from '../../types';
+import { formatLabel } from '../../utils/taskUtils';
 
 interface FleetScreenProps {
     onNotify: (message: string, tone?: 'success' | 'error') => void;
@@ -73,7 +74,7 @@ const FleetScreen: React.FC<FleetScreenProps> = ({ onNotify }) => {
                 credentials: 'include',
                 body: JSON.stringify({ mode }),
             });
-            onNotify(`Proxy binding mode set to ${mode}`, 'success');
+            onNotify(`Proxy binding mode set to ${formatLabel(mode.toLowerCase())}`, 'success');
             loadFleetData();
         } catch (e: any) {
             onNotify(`Failed to update proxy binding: ${e.message}`, 'error');

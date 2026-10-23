@@ -88,7 +88,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                                 <button
                                     type="button"
                                     onClick={() => setShowPass(!showPass)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg theme-text-faint hover:text-white hover:bg-white/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg theme-text-faint hover:text-[var(--app-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                     aria-label={showPass ? "Hide password" : "Show password"}
                                     title={showPass ? "Hide password" : "Show password"}
                                 >
@@ -113,7 +113,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                                     <button
                                         type="button"
                                         onClick={() => setShowPassConfirm(!showPassConfirm)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg theme-text-faint hover:text-white hover:bg-white/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 rounded-lg theme-text-faint hover:text-[var(--app-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         aria-label={showPassConfirm ? "Hide password confirmation" : "Show password confirmation"}
                                         title={showPassConfirm ? "Hide password confirmation" : "Show password confirmation"}
                                     >

@@ -5,7 +5,6 @@ import { ConfirmRequest, Results, CaptureEntry } from '../../types';
 import CaptureCard from '../CaptureCard';
 import CodeEditor from '../CodeEditor';
 import JSZip from 'jszip';
-import GithubStarPrompt from '../GithubStarPrompt';
 import FileTypeIcon from '../FileTypeIcon';
 import { normalizeTaskOutcome, taskOutcomeIcon, taskOutcomeLabel } from '../../utils/taskOutcome';
 import { formatLabel } from '../../utils/taskUtils';
@@ -253,9 +252,6 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
     return (
         <div className={containerClassName}>
-            {!isExecuting && activeResults && normalizeTaskOutcome(activeResults.outcome) === 'success' && (activeResults.data !== undefined || activeResults.screenshotUrl || activeResults.downloads) && (
-                <GithubStarPrompt runId={runId} />
-            )}
             <div className="flex items-end justify-between border-b border-white/5 pb-4">
                 <div className="space-y-2 min-w-0 mr-3">
                     <p className="text-xs font-bold text-gray-500 tracking-[0.3em]">Results</p>
@@ -269,7 +265,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                 </div>
             </div>
 
-            <div className={`grid grid-cols-1 ${fullWidth ? 'gap-6' : `${showCapture ? 'xl:grid-cols-2' : ''} gap-8`}`}>
+            <div className={`grid grid-cols-1 ${showCapture ? (fullWidth ? 'xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]' : 'xl:grid-cols-2') : ''} ${fullWidth ? 'gap-6' : 'gap-8'}`}>
                 {showCapture && <div className={`glass-card overflow-hidden flex flex-col ${fullWidth ? 'rounded-2xl min-h-[260px]' : 'rounded-[32px] min-h-[400px]'}`}>
                     <div className={`border-b border-white/5 flex items-center justify-between text-xs font-bold text-gray-500 tracking-widest ${fullWidth ? 'p-4' : 'p-6'}`}>
                         <span>Screenshot</span>
@@ -321,7 +317,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                         ) : null}
                     </div>
                 </div>}
-                <div className={`glass-card flex flex-col ${fullWidth ? 'rounded-2xl p-4 h-[240px]' : 'rounded-[32px] p-8 h-[400px]'}`}>
+                <div className={`glass-card flex flex-col min-w-0 ${fullWidth ? 'rounded-2xl p-4 h-[260px]' : 'rounded-[32px] p-8 h-[400px]'}`}>
                     <div className={`flex items-center justify-between border-b border-white/5 ${fullWidth ? 'mb-4 pb-3' : 'mb-6 pb-4'}`}>
                         <span className="text-xs font-bold text-gray-500 tracking-widest">Activity Log</span>
                         <button

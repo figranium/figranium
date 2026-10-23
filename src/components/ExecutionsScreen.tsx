@@ -5,7 +5,8 @@ import OutcomeIcon from './OutcomeIcon';
 import { Execution, ConfirmRequest } from '../types';
 import { List, type RowComponentProps } from 'react-window';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
-import { formatLabel } from '../utils/taskUtils';
+import { formatExecutionSource, formatLabel } from '../utils/taskUtils';
+import UrlVariableDisplay from './UrlVariableDisplay';
 import { ExecutionListSkeleton } from './common/Skeleton';
 
 const EXECUTION_ITEM_SIZE = 94;
@@ -15,6 +16,7 @@ const FILTER_LABELS = {
     all: 'All',
     editor: 'Editor',
     api: 'API',
+    scheduler: 'Schedule',
 } as const;
 
 interface ExecutionListItemData {
@@ -28,7 +30,7 @@ const renderExecutionRow = ({ index, style, items, deleteExecution, navigate }: 
     if (!execution) return null;
     const phase = execution.phase || 'finished';
     const outcome = phase === 'finished' ? normalizeTaskOutcome(execution.outcome, execution.status) : null;
-    const sourceLabel = execution.source === 'api' ? 'API' : formatLabel(execution.source || 'editor');
+    const sourceLabel = formatExecutionSource(execution.source);
     const modeLabel = formatLabel(execution.mode || 'agent');
 
     return (
@@ -46,14 +48,14 @@ const renderExecutionRow = ({ index, style, items, deleteExecution, navigate }: 
                 className="app-list-row h-full grid grid-cols-[minmax(240px,1.5fr)_110px_120px_120px_44px] items-center gap-4 px-5 max-lg:grid-cols-[minmax(220px,1fr)_110px_44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/30"
             >
                 <div className="flex items-center gap-3 min-w-0">
-                    <TablerIcon name={execution.source === 'api' ? 'cloud' : 'monitor'} className="text-xl theme-text-faint shrink-0" />
+                    <TablerIcon name={execution.source === 'api' ? 'cloud' : execution.source === 'scheduler' ? 'event_repeat' : 'monitor'} className="text-xl theme-text-faint shrink-0" />
                     <div className="min-w-0">
                         {execution.taskName ? (
                             <div className="text-xs font-bold theme-text truncate">{execution.taskName}</div>
                         ) : (
                             <div className="text-xs font-bold theme-text truncate">{modeLabel}</div>
                         )}
-                        <div className="mt-1 text-[10px] theme-text-faint truncate">{execution.url || new Date(execution.timestamp).toLocaleString()}</div>
+                        <div className="mt-1 text-[10px] theme-text-faint truncate"><UrlVariableDisplay value={execution.url || undefined} emptyLabel={new Date(execution.timestamp).toLocaleString()} /></div>
                     </div>
                 </div>
                 <div>
@@ -89,7 +91,7 @@ interface ExecutionsScreenProps {
 const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify }) => {
     const navigate = useNavigate();
     const [executions, setExecutions] = useState<Execution[]>([]);
-    const [filter, setFilter] = useState<'all' | 'editor' | 'api'>('all');
+    const [filter, setFilter] = useState<'all' | 'editor' | 'api' | 'scheduler'>('all');
     const [loading, setLoading] = useState(false);
 
     const loadExecutions = useCallback(async () => {
@@ -181,7 +183,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                     <div className="app-panel-header">
                         <div><h2 className="text-sm font-bold theme-text">Run history</h2><p className="mt-1 text-[10px] tracking-[0.14em] theme-text-faint">{filtered.length} executions</p></div>
                         <div role="tablist" className="app-toolbar rounded-xl border theme-border p-1 theme-input">
-                            {(['all', 'editor', 'api'] as const).map((mode) => (
+                            {(['all', 'editor', 'api', 'scheduler'] as const).map((mode) => (
                                 <button key={mode} role="tab" aria-selected={filter === mode} onClick={() => setFilter(mode)} className={`min-h-8 px-3 rounded-lg text-[10px] font-bold tracking-widest transition-all ${filter === mode ? 'theme-accent-bg' : 'theme-text-faint hover:theme-text'}`}>{FILTER_LABELS[mode]}</button>
                             ))}
                         </div>

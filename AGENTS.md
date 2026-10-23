@@ -76,6 +76,7 @@ Do not create a separate plan file unless explicitly asked. Post the plan in cha
 
 ## Coding Standards
 
+- **Icon styling**: Never add unnecessary rounded square background tiles directly behind icons. Other icon containers can be appropriate when they serve a purpose.
 - **Module system**: CommonJS for root files; ESM for frontend (`src/`).
 - **Async**: Always use `async/await` — no raw callbacks.
 - **Error handling**: Wrap async operations in `try/catch`; return errors in API responses.

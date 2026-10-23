@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import TablerIcon from '../../TablerIcon';
 import { FleetWorkerState } from '../../../types';
+import { formatLabel } from '../../../utils/taskUtils';
 
 const STATUS_COLORS: Record<string, string> = {
     IDLE: 'bg-gray-500/30 text-gray-400',
@@ -113,7 +114,7 @@ const TaskMatrixTab: React.FC<TaskMatrixTabProps> = ({ workers, rows, fleetConfi
                                 </div>
                                 <div>
                                     <span className={`px-1.5 py-0.5 rounded text-xs font-bold border ${STATUS_COLORS[w.status] || STATUS_COLORS.IDLE}`}>
-                                        {w.status}
+                                        {formatLabel(w.status.toLowerCase())}
                                     </span>
                                 </div>
                                 <div className="text-white/40">{w.rowIndex !== undefined ? w.rowIndex + 1 : '—'}</div>

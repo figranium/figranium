@@ -170,9 +170,9 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                         <span className="text-gray-500">Worker limit</span>
                         <span className="text-white/60">{fleetConfig?.maxWorkers || 50}</span>
                         <span className="text-gray-500">Proxy bind mode</span>
-                        <span className="text-cyan-400">{formatLabel(fleetConfig?.proxyBindingMode || 'STICKY_AUTO_BIND')}</span>
+                        <span className="text-cyan-400">{formatLabel((fleetConfig?.proxyBindingMode || 'STICKY_AUTO_BIND').toLowerCase())}</span>
                         <span className="text-gray-500">Fallback strategy</span>
-                        <span className="text-white/60">{formatLabel(fleetConfig?.fallbackStrategy || 'LOOP')}</span>
+                        <span className="text-white/60">{formatLabel((fleetConfig?.fallbackStrategy || 'LOOP').toLowerCase())}</span>
                     </div>
                 </div>
             </div>

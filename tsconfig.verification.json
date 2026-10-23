@@ -7,7 +7,6 @@
   "include": [
     "tests/user_journey_test.ts",
     "tests/verify_agent_html_opt.ts",
-    "tests/verify_star_prompt.ts",
     "tests/verify_ui.ts"
   ],
   "references": []

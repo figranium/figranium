@@ -3,8 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Execution, Results, ConfirmRequest } from '../types';
 import TablerIcon from './TablerIcon';
 import OutcomeIcon from './OutcomeIcon';
+import UrlVariableDisplay from './UrlVariableDisplay';
 import ResultsPane from './editor/ResultsPane';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
+import { formatExecutionSource, formatLabel } from '../utils/taskUtils';
 import { ExecutionDetailSkeleton } from './common/Skeleton';
 
 interface ExecutionDetailScreenProps {
@@ -130,8 +132,8 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
     const metrics = [
         { label: 'Outcome', value: phase, mono: false },
         { label: 'Started', value: new Date(execution.timestamp).toLocaleString(), mono: false },
-        { label: 'Source', value: execution.source, mono: false },
-        { label: 'Mode', value: execution.mode, mono: false },
+        { label: 'Source', value: formatExecutionSource(execution.source), mono: false },
+        { label: 'Mode', value: formatLabel(execution.mode || 'agent'), mono: false },
         { label: 'Runtime', value: execution.durationMs === undefined ? '—' : `${execution.durationMs}ms`, mono: false },
     ];
 
@@ -144,9 +146,9 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
                         {execution.taskName ? (
                             <h1 className="app-page-title">{execution.taskName}</h1>
                         ) : (
-                            <h1 className="app-page-title">{execution.mode}</h1>
+                            <h1 className="app-page-title">{formatLabel(execution.mode || 'agent')}</h1>
                         )}
-                        <p className="text-xs theme-text-faint truncate max-w-3xl">{execution.url || execution.path}</p>
+                        <p className="text-xs theme-text-faint truncate max-w-3xl"><UrlVariableDisplay value={execution.url || execution.path} /></p>
                     </div>
                     <button
                         onClick={() => navigate('/executions')}

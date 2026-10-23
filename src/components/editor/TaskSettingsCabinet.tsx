@@ -92,13 +92,15 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         }, [activeTab, isOpen]);
 
         React.useEffect(() => {
-            if (!versionContextMenu) return;
+            if (!isOpen) return;
             const handleKeyDown = (event: KeyboardEvent) => {
-                if (event.key === 'Escape') setVersionContextMenu(null);
+                if (event.key !== 'Escape' || event.defaultPrevented) return;
+                if (versionContextMenu) setVersionContextMenu(null);
+                else onClose();
             };
             window.addEventListener('keydown', handleKeyDown);
             return () => window.removeEventListener('keydown', handleKeyDown);
-        }, [versionContextMenu]);
+        }, [isOpen, onClose, versionContextMenu]);
 
         React.useEffect(() => {
             if (isOpen && activeTab === 'output') {
@@ -233,17 +235,13 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
             </button>
         );
 
-        return (
+        return createPortal(
             <>
-            <div className="fixed inset-y-0 right-0 w-[450px] z-[100] flex">
-                {/* Backdrop for closing */}
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
-
-                {/* The Cabinet */}
-                <div className="relative h-full w-full glass border-l theme-border shadow-[-20px_0_50px_rgba(0,0,0,0.15)] flex flex-col animate-in slide-in-from-right duration-300 ease-out p-8">
+            <div className="theme-modal-backdrop fixed inset-0 z-[190] flex items-center justify-center p-3 backdrop-blur-lg sm:p-6 lg:p-10" onClick={onClose}>
+                <section role="dialog" aria-modal="true" aria-labelledby="task-settings-title" onClick={(event) => event.stopPropagation()} className="theme-modal-elevation theme-surface theme-text relative flex h-[min(800px,calc(100vh-1.5rem))] w-full max-w-[1200px] flex-col overflow-y-auto custom-scrollbar rounded-[28px] border theme-border-strong p-5 animate-in fade-in zoom-in-95 duration-200 sm:h-[min(800px,90vh)] sm:w-[92vw] sm:p-8 lg:p-10">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-xl font-bold text-[var(--app-text)] tracking-tight">Task Settings</h2>
+                            <h2 id="task-settings-title" className="text-xl font-bold text-[var(--app-text)] tracking-tight">Task Settings</h2>
                             <p className="text-xs text-[var(--app-text-muted)] tracking-[0.2em] mt-1">{currentTask.name || 'Untitled Task'}</p>
                         </div>
                         <button
@@ -269,7 +267,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                     </div>
 
                     {/* Tabs Nav */}
-                    <div role="tablist" className="flex flex-wrap gap-2 mb-8 bg-[var(--app-input)] p-1 rounded-2xl border border-[var(--app-border)]">
+                    <div role="tablist" className="flex flex-wrap justify-center gap-2 mb-8 bg-[var(--app-input)] p-1 rounded-2xl border border-[var(--app-border)]">
                         {renderTabButton('mode', 'Mode', 'settings_input_component')}
                         {renderTabButton('variables', 'Vars', 'variables')}
                         {renderTabButton('behavior', 'Behavior', 'device_gamepad_3')}
@@ -282,7 +280,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                     </div>
 
                     {/* Tab Content */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
+                    <div className="flex-1 min-w-0">
                         {activeTab === 'mode' && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 <div className="space-y-4">
@@ -709,7 +707,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                             </div>
                         )}
                     </div>
-                </div>
+                </section>
             </div>
             {versionContextMenu && createPortal(
                 <>
@@ -745,7 +743,8 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                 </>,
                 document.body,
             )}
-            </>
+            </>,
+            document.body,
         );
     };
 

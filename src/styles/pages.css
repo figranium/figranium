@@ -404,6 +404,19 @@
 .auth-screen .glass-card.auth-card-opaque,
 .auth-screen .glass-card.auth-card-opaque:hover { background: var(--app-surface); }
 
+.api-access-hint { margin-top: 5px; color: var(--app-text-faint); font-size: 12px; }
+.api-access-options { display: grid; gap: 8px; margin-top: 12px; }
+.api-access-option { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--app-border-strong); border-radius: 12px; color: var(--app-text); cursor: pointer; transition: background-color .2s, border-color .2s; }
+.api-access-option:hover { background: var(--app-glass-card-hover); }
+.api-access-option.is-selected { border-color: var(--app-accent); background: color-mix(in srgb, var(--app-accent) 8%, var(--app-surface)); }
+.api-access-option:focus-within { outline: 2px solid var(--app-accent); outline-offset: 2px; }
+.api-access-icon { display: flex; align-items: center; justify-content: center; flex: 0 0 24px; color: var(--app-text-muted); font-size: 18px; }
+.api-access-option.is-selected .api-access-icon { color: var(--app-accent); }
+.api-access-copy { flex: 1; min-width: 0; }
+.api-access-title { display: block; font-size: 13px; font-weight: 700; }
+.api-access-description { display: block; margin-top: 3px; color: var(--app-text-muted); font-size: 12px; line-height: 1.4; }
+.api-access-option input { flex: 0 0 auto; width: 16px; height: 16px; accent-color: var(--app-accent); }
+
 .shine-effect {
     position: relative;
     overflow: hidden;

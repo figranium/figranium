@@ -277,7 +277,7 @@ export function CustomCombobox({ value, options, onChange, ariaLabel, placeholde
                         if (event.key === 'ArrowDown' && filtered.length) { event.preventDefault(); if (!position) open(); else setActiveIndex((index) => (index + 1) % filtered.length); }
                         else if (event.key === 'ArrowUp' && filtered.length) { event.preventDefault(); if (!position) open(); else setActiveIndex((index) => (index - 1 + filtered.length) % filtered.length); }
                         else if (event.key === 'Enter') { event.preventDefault(); if (position && filtered[activeIndex]) choose(filtered[activeIndex]); else onEnter?.(); }
-                        else if (event.key === 'Escape') { if (position) close(); else onEscape?.(); }
+                        else if (event.key === 'Escape') { if (position) { event.preventDefault(); close(); } else if (onEscape) { event.preventDefault(); onEscape(); } }
                     }}
                     placeholder={placeholder}
                     disabled={disabled}

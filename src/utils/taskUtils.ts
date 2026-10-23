@@ -23,6 +23,12 @@ export const formatLabel = (value: string) => value
         .replace(/\b[a-z]/g, character => character.toUpperCase())
     : value;
 
+export const formatExecutionSource = (source?: string | null) => {
+    if (source === 'api') return 'API';
+    if (source === 'scheduler') return 'Schedule';
+    return formatLabel(source || 'editor');
+};
+
 export const ensureActionIds = (task: Task) => {
     if (!task.actions || !Array.isArray(task.actions)) return task;
     let changed = false;
