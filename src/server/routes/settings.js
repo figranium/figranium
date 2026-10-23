@@ -443,7 +443,7 @@ router.get('/theme', dataRateLimiter, requireAuthForSettings, async (req, res) =
         let theme = await loadThemeConfig();
         if (!theme) {
             // Check for existing theme cookies
-            const cookies = cookie.parse(req.headers.cookie || '');
+            const cookies = cookie.parseCookie(req.headers.cookie || '');
             const cookieTheme = cookies['figranium_theme'] || cookies['theme'];
             const validThemes = ['auto', 'dark', 'light', 'solarized-light', 'solarized-dark'];
             if (cookieTheme && validThemes.includes(cookieTheme.trim())) {
@@ -469,7 +469,7 @@ router.post('/theme', csrfProtection, dataRateLimiter, requireAuthForSettings, a
         const savedTheme = await saveThemeConfig(selectedTheme);
 
         // Set persistent cookie for fast initial page load (1 year TTL)
-        res.setHeader('Set-Cookie', cookie.serialize('figranium_theme', savedTheme, {
+        res.setHeader('Set-Cookie', cookie.stringifySetCookie({ name: 'figranium_theme', value: savedTheme,
             path: '/',
             maxAge: 31536000,
             sameSite: 'lax',
