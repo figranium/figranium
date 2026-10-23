@@ -3,7 +3,7 @@ import { useNavigate, type NavigateFunction } from 'react-router-dom';
 import TablerIcon from './TablerIcon';
 import OutcomeIcon from './OutcomeIcon';
 import { Execution, ConfirmRequest } from '../types';
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import { List, type RowComponentProps } from 'react-window';
 import { normalizeTaskOutcome } from '../utils/taskOutcome';
 import { formatLabel } from '../utils/taskUtils';
 import { ExecutionListSkeleton } from './common/Skeleton';
@@ -23,8 +23,8 @@ interface ExecutionListItemData {
     navigate: NavigateFunction;
 }
 
-const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<ExecutionListItemData>) => {
-    const execution = data.items[index];
+const renderExecutionRow = ({ index, style, items, deleteExecution, navigate }: RowComponentProps<ExecutionListItemData>) => {
+    const execution = items[index];
     if (!execution) return null;
     const phase = execution.phase || 'finished';
     const outcome = phase === 'finished' ? normalizeTaskOutcome(execution.outcome, execution.status) : null;
@@ -34,11 +34,11 @@ const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<Exec
     return (
         <div style={style}>
             <div
-                onClick={() => data.navigate(`/executions/${execution.id}`)}
+                onClick={() => navigate(`/executions/${execution.id}`)}
                 onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        data.navigate(`/executions/${execution.id}`);
+                        navigate(`/executions/${execution.id}`);
                     }
                 }}
                 role="button"
@@ -69,7 +69,7 @@ const renderExecutionRow = ({ index, style, data }: ListChildComponentProps<Exec
                     <div className="mt-1 text-[10px] theme-text-faint">{new Date(execution.timestamp).toLocaleString()}</div>
                 </div>
                 <button
-                    onClick={(event) => { event.stopPropagation(); data.deleteExecution(execution.id); }}
+                    onClick={(event) => { event.stopPropagation(); deleteExecution(execution.id); }}
                     className="p-2 theme-text-faint hover:text-red-400 transition-colors"
                     aria-label={`Delete execution ${execution.id}`}
                     title="Delete execution"
@@ -189,9 +189,15 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                     {loading ? (
                         <div className="p-5"><ExecutionListSkeleton rows={5} /></div>
                     ) : filtered.length ? (
-                        <FixedSizeList height={Math.min(Math.max(EXECUTION_ITEM_SIZE, filtered.length * EXECUTION_ITEM_SIZE), EXECUTION_ITEM_SIZE * EXECUTION_LIST_MAX_VISIBLE)} itemCount={filtered.length} itemSize={EXECUTION_ITEM_SIZE} width="100%" overscanCount={EXECUTION_OVERSCAN} itemData={itemData} className="custom-scrollbar">
-                            {renderExecutionRow}
-                        </FixedSizeList>
+                        <List
+                            style={{ height: Math.min(Math.max(EXECUTION_ITEM_SIZE, filtered.length * EXECUTION_ITEM_SIZE), EXECUTION_ITEM_SIZE * EXECUTION_LIST_MAX_VISIBLE), width: '100%' }}
+                            rowCount={filtered.length}
+                            rowHeight={EXECUTION_ITEM_SIZE}
+                            overscanCount={EXECUTION_OVERSCAN}
+                            rowProps={itemData}
+                            rowComponent={renderExecutionRow}
+                            className="custom-scrollbar"
+                        />
                     ) : (
                         <div className="app-empty-state">
                             <div className="app-empty-icon"><TablerIcon name="history" className="text-2xl" /></div>
