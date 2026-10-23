@@ -48,8 +48,8 @@ async function check(value, expectedStatus) {
     }
 }
 
-function checkManageOnlyRoute(permissions, expectedStatus) {
-    const req = { apiKey: { permissions, taskIds: [] }, params: {} };
+function checkManageOnlyRoute(permissions, expectedStatus, taskIds = []) {
+    const req = { apiKey: { permissions, taskIds }, params: {} };
     const res = {
         status(code) { this.statusCode = code; return this; },
         json(body) { this.body = body; return this; }
@@ -58,7 +58,7 @@ function checkManageOnlyRoute(permissions, expectedStatus) {
     requireScopedPermission('tasks:manage')(req, res, () => { continued = true; });
     assert.equal(res.statusCode || 200, expectedStatus);
     assert.equal(continued, expectedStatus === 200);
-    if (expectedStatus === 403) assert.equal(res.body?.error, 'API_KEY_FORBIDDEN');
+    if (expectedStatus === 403) assert.equal(res.body?.error, taskIds.length ? 'TASK_NOT_ALLOWED' : 'API_KEY_FORBIDDEN');
 }
 
 (async () => {
@@ -68,6 +68,7 @@ function checkManageOnlyRoute(permissions, expectedStatus) {
         checkManageOnlyRoute(['tasks:read'], 403);
         checkManageOnlyRoute(['tasks:run'], 403);
         checkManageOnlyRoute(['tasks:manage'], 200);
+        checkManageOnlyRoute(['tasks:manage'], 403, ['task_allowed']);
         for (const [body, allowed] of [[{ id: 'task_allowed' }, true], [{ id: 'task_other' }, false], [{}, false]]) {
             const req = { apiKey: { permissions: ['tasks:manage'], taskIds: ['task_allowed'] }, params: {}, body };
             const res = { status(code) { this.statusCode = code; return this; }, json(value) { this.body = value; return this; } };
