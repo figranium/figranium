@@ -10,7 +10,7 @@ function createTortureApp() {
     // Helper to parse cookies
     app.use((req, res, next) => {
         const header = req.headers.cookie;
-        req.cookies = header ? cookieParser.parse(header) : {};
+        req.cookies = header ? cookieParser.parseCookie(header) : {};
         next();
     });
 
