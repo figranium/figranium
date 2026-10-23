@@ -356,7 +356,6 @@ export default function App() {
                                 isStopping={isCurrentTaskStopping}
                                 onSave={handleSaveTask}
                                 onRun={() => runTaskWithSnapshot(currentTask, currentTask, setCurrentTask)}
-                                onRunSnapshot={(t) => runTaskWithSnapshot(t || currentTask, currentTask, setCurrentTask)}
                                 results={results}
                                 pinnedResults={pinnedResults}
                                 onConfirm={requestConfirm}
@@ -390,7 +389,6 @@ export default function App() {
                                 isStopping={isCurrentTaskStopping}
                                 onSave={handleSaveTask}
                                 onRun={() => runTaskWithSnapshot(currentTask, currentTask, setCurrentTask)}
-                                onRunSnapshot={(t) => runTaskWithSnapshot(t || currentTask, currentTask, setCurrentTask)}
                                 results={results}
                                 pinnedResults={pinnedResults}
                                 onConfirm={requestConfirm}

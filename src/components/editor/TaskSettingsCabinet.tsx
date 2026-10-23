@@ -5,7 +5,6 @@ import { Task, VarType, Credential, TaskOutput } from '../../types';
 import ScheduleTab from './ScheduleTab';
 import VariablesTab from './VariablesTab';
 import ApiTab from './ApiTab';
-import ExtractionTab from './ExtractionTab';
 import CustomSelect from '../common/CustomSelect';
 import { formatLabel } from '../../utils/taskUtils';
 
@@ -30,22 +29,17 @@ interface TaskSettingsCabinetProps {
     onUpdateTask: (updates: Partial<Task>) => void;
     proxyListLoaded: boolean;
     proxyList: { id: string }[];
-    onStartFieldInspect?: (fieldId: string) => void;
-    onStartGroupContainerInspect?: (groupId: string) => void;
-    onStartGroupFieldInspect?: (groupId: string, fieldId: string) => void;
-    fieldSelectorOptionsById?: Record<string, string[]>;
 }
 
 const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
-    initialTab?: 'mode' | 'variables' | 'behavior' | 'extraction' | 'api' | 'output' | 'schedule' | 'history' | 'cabinets',
+    initialTab?: 'mode' | 'variables' | 'behavior' | 'api' | 'output' | 'schedule' | 'history' | 'cabinets',
     versions: { id: string; timestamp: number; name: string; mode: string }[],
     versionsLoading: boolean,
     isCreatingVersion: boolean,
     onCreateVersion: () => void,
     deletingVersionId: string | null,
     onDeleteVersion: (id: string) => void,
-    onRollback: (id: string) => void,
-    onPreview: (id: string) => void
+    onRollback: (id: string) => void
 }> = ({
     isOpen,
     onClose,
@@ -54,10 +48,6 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
     onUpdateTask,
     proxyListLoaded,
     proxyList,
-    onStartFieldInspect,
-    onStartGroupContainerInspect,
-    onStartGroupFieldInspect,
-    fieldSelectorOptionsById,
     initialTab = 'mode',
     versions,
     versionsLoading,
@@ -65,8 +55,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
     onCreateVersion,
     deletingVersionId,
     onDeleteVersion,
-    onRollback,
-    onPreview
+    onRollback
 }) => {
         const [activeTab, setActiveTab] = React.useState<typeof initialTab>(initialTab);
         const [credentials, setCredentials] = React.useState<Credential[]>([]);
@@ -225,7 +214,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                 role="tab"
                 aria-selected={activeTab === id}
                 onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${activeTab === id
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all focus:outline-none focus-visible:ring-2 ${activeTab === id
                     ? 'bg-[var(--app-accent)] text-[var(--app-accent-text)] shadow-lg shadow-black/10 focus-visible:ring-blue-500'
                     : 'text-[var(--app-text-muted)] hover:text-[var(--app-text)] hover:bg-[var(--app-glass-card-hover)] focus-visible:ring-white/50'
                     }`}
@@ -238,40 +227,27 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         return createPortal(
             <>
             <div className="theme-modal-backdrop fixed inset-0 z-[190] flex items-center justify-center p-3 backdrop-blur-lg sm:p-6 lg:p-10" onClick={onClose}>
-                <section role="dialog" aria-modal="true" aria-labelledby="task-settings-title" onClick={(event) => event.stopPropagation()} className="theme-modal-elevation theme-surface theme-text relative flex h-[min(800px,calc(100vh-1.5rem))] w-full max-w-[1200px] flex-col overflow-y-auto custom-scrollbar rounded-[28px] border theme-border-strong p-5 animate-in fade-in zoom-in-95 duration-200 sm:h-[min(800px,90vh)] sm:w-[92vw] sm:p-8 lg:p-10">
-                    <div className="flex items-center justify-between mb-8">
+                <section role="dialog" aria-modal="true" aria-labelledby="task-settings-title" onClick={(event) => event.stopPropagation()} className="theme-modal-elevation theme-surface theme-text relative flex h-[min(720px,calc(100vh-1.5rem))] w-full max-w-[1080px] flex-col overflow-hidden rounded-[28px] border theme-border-strong p-5 animate-in fade-in zoom-in-95 duration-200 sm:h-[min(720px,88vh)] sm:w-[92vw] sm:p-7 lg:p-8">
+                    <div className="mx-auto flex w-full max-w-[960px] items-center justify-between">
                         <div>
                             <h2 id="task-settings-title" className="text-xl font-bold text-[var(--app-text)] tracking-tight">Task Settings</h2>
-                            <p className="text-xs text-[var(--app-text-muted)] tracking-[0.2em] mt-1">{currentTask.name || 'Untitled Task'}</p>
+                            <p className="text-xs text-[var(--app-text-muted)] tracking-wide mt-1">{currentTask.name || 'Untitled Task'}</p>
                         </div>
                         <button
                             onClick={onClose}
-                            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-[var(--app-glass-card-hover)] text-[var(--app-text-muted)] hover:text-[var(--app-text)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                            className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--app-text-muted)] transition-colors hover:bg-[var(--app-glass-card-hover)] hover:text-[var(--app-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                             aria-label="Close settings"
                             title="Close settings"
                         >
-                            <TablerIcon name="close" />
+                            <TablerIcon name="close" className="text-sm" />
                         </button>
                     </div>
 
-                    {/* Description — always visible regardless of active tab */}
-                    <div className="mb-6">
-                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em] block mb-2">Description</label>
-                        <textarea
-                            value={currentTask.description || ''}
-                            onChange={(e) => onUpdateTask({ description: e.target.value })}
-                            placeholder="What does this task do? Give AI agents and operators context..."
-                            rows={3}
-                            className="w-full bg-[var(--app-input)] border border-[var(--app-border)] rounded-xl px-3 py-2.5 text-xs text-[var(--app-text)] placeholder:text-[var(--app-text-faint)] focus:outline-none focus:border-[var(--app-border-strong)] resize-none transition-all custom-scrollbar"
-                        />
-                    </div>
-
                     {/* Tabs Nav */}
-                    <div role="tablist" className="flex flex-wrap justify-center gap-2 mb-8 bg-[var(--app-input)] p-1 rounded-2xl border border-[var(--app-border)]">
+                    <div role="tablist" className="mx-auto mt-6 flex w-fit max-w-full flex-wrap justify-center gap-1 rounded-2xl border border-[var(--app-border)] bg-[var(--app-input)] p-1">
                         {renderTabButton('mode', 'Mode', 'settings_input_component')}
                         {renderTabButton('variables', 'Vars', 'variables')}
                         {renderTabButton('behavior', 'Behavior', 'device_gamepad_3')}
-                        {renderTabButton('extraction', 'Extract', 'terminal')}
                         {renderTabButton('api', 'API', 'api')}
                         {renderTabButton('output', 'Output', 'outbound')}
                         {renderTabButton('schedule', 'Schedule', 'event_repeat')}
@@ -279,23 +255,39 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         {renderTabButton('history', 'History', 'history_toggle')}
                     </div>
 
+                    {/* Description — always visible regardless of active tab */}
+                    <div className="mx-auto my-5 w-full max-w-[960px]">
+                        <label className="mb-2 block text-xs font-bold tracking-wide text-[var(--app-text-muted)]">Description</label>
+                        <textarea
+                            value={currentTask.description || ''}
+                            onChange={(e) => onUpdateTask({ description: e.target.value })}
+                            placeholder="What does this task do? Give AI agents and operators context..."
+                            rows={2}
+                            className="w-full resize-none rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-3 py-2.5 text-xs text-[var(--app-text)] placeholder:text-[var(--app-text-faint)] transition-all focus:border-[var(--app-border-strong)] focus:outline-none custom-scrollbar"
+                        />
+                    </div>
+
                     {/* Tab Content */}
-                    <div className="flex-1 min-w-0">
+                    <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="mx-auto w-full max-w-[960px] py-4">
                         {activeTab === 'mode' && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="space-y-4">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Execution Mode</label>
-                                    <div className="grid grid-cols-2 gap-3">
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-5 sm:p-6">
+                                    <div className="mb-5">
+                                        <div>
+                                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Execution Mode</label>
+                                            <p className="mt-2 text-xs text-[var(--app-text-faint)]">Choose how this task runs. The editor remains the source of truth for its actions and extraction.</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <button
                                             onClick={() => onUpdateTask({ mode: 'agent' })}
-                                            className={`p-4 rounded-2xl border transition-all text-left space-y-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'agent'
+                                            className={`min-h-36 p-5 rounded-2xl border transition-all text-left space-y-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'agent'
                                                 ? 'bg-[var(--app-surface-2)] border-[var(--app-border-strong)] ring-1 ring-[var(--app-border-strong)]'
                                                 : 'bg-[var(--app-surface-3)] border-[var(--app-border)] opacity-50 hover:opacity-100 hover:border-[var(--app-border-strong)]'
                                                 }`}
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-[var(--app-input)] flex items-center justify-center">
-                                                <TablerIcon name="ads_click" className="text-[var(--app-text-muted)]" />
-                                            </div>
+                                            <TablerIcon name="ads_click" className="text-lg text-[var(--app-text-muted)]" />
                                             <div>
                                                 <div className="text-xs font-bold text-[var(--app-text)]">Agent Mode</div>
                                                 <div className="text-xs text-[var(--app-text-faint)]">Custom action sequence with logic</div>
@@ -303,14 +295,12 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                         </button>
                                         <button
                                             onClick={() => onUpdateTask({ mode: 'scrape' })}
-                                            className={`p-4 rounded-2xl border transition-all text-left space-y-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'scrape'
+                                            className={`min-h-36 p-5 rounded-2xl border transition-all text-left space-y-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'scrape'
                                                 ? 'bg-[var(--app-surface-2)] border-[var(--app-border-strong)] ring-1 ring-[var(--app-border-strong)]'
                                                 : 'bg-[var(--app-surface-3)] border-[var(--app-border)] opacity-50 hover:opacity-100 hover:border-[var(--app-border-strong)]'
                                                 }`}
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-[var(--app-input)] flex items-center justify-center">
-                                                <TablerIcon name="language" className="text-[var(--app-text-muted)]" />
-                                            </div>
+                                            <TablerIcon name="language" className="text-lg text-[var(--app-text-muted)]" />
                                             <div>
                                                 <div className="text-xs font-bold text-[var(--app-text)]">Scrape Mode</div>
                                                 <div className="text-xs text-[var(--app-text-faint)]">Fixed data extraction flow</div>
@@ -324,10 +314,10 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         {activeTab === 'variables' && <VariablesTab currentTask={currentTask} addVariable={addVariable} updateVariable={updateVariable} removeVariable={removeVariable} />}
 
                         {activeTab === 'behavior' && (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="mx-auto max-w-[960px] space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 <div className="space-y-4">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Runtime Flags</label>
-                                    <div className="grid grid-cols-1 gap-2">
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Runtime Flags</label>
+                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                                         {[
                                             { label: 'Disable Recording', key: 'disableRecording', icon: 'videocam_off' },
                                             { label: 'Rotate Proxies', key: 'rotateProxies', icon: 'vpn_lock', disabled: rotateProxiesDisabled },
@@ -360,7 +350,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Page Translation</label>
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Page Translation</label>
                                     <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4">
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-3">
@@ -387,7 +377,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                         </div>
                                         {currentTask.translation?.enabled && (
                                             <div className="mt-4">
-                                                <label className="mb-2 block text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Translate to</label>
+                                                <label className="mb-2 block text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Translate to</label>
                                                 <CustomSelect
                                                     value={currentTask.translation.targetLanguage || 'english'}
                                                     onChange={(targetLanguage) => onUpdateTask({
@@ -402,8 +392,8 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Stealth & Behavior</label>
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Stealth & Behavior</label>
+                                    <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
                                         {[
                                             { label: 'Human Typing', key: 'naturalTyping', icon: 'keyboard' },
                                             { label: 'Cursor Glide', key: 'cursorGlide', icon: 'near_me' },
@@ -434,9 +424,9 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         )}
 
                         {activeTab === 'cabinets' && (
-                            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="mx-auto max-w-[960px] space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 <div className="space-y-3">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Cookie state</label>
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Cookie state</label>
                                     <p className="text-xs text-[var(--app-text-faint)]">Attached runs use and update this isolated state. Detached runs start with no cookies.</p>
                                     <CustomSelect
                                         value={currentTask.cookieStateId === undefined ? 'cookies_default' : currentTask.cookieStateId || ''}
@@ -444,11 +434,11 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                         options={[...cookieStates.map(state => ({ value: state.id, label: `${state.name} (${state.cookies} cookies)` })), { value: '', label: 'No State' }]}
                                         ariaLabel="Attached cookie state"
                                     />
-                                    <a href="/vault" className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Vault</a>
+                                    <a href="/vault" className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Vault</a>
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Download destination</label>
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Download destination</label>
                                     <p className="mt-2 text-xs text-[var(--app-text-faint)]">Downloads made by this automation are saved in this cabinet.</p>
                                 </div>
                                 <CustomSelect
@@ -457,27 +447,14 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     options={cabinets.length ? cabinets.map(c => ({ value: c.id, label: `${c.name}${c.isDefault ? ' (Default)' : ''}`, icon: 'inventory_2' })) : [{ value: '', label: 'Loading cabinets…', disabled: true }]}
                                     ariaLabel="Download cabinet"
                                 />
-                                <a href="/cabinets" className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Cabinets</a>
+                                <a href="/cabinets" className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Cabinets</a>
                             </div>
                         )}
-
-                        {activeTab === 'extraction' && (
-                            <ExtractionTab
-                                currentTask={currentTask}
-                                onUpdateTask={onUpdateTask}
-                                onStartFieldInspect={onStartFieldInspect}
-                                onStartGroupContainerInspect={onStartGroupContainerInspect}
-                                onStartGroupFieldInspect={onStartGroupFieldInspect}
-                                fieldSelectorOptionsById={fieldSelectorOptionsById}
-                            />
-                        )}
-
-
 
                         {activeTab === 'api' && <ApiTab currentTask={currentTask} onUpdateTask={onUpdateTask} />}
 
                         {activeTab === 'output' && (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="mx-auto max-w-[960px] space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 {/* Enable toggle */}
                                 <button
                                     role="switch"
@@ -497,7 +474,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                 {currentTask.output && (<>
                                     {/* Provider dropdown */}
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Provider</label>
+                                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Provider</label>
                                         <CustomSelect
                                             value={currentTask.output.provider}
                                             onChange={(provider) => onUpdateTask({ output: { ...currentTask.output as TaskOutput, provider, credentialId: '', tableId: '' } })}
@@ -509,7 +486,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     {/* Credential picker */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Credential</label>
+                                            <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Credential</label>
                                             <button
                                                 onClick={() => setShowNewCredForm(v => !v)}
                                                 className="text-xs font-bold text-[var(--app-text-muted)] hover:text-[var(--app-text)] transition-colors flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded"
@@ -613,13 +590,13 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
 
                                     {/* On Error */}
                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">On Push Error</label>
+                                        <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">On Push Error</label>
                                         <div className="flex gap-2">
                                             {(['ignore', 'fail'] as const).map(val => (
                                                 <button
                                                     key={val}
                                                     onClick={() => onUpdateTask({ output: { ...currentTask.output as TaskOutput, onError: val } })}
-                                                    className={`flex-1 py-2 rounded-lg text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${currentTask.output?.onError === val ? 'bg-[var(--app-accent)] text-[var(--app-accent-text)] focus-visible:ring-blue-500' : 'bg-[var(--app-surface-3)] text-[var(--app-text-muted)] hover:text-[var(--app-text)] border border-[var(--app-border)] focus-visible:ring-white/50'}`}
+                                                    className={`flex-1 py-2 rounded-lg text-xs font-bold tracking-wide transition-all focus:outline-none focus-visible:ring-2 ${currentTask.output?.onError === val ? 'bg-[var(--app-accent)] text-[var(--app-accent-text)] focus-visible:ring-blue-500' : 'bg-[var(--app-surface-3)] text-[var(--app-text-muted)] hover:text-[var(--app-text)] border border-[var(--app-border)] focus-visible:ring-white/50'}`}
                                                 >
                                                     {val === 'ignore' ? 'Ignore' : 'Log Error'}
                                                 </button>
@@ -640,9 +617,9 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         )}
 
                         {activeTab === 'history' && (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="mx-auto max-w-[960px] space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Version History</label>
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Version History</label>
                                     <div className="flex items-center gap-3">
                                         {versionsLoading && <div className="h-3 w-3 animate-spin rounded-full border-2 border-[var(--app-border)] border-t-[var(--app-text)]" />}
                                         <button
@@ -674,19 +651,11 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                             <div className="flex flex-col gap-1">
                                                 <div className="text-xs font-bold text-[var(--app-text)] mb-0.5">{new Date(v.timestamp).toLocaleString()}</div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--app-surface-2)] text-[var(--app-text-muted)] font-bold tracking-widest">{formatLabel(v.mode)}</span>
+                                                    <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--app-surface-2)] text-[var(--app-text-muted)] font-bold tracking-wide">{formatLabel(v.mode)}</span>
                                                     <span className="text-xs text-[var(--app-text-faint)] truncate max-w-[150px]">{v.name || 'Untitled'}</span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => onPreview(v.id)}
-                                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--app-text-faint)] hover:text-[var(--app-text)] hover:bg-[var(--app-surface-2)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                                                    title="Preview version"
-                                                    aria-label="Preview version"
-                                                >
-                                                    <TablerIcon name="visibility" className="text-sm" />
-                                                </button>
                                                 <button
                                                     onClick={() => onRollback(v.id)}
                                                     className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--app-text-faint)] hover:text-[var(--app-text)] hover:bg-[var(--app-surface-2)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
@@ -700,12 +669,13 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     ))}
                                     {versions.length === 0 && !versionsLoading && (
                                         <div className="text-center py-12 border border-dashed border-[var(--app-border)] rounded-3xl">
-                                            <p className="text-xs text-[var(--app-text-faint)] tracking-widest">No previous versions found</p>
+                                            <p className="text-xs text-[var(--app-text-faint)] tracking-wide">No previous versions found</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
                         )}
+                    </div>
                     </div>
                 </section>
             </div>

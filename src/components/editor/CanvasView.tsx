@@ -277,7 +277,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                         </div>
                         <div className={`flex mt-4 relative ${isNestedIf ? 'gap-6 -translate-x-[132px]' : 'gap-16'}`}>
                             <div className={`flex flex-col items-center ${isNestedIf ? 'w-[280px]' : 'min-w-[200px]'}`}>
-                                <div className="text-xs font-bold text-white/60 tracking-widest mb-2">
+                                <div className="text-xs font-bold text-white/60 tracking-wide mb-2">
                                     True
                                 </div>
                                 <div className="w-px h-6 bg-white/25" />
@@ -298,7 +298,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 </div>
                             </div>
                             <div className={`flex flex-col items-center ${isNestedIf ? 'w-[280px]' : 'min-w-[200px]'}`}>
-                                    <div className="text-xs font-bold text-white/60 tracking-widest mb-2">Otherwise</div>
+                                    <div className="text-xs font-bold text-white/60 tracking-wide mb-2">Otherwise</div>
                                     <div className="w-px h-6 bg-white/25" />
                                     <div className="flex flex-col items-center gap-3">
                                         {falseStart !== -1 ? buildAst(falseStart, falseEnd, _depth + 1, branchActionWidth) : null}
@@ -548,7 +548,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 className="flex items-center gap-3 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg pr-2 transition-all"
                             >
                                 <TablerIcon name="bolt" className="text-white/40 text-base" />
-                                <h3 className="text-white/60 font-bold tracking-widest text-xs">On Execution</h3>
+                                <h3 className="text-white/60 font-bold tracking-wide text-xs">On Execution</h3>
                             </button>
                             <button
                                 type="button"
@@ -600,7 +600,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     className="canvas-add-action w-full border border-dashed rounded-2xl p-5 transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                 >
                                     <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
-                                    <span className="canvas-add-action-text text-xs font-bold tracking-[0.2em] transition-colors">Add Extraction Script</span>
+                                    <span className="canvas-add-action-text text-xs font-bold tracking-wide transition-colors">Add Extraction Script</span>
                                 </button>
                             )}
                         </div>
@@ -621,7 +621,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         <div className="canvas-add-action-icon-box w-10 h-10 rounded-xl transition-colors flex items-center justify-center">
                                             <TablerIcon name="add" className="canvas-insert-icon text-2xl transition-colors" />
                                         </div>
-                                        <span className="canvas-add-action-text text-xs font-bold tracking-[0.2em] transition-colors">Add Action</span>
+                                        <span className="canvas-add-action-text text-xs font-bold tracking-wide transition-colors">Add Action</span>
                                     </button>
                                 </div>
                                 <div className="canvas-connector w-px h-6 bg-white/25" />
@@ -644,7 +644,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                             className="canvas-add-action w-full border border-dashed rounded-2xl p-5 transition-all flex items-center justify-center gap-2 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                         >
                                             <TablerIcon name="add" className="canvas-insert-icon text-lg transition-colors" />
-                                            <span className="canvas-add-action-text text-xs font-bold tracking-[0.2em] transition-colors">Add Extraction Script</span>
+                                            <span className="canvas-add-action-text text-xs font-bold tracking-wide transition-colors">Add Extraction Script</span>
                                         </button>
                                     )}
                                 </div>
@@ -682,7 +682,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setCanvasContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setCanvasContextMenu(null); }} />
                     <div
-                        className="fixed z-50 w-[180px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold tracking-widest text-white/80"
+                        className="fixed z-50 w-[180px] bg-[#0b0b0b] border border-white/10 rounded-xl shadow-2xl p-2 text-xs font-bold tracking-wide text-white/80"
                         style={{ left: canvasContextMenu.x, top: canvasContextMenu.y }}
                     >
                         <button

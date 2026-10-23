@@ -11,18 +11,18 @@ interface VariablesTabProps {
 }
 
 const VariablesTab: React.FC<VariablesTabProps> = ({ currentTask, addVariable, updateVariable, removeVariable }) => (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="mx-auto max-w-[960px] space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Task Variables</label>
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Task Variables</label>
                                     <button
                                         onClick={addVariable}
-                                        className="px-3 py-1 rounded-lg bg-[var(--app-surface-3)] text-[var(--app-text)] text-xs font-bold tracking-wider hover:bg-[var(--app-surface-2)] transition-all border border-[var(--app-border)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                        className="px-3 py-1 rounded-lg bg-[var(--app-surface-3)] text-[var(--app-text)] text-xs font-bold tracking-normal hover:bg-[var(--app-surface-2)] transition-all border border-[var(--app-border)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                     >
                                         + Add Var
                                     </button>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                     {Object.entries(currentTask.variables || {}).map(([name, def]) => (
                                         <div key={name} className="bg-[var(--app-surface-3)] border border-[var(--app-border)] rounded-2xl p-4 space-y-3">
                                             <div className="flex gap-2">
@@ -81,7 +81,7 @@ const VariablesTab: React.FC<VariablesTabProps> = ({ currentTask, addVariable, u
                                     ))}
                                     {Object.keys(currentTask.variables || {}).length === 0 && (
                                         <div className="text-center py-12 border border-dashed border-[var(--app-border)] rounded-3xl">
-                                            <p className="text-xs text-[var(--app-text-faint)] tracking-widest">No variables defined</p>
+                                            <p className="text-xs text-[var(--app-text-faint)] tracking-wide">No variables defined</p>
                                         </div>
                                     )}
                                 </div>

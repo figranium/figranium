@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, Dispatch, SetStateAction, us
 import TablerIcon from './TablerIcon';
 import { Task, Action, StickyNote, StickyNoteColor, Results, ConfirmRequest, ViewMode } from '../types';
 import { generateExtractionScript } from '../utils/extractionScriptGen';
-import { TASK_FIELD_INSPECT_PREFIX, taskFieldInspectId, taskGroupContainerInspectId, taskGroupFieldInspectId } from '../utils/extractionFieldIds';
+import { TASK_FIELD_INSPECT_PREFIX, taskGroupContainerInspectId, taskGroupFieldInspectId } from '../utils/extractionFieldIds';
 import {
     cloneActionsWithFreshIds,
     createActionSequence,
@@ -25,7 +25,6 @@ import { useEditorHeadful, useEditorProxies } from '../hooks/useEditorHeadful';
 import EditorTopBar from './editor/EditorTopBar';
 import BottomActionBar from './editor/BottomActionBar';
 import ResultsDrawer from './editor/ResultsDrawer';
-import VersionPreviewModal from './editor/VersionPreviewModal';
 import HeadfulModal from './editor/HeadfulModal';
 import CanvasView from './editor/CanvasView';
 
@@ -47,7 +46,6 @@ interface EditorScreenProps {
     onNotify: (message: string, tone?: 'success' | 'error') => void;
     onPinResults?: (results: Results) => void;
     onUnpinResults?: () => void;
-    onRunSnapshot?: (task: Task) => void;
     runId?: string | null;
     onStop?: () => void;
     isHeadfulOpen?: boolean;
@@ -73,7 +71,6 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
     onNotify,
     onPinResults,
     onUnpinResults,
-    onRunSnapshot,
     runId,
     onStop,
     isHeadfulOpen,
@@ -115,7 +112,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
     const [noteClipboard, setNoteClipboard] = useState<StickyNote[]>([]);
     const [actionPaletteOpen, setActionPaletteOpen] = useState(false);
     const [isCabinetOpen, setIsCabinetOpen] = useState(false);
-    const [cabinetTab, setCabinetTab] = useState<'mode' | 'variables' | 'behavior' | 'extraction' | 'api' | 'output' | 'schedule' | 'history' | 'cabinets'>('mode');
+    const [cabinetTab, setCabinetTab] = useState<'mode' | 'variables' | 'behavior' | 'api' | 'output' | 'schedule' | 'history' | 'cabinets'>('mode');
     const [selectionBox, setSelectionBox] = useState<{ startX: number, startY: number, currentX: number, currentY: number } | null>(null);
     const [actionPaletteQuery, setActionPaletteQuery] = useState('');
     const [actionPaletteTargetId, setActionPaletteTargetId] = useState<string | null>(null);
@@ -301,9 +298,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 e.preventDefault();
                 if (!actionPaletteOpen) openActionPalette();
             } else if (e.key === 'Escape') {
-                if (versioning.versionPreview) {
-                    versioning.setVersionPreview(null);
-                } else if (actionPaletteOpen) {
+                if (actionPaletteOpen) {
                     setActionPaletteOpen(false);
                 } else if (isCabinetOpen) {
                     setIsCabinetOpen(false);
@@ -513,7 +508,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 return (
                     <>
                     <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
-                    <div className="action-context-menu editor-context-menu fixed z-50 w-[200px] rounded-xl p-2 text-xs font-bold tracking-widest" style={{ left: contextMenu.x, top: contextMenu.y }}>
+                    <div className="action-context-menu editor-context-menu fixed z-50 w-[200px] rounded-xl p-2 text-xs font-bold tracking-wide" style={{ left: contextMenu.x, top: contextMenu.y }}>
                         <button onClick={() => {
                             const nextState = !target.disabled;
                             const nextActions = currentTask.actions.map(a => affectedIds.includes(a.id) ? { ...a, disabled: nextState } : a);
@@ -651,12 +646,6 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 onUnpinResults={onUnpinResults}
             />
 
-            <VersionPreviewModal
-                versionPreview={versioning.versionPreview}
-                onClose={() => versioning.setVersionPreview(null)}
-                onRunSnapshot={onRunSnapshot!}
-            />
-
             <HeadfulModal
                 isHeadfulOpen={isHeadfulOpen || false}
                 isInspectMode={headful.isInspectMode}
@@ -690,28 +679,6 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 }}
                 proxyListLoaded={proxyListLoaded}
                 proxyList={proxyList}
-                onStartFieldInspect={(fieldId: string) => {
-                    const id = taskFieldInspectId(fieldId);
-                    headful.setActiveInspectActionId(id);
-                    setIsCabinetOpen(false);
-                    onOpenHeadful?.(currentTask.url || 'https://www.google.com', id, currentTaskRef.current, currentTaskRef.current.variables);
-                }}
-                onStartGroupContainerInspect={(groupId: string) => {
-                    const id = taskGroupContainerInspectId(groupId);
-                    headful.setActiveInspectActionId(id);
-                    headful.setActiveInspectScopeSelector(null);
-                    setIsCabinetOpen(false);
-                    onOpenHeadful?.(currentTask.url || 'https://www.google.com', id, currentTaskRef.current, currentTaskRef.current.variables);
-                }}
-                onStartGroupFieldInspect={(groupId: string, fieldId: string) => {
-                    const id = taskGroupFieldInspectId(groupId, fieldId);
-                    const group = (currentTaskRef.current.extractionGroups || []).find(g => g.id === groupId);
-                    headful.setActiveInspectActionId(id);
-                    headful.setActiveInspectScopeSelector(group?.containerSelector || null);
-                    setIsCabinetOpen(false);
-                    onOpenHeadful?.(currentTask.url || 'https://www.google.com', id, currentTaskRef.current, currentTaskRef.current.variables);
-                }}
-                fieldSelectorOptionsById={headful.selectorOptionsById}
                 initialTab={cabinetTab}
                 versions={versioning.versions as any}
                 versionsLoading={versioning.versionsLoading}
@@ -720,7 +687,6 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 deletingVersionId={versioning.deletingVersionId}
                 onDeleteVersion={versioning.deleteVersion}
                 onRollback={versioning.rollbackToVersion}
-                onPreview={versioning.openVersionPreview}
             />
         </div>
     );

@@ -205,7 +205,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                     <TablerIcon name="open_in_browser" className="text-blue-300 text-2xl" />
                 </div>
                 <div>
-                    <h2 className="text-sm font-bold tracking-widest text-white">Browser session active</h2>
+                    <h2 className="text-sm font-bold tracking-wide text-white">Browser session active</h2>
                     <p className="mt-2 text-xs leading-5 text-white/50 max-w-xs">
                         The live browser is shown in the browser window. Results will appear here when the session finishes.
                     </p>
@@ -223,7 +223,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                         <TablerIcon name="error" className="text-xl text-red-300" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-xs font-bold tracking-[0.2em] text-red-300">EXECUTION FAILED</p>
+                        <p className="text-xs font-bold tracking-wide text-red-300">EXECUTION FAILED</p>
                         <h2 className="mt-2 text-sm font-semibold text-white">The task did not return results.</h2>
                         <p className="mt-2 text-sm leading-6 text-white/65">{message}</p>
                     </div>
@@ -267,7 +267,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
             <div className={`grid grid-cols-1 ${showCapture ? (fullWidth ? 'xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]' : 'xl:grid-cols-2') : ''} ${fullWidth ? 'gap-6' : 'gap-8'}`}>
                 {showCapture && <div className={`glass-card overflow-hidden flex flex-col ${fullWidth ? 'rounded-2xl min-h-[260px]' : 'rounded-[32px] min-h-[400px]'}`}>
-                    <div className={`border-b border-white/5 flex items-center justify-between text-xs font-bold text-gray-500 tracking-widest ${fullWidth ? 'p-4' : 'p-6'}`}>
+                    <div className={`border-b border-white/5 flex items-center justify-between text-xs font-bold text-gray-500 tracking-wide ${fullWidth ? 'p-4' : 'p-6'}`}>
                         <span>Screenshot</span>
                         <div className="flex items-center gap-2">
                             <span className="text-white/20">{activeResults?.timestamp || '--:--:--'}</span>
@@ -277,7 +277,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                     setCapturesOpen(true);
                                     loadCaptures();
                                 }}
-                                className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-all"
+                                className="px-3 py-2 rounded-xl border border-white/10 text-xs font-bold tracking-wide text-white/70 hover:text-white hover:bg-white/5 transition-all"
                             >
                                 View All Captures
                             </button>
@@ -319,7 +319,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                 </div>}
                 <div className={`glass-card flex flex-col min-w-0 ${fullWidth ? 'rounded-2xl p-4 h-[260px]' : 'rounded-[32px] p-8 h-[400px]'}`}>
                     <div className={`flex items-center justify-between border-b border-white/5 ${fullWidth ? 'mb-4 pb-3' : 'mb-6 pb-4'}`}>
-                        <span className="text-xs font-bold text-gray-500 tracking-widest">Activity Log</span>
+                        <span className="text-xs font-bold text-gray-500 tracking-wide">Activity Log</span>
                         <button
                             onClick={() => handleCopy((activeResults?.logs || []).join('\n'), 'logs')}
                             className={`px-3 py-1.5 border text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${copied === 'logs' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'}`}
@@ -346,7 +346,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                     <div role="dialog" aria-modal="true" aria-labelledby="captures-dialog-title" className="glass-card theme-modal-elevation border theme-border-strong rounded-[32px] w-full max-w-5xl max-h-[85vh] overflow-hidden flex flex-col" style={{ backgroundColor: 'var(--app-surface)' }} onClick={(event) => event.stopPropagation()}>
                         <div className="p-6 border-b border-white/10 flex items-center justify-between">
                             <div>
-                                <div className="text-xs font-bold text-gray-500 tracking-widest">Captures</div>
+                                <div className="text-xs font-bold text-gray-500 tracking-wide">Captures</div>
                                 <div id="captures-dialog-title" className="text-sm font-bold text-white">Recordings and Screenshots</div>
                             </div>
                             <button
@@ -358,10 +358,10 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                         </div>
                         <div className="p-6 overflow-y-auto custom-scrollbar">
                             {capturesLoading && (
-                                <div className="text-xs text-gray-500 tracking-widest">Loading captures...</div>
+                                <div className="text-xs text-gray-500 tracking-wide">Loading captures...</div>
                             )}
                             {!capturesLoading && captures.length === 0 && (
-                                <div className="text-xs text-gray-600 tracking-widest">No captures found.</div>
+                                <div className="text-xs text-gray-600 tracking-wide">No captures found.</div>
                             )}
                             {!capturesLoading && captures.length > 0 && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{captures.map((capture) => <CaptureCard key={capture.name} capture={capture} />)}</div>}
                         </div>
@@ -371,7 +371,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
 
             <div className={`glass-card flex flex-col relative ${fullWidth ? 'rounded-2xl p-4' : 'rounded-[32px] p-8'}`}>
                 <div className={`flex items-center justify-between gap-2 border-b border-white/5 ${fullWidth ? 'flex-wrap pb-4 mb-4' : 'pb-4 mb-6'}`}>
-                    <span className="shrink-0 text-xs font-bold text-gray-500 tracking-widest">
+                    <span className="shrink-0 text-xs font-bold text-gray-500 tracking-wide">
                         {mainView === 'downloads' ? 'Downloads' : 'Data'}
                     </span>
                     <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
@@ -383,7 +383,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         role="tab"
                                         aria-selected={mainView === mode}
                                         onClick={() => setMainView(mode)}
-                                        className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${mainView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
+                                        className={`px-3 py-1 rounded text-xs font-bold tracking-wide transition-all focus:outline-none focus-visible:ring-2 ${mainView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
                                         {formatLabel(mode)}
                                     </button>
@@ -398,7 +398,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         role="tab"
                                         aria-selected={resultView === mode}
                                         onClick={() => setResultView(mode)}
-                                        className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${resultView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
+                                        className={`px-3 py-1 rounded text-xs font-bold tracking-wide transition-all focus:outline-none focus-visible:ring-2 ${resultView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
                                         {formatLabel(mode)}
                                     </button>
@@ -413,7 +413,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         role="tab"
                                         aria-selected={dataView === mode}
                                         onClick={() => setDataView(mode)}
-                                        className={`px-3 py-1 rounded text-xs font-bold tracking-widest transition-all focus:outline-none focus-visible:ring-2 ${dataView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
+                                        className={`px-3 py-1 rounded text-xs font-bold tracking-wide transition-all focus:outline-none focus-visible:ring-2 ${dataView === mode ? 'bg-white text-black focus-visible:ring-blue-500' : 'text-gray-500 hover:text-white focus-visible:ring-white/50'}`}
                                     >
                                         {mode === 'table' ? 'Table' : 'Raw'}
                                     </button>
@@ -599,7 +599,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                 ) : tableData && dataView === 'table' ? (
                                     <div className="overflow-auto custom-scrollbar rounded-2xl border border-white/10">
                                         <table className="min-w-full table-auto text-xs text-left text-white/80 font-mono">
-                                            <thead className="bg-white/5 text-xs tracking-widest text-white/50">
+                                            <thead className="bg-white/5 text-xs tracking-wide text-white/50">
                                                 <tr>
                                                     {tableData.headers.map((header) => (
                                                         <th key={header} className="px-3 py-2 border-b border-white/10 whitespace-nowrap">

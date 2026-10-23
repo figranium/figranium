@@ -184,7 +184,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                         <div><h2 className="text-sm font-bold theme-text">Run history</h2><p className="mt-1 text-[10px] tracking-[0.14em] theme-text-faint">{filtered.length} executions</p></div>
                         <div role="tablist" className="app-toolbar rounded-xl border theme-border p-1 theme-input">
                             {(['all', 'editor', 'api', 'scheduler'] as const).map((mode) => (
-                                <button key={mode} role="tab" aria-selected={filter === mode} onClick={() => setFilter(mode)} className={`min-h-8 px-3 rounded-lg text-[10px] font-bold tracking-widest transition-all ${filter === mode ? 'theme-accent-bg' : 'theme-text-faint hover:theme-text'}`}>{FILTER_LABELS[mode]}</button>
+                                <button key={mode} role="tab" aria-selected={filter === mode} onClick={() => setFilter(mode)} className={`min-h-8 px-3 rounded-lg text-[10px] font-bold tracking-wide transition-all ${filter === mode ? 'theme-accent-bg' : 'theme-text-faint hover:theme-text'}`}>{FILTER_LABELS[mode]}</button>
                             ))}
                         </div>
                     </div>

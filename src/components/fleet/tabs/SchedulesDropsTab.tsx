@@ -48,7 +48,7 @@ const SchedulesDropsTab: React.FC<SchedulesDropsTabProps> = ({ fleetConfig, onNo
             <div className="p-4 space-y-6 font-questrial">
                 {/* Cron trigger */}
                 <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-600 tracking-widest">Cron Trigger</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-wide">Cron Trigger</label>
                     <input
                         type="text"
                         value={cronExpr}
@@ -61,7 +61,7 @@ const SchedulesDropsTab: React.FC<SchedulesDropsTabProps> = ({ fleetConfig, onNo
 
                 {/* Pre-warming */}
                 <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-600 tracking-widest">Pre-warming</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-wide">Pre-warming</label>
                     <div className="flex items-center gap-3">
                         <input
                             type="number"
@@ -84,7 +84,7 @@ const SchedulesDropsTab: React.FC<SchedulesDropsTabProps> = ({ fleetConfig, onNo
 
                 {/* Jitter */}
                 <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-600 tracking-widest">Jitter</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-wide">Jitter</label>
                     <div className="flex items-center gap-3">
                         <input
                             type="range"
@@ -102,7 +102,7 @@ const SchedulesDropsTab: React.FC<SchedulesDropsTabProps> = ({ fleetConfig, onNo
 
                 {/* Drop schedule */}
                 <div className="space-y-2 pt-2 border-t border-white/5">
-                    <label className="text-xs font-bold text-gray-600 tracking-widest">Scheduled Drops</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-wide">Scheduled Drops</label>
                     {fleetConfig?.scheduledDrops?.length === 0 ? (
                         <p className="text-xs text-gray-600">No scheduled drops configured.</p>
                     ) : (
@@ -119,7 +119,7 @@ const SchedulesDropsTab: React.FC<SchedulesDropsTabProps> = ({ fleetConfig, onNo
 
                 <button
                     onClick={handleSaveSchedule}
-                    className="w-full py-2.5 rounded-xl bg-cyan-400 text-black text-xs font-bold tracking-widest hover:scale-[1.02] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                    className="w-full py-2.5 rounded-xl bg-cyan-400 text-black text-xs font-bold tracking-wide hover:scale-[1.02] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
                 >
                     Save Schedule
                 </button>

@@ -47,7 +47,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                     <div className="space-y-4">
                         {status === 'setup' && (
                             <div className="space-y-2">
-                                <label htmlFor="auth-name" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Name</label>
+                                <label htmlFor="auth-name" className="text-xs font-bold theme-text-muted tracking-wide">Name</label>
                                 <input
                                     id="auth-name"
                                     type="text"
@@ -60,7 +60,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                             </div>
                         )}
                         <div className="space-y-2">
-                            <label htmlFor="auth-email" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Email</label>
+                            <label htmlFor="auth-email" className="text-xs font-bold theme-text-muted tracking-wide">Email</label>
                             <input
                                 id="auth-email"
                                 type="email"
@@ -73,7 +73,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                             />
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="auth-pass" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Password</label>
+                            <label htmlFor="auth-pass" className="text-xs font-bold theme-text-muted tracking-wide">Password</label>
                             <div className="relative">
                                 <input
                                     id="auth-pass"
@@ -98,7 +98,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                         </div>
                         {status === 'setup' && (
                             <div className="space-y-2">
-                                <label htmlFor="auth-pass-confirm" className="text-xs font-bold theme-text-muted tracking-[0.2em]">Confirm Password</label>
+                                <label htmlFor="auth-pass-confirm" className="text-xs font-bold theme-text-muted tracking-wide">Confirm Password</label>
                                 <div className="relative">
                                     <input
                                         id="auth-pass-confirm"
@@ -137,7 +137,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                     </button>
 
                     {(localError || error) && (
-                        <div role="alert" className="text-xs font-bold text-red-500 text-center tracking-widest">
+                        <div role="alert" className="text-xs font-bold text-red-500 text-center tracking-wide">
                             {localError || error}
                         </div>
                     )}

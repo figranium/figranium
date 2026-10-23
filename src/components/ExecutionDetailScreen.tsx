@@ -180,7 +180,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
 
                 <section className="app-panel p-6 flex flex-col min-h-[420px]">
                         <div className="flex items-center justify-between border-b theme-border pb-4 mb-6">
-                            <span className="text-xs font-bold theme-text-muted tracking-widest">Output</span>
+                            <span className="text-xs font-bold theme-text-muted tracking-wide">Output</span>
                             {execution.result?.hasFullResult && !fullResultLoaded && (
                                 <button type="button" onClick={loadFullResult} disabled={fullResultLoading} className="app-button-secondary text-xs disabled:opacity-50">
                                     <TablerIcon name={fullResultLoading ? 'sync' : 'visibility'} className={`text-base ${fullResultLoading ? 'animate-spin' : ''}`} />

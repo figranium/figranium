@@ -15,12 +15,28 @@ export const parseBooleanFlag = (value: any) => {
     return normalized === 'true' || normalized === '1';
 };
 
+const DISPLAY_TERMS: Record<string, string> = {
+    api: 'API',
+    csv: 'CSV',
+    dns: 'DNS',
+    dom: 'DOM',
+    html: 'HTML',
+    http: 'HTTP',
+    https: 'HTTPS',
+    id: 'ID',
+    javascript: 'JavaScript',
+    json: 'JSON',
+    ui: 'UI',
+    url: 'URL',
+};
+
 export const formatLabel = (value: string) => value
     ? value
         .trim()
         .replace(/[_-]+/g, ' ')
         .replace(/\s+/g, ' ')
         .replace(/\b[a-z]/g, character => character.toUpperCase())
+        .replace(/\b[A-Za-z]+\b/g, term => DISPLAY_TERMS[term.toLowerCase()] || term)
     : value;
 
 export const formatExecutionSource = (source?: string | null) => {

@@ -118,7 +118,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                             const resolved = tested ? testResult?.resolvedInputs[entry.key] : entry.resolved;
                             return (
                                 <div key={entry.key} className="rounded-xl bg-[var(--app-input)] px-3 py-2">
-                                    <div className="text-[10px] tracking-wider text-[var(--app-text-faint)]">{entry.label}</div>
+                                    <div className="text-[10px] tracking-normal text-[var(--app-text-faint)]">{entry.label}</div>
                                     <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-[var(--app-text)]">{formatValue(resolved)}</pre>
                                     {!Object.is(entry.raw, resolved) && <div className="mt-1 truncate font-mono text-[10px] text-[var(--app-text-faint)]">Raw: {formatValue(entry.raw)}</div>}
                                 </div>
@@ -143,7 +143,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                         <div className="flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">
                             <TablerIcon name="science" className="text-sm" /> Test block
                         </div>
-                        {testResult && <span className={`text-[10px] font-bold tracking-wider ${statusTone[testResult.status]}`}>{formatLabel(testResult.status)}</span>}
+                        {testResult && <span className={`text-[10px] font-bold tracking-normal ${statusTone[testResult.status]}`}>{formatLabel(testResult.status)}</span>}
                     </div>
                     <p className="mt-2 text-[10px] leading-4 text-[var(--app-text-faint)]">Runs preceding blocks in a temporary browser. Actions may affect the target site.</p>
                     <button
@@ -163,7 +163,7 @@ const BlockConfigWorkspace: React.FC<BlockConfigWorkspaceProps> = ({
                             <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-[var(--app-code-bg)] p-3 font-mono text-[11px] leading-5 text-[var(--app-code-text)] custom-scrollbar">{formatValue(testResult.output)}</pre>
                             {changedVariables.length > 0 && (
                                 <div>
-                                    <div className="text-[10px] tracking-wider text-[var(--app-text-faint)]">Changed variables</div>
+                                    <div className="text-[10px] tracking-normal text-[var(--app-text-faint)]">Changed variables</div>
                                     <div className="mt-2 space-y-1">{changedVariables.map(([name, value]) => <div key={name} className="flex gap-2 font-mono text-[10px] text-[var(--app-text-muted)]"><span className="text-blue-500">{name}</span><span className="min-w-0 flex-1 truncate text-right">{formatValue(value)}</span></div>)}</div>
                                 </div>
                             )}

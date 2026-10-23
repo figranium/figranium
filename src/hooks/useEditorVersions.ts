@@ -10,7 +10,6 @@ export const useEditorVersions = (
 ) => {
     const [versions, setVersions] = useState<{ id: string; timestamp: number; name: string; mode: TaskMode }[]>([]);
     const [versionsLoading, setVersionsLoading] = useState(false);
-    const [versionPreview, setVersionPreview] = useState<{ id: string; timestamp: number; snapshot: Task } | null>(null);
     const [isCreatingVersion, setIsCreatingVersion] = useState(false);
     const [deletingVersionId, setDeletingVersionId] = useState<string | null>(null);
 
@@ -49,23 +48,6 @@ export const useEditorVersions = (
         }
     }, [currentTask.id, onConfirm, onNotify, setCurrentTask, loadVersions]);
 
-    const openVersionPreview = useCallback(async (versionId: string) => {
-        if (!currentTask.id) return;
-        try {
-            const res = await fetch(`/api/tasks/${currentTask.id}/versions/${versionId}`);
-            if (!res.ok) throw new Error('Failed to load version');
-            const data = await res.json();
-            if (!data?.snapshot) throw new Error('Missing snapshot');
-            setVersionPreview({
-                id: data.metadata?.id || versionId,
-                timestamp: data.metadata?.timestamp || Date.now(),
-                snapshot: data.snapshot
-            });
-        } catch {
-            onNotify('Failed to load version snapshot.', 'error');
-        }
-    }, [currentTask.id, onNotify]);
-
     const createVersion = useCallback(async () => {
         if (!currentTask.id || isCreatingVersion) return;
         setIsCreatingVersion(true);
@@ -89,25 +71,21 @@ export const useEditorVersions = (
             const response = await fetch(`/api/tasks/${currentTask.id}/versions/${versionId}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Version deletion failed');
             setVersions((current) => current.filter((version) => version.id !== versionId));
-            if (versionPreview?.id === versionId) setVersionPreview(null);
             onNotify('Version deleted.', 'success');
         } catch {
             onNotify('Failed to delete the version.', 'error');
         } finally {
             setDeletingVersionId(null);
         }
-    }, [currentTask.id, deletingVersionId, onConfirm, onNotify, versionPreview?.id]);
+    }, [currentTask.id, deletingVersionId, onConfirm, onNotify]);
 
     return {
         versions,
         versionsLoading,
         isCreatingVersion,
         deletingVersionId,
-        versionPreview,
-        setVersionPreview,
         loadVersions,
         rollbackToVersion,
-        openVersionPreview,
         createVersion,
         deleteVersion,
     };

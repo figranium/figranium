@@ -44,7 +44,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                     </div>
                     <button
                         onClick={this.handleReload}
-                        className="px-4 py-2 rounded-full border theme-border text-xs font-bold tracking-[0.2em] theme-text hover:opacity-80 transition-opacity"
+                        className="px-4 py-2 rounded-full border theme-border text-xs font-bold tracking-wide theme-text hover:opacity-80 transition-opacity"
                         type="button"
                     >
                         Reload

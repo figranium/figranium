@@ -133,7 +133,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                             >
                                 <TablerIcon name={item.icon || 'extension'} className="action-palette-item-icon text-2xl transition-colors shrink-0 mb-1" />
                                 <div>
-                                    <div className="action-palette-item-title text-xs font-bold tracking-widest mb-1">{item.label}</div>
+                                    <div className="action-palette-item-title text-xs font-bold tracking-wide mb-1">{item.label}</div>
                                     <div className="action-palette-item-description text-xs line-clamp-2 leading-relaxed">{item.description}</div>
                                 </div>
                             </button>
@@ -143,7 +143,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                         <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
                             <TablerIcon name="search_off" className="text-4xl text-white/10" />
                             <div className="space-y-1">
-                                <p className="text-xs font-bold tracking-widest text-white/40">No matches found</p>
+                                <p className="text-xs font-bold tracking-wide text-white/40">No matches found</p>
                                 <p className="text-xs text-gray-600">Try a different search term or browse the catalog.</p>
                             </div>
                         </div>

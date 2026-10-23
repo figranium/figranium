@@ -189,9 +189,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, o
                     <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-full slide-up">
                         <div className="p-6 sm:p-8 shrink-0"><h3 className="text-xl font-bold text-white tracking-tight">Export Tasks</h3><p className="text-xs text-white/50 mt-2">Select the Tasks you want to export.</p></div>
                         <div className="px-6 sm:px-8 pb-4 flex items-center gap-3 shrink-0 border-b border-white/5">
-                            <button onClick={() => setSelectedTaskIds(tasks.flatMap((task) => task.id ? [task.id] : []))} className="text-xs font-bold tracking-widest text-blue-400 hover:text-blue-300">Select All</button>
+                            <button onClick={() => setSelectedTaskIds(tasks.flatMap((task) => task.id ? [task.id] : []))} className="text-xs font-bold tracking-wide text-blue-400 hover:text-blue-300">Select All</button>
                             <span className="text-white/20">|</span>
-                            <button onClick={() => setSelectedTaskIds([])} className="text-xs font-bold tracking-widest text-white/40 hover:text-white/80">Deselect All</button>
+                            <button onClick={() => setSelectedTaskIds([])} className="text-xs font-bold tracking-wide text-white/40 hover:text-white/80">Deselect All</button>
                             <div className="flex-1" /><span className="text-xs text-white/30">{selectedTaskIds.length} selected</span>
                         </div>
                         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-2">

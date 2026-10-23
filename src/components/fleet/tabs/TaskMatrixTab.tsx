@@ -50,19 +50,19 @@ const TaskMatrixTab: React.FC<TaskMatrixTabProps> = ({ workers, rows, fleetConfi
                 <div className="grid grid-cols-4 gap-2">
                     <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 text-center">
                         <div className="text-2xl font-bold text-cyan-400">{summary.running}</div>
-                        <div className="text-xs font-bold text-gray-500 tracking-widest">Running</div>
+                        <div className="text-xs font-bold text-gray-500 tracking-wide">Running</div>
                     </div>
                     <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 text-center">
                         <div className="text-2xl font-bold text-gray-400">{summary.idle}</div>
-                        <div className="text-xs font-bold text-gray-500 tracking-widest">Idle</div>
+                        <div className="text-xs font-bold text-gray-500 tracking-wide">Idle</div>
                     </div>
                     <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 text-center">
                         <div className="text-2xl font-bold text-green-400">{summary.success}</div>
-                        <div className="text-xs font-bold text-gray-500 tracking-widest">Success</div>
+                        <div className="text-xs font-bold text-gray-500 tracking-wide">Success</div>
                     </div>
                     <div className="bg-[#0a0a0a] border border-white/5 rounded-xl p-3 text-center">
                         <div className="text-2xl font-bold text-red-400">{summary.failed}</div>
-                        <div className="text-xs font-bold text-gray-500 tracking-widest">Failed</div>
+                        <div className="text-xs font-bold text-gray-500 tracking-wide">Failed</div>
                     </div>
                 </div>
 

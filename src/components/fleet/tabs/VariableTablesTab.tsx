@@ -102,7 +102,7 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
                 {/* CSV/TSV/JSON ingestion */}
                 <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                        <label className="text-xs font-bold text-gray-600 tracking-widest">Import Format</label>
+                        <label className="text-xs font-bold text-gray-600 tracking-wide">Import Format</label>
                         <div className="flex gap-1">
                             {(['csv', 'tsv', 'json'] as const).map((fmt) => (
                                 <button
@@ -147,7 +147,7 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
                 {headers.length > 0 && (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-gray-600 tracking-widest">
+                            <label className="text-xs font-bold text-gray-600 tracking-wide">
                                 Preview ({previewRows.length} / {rows.length} total rows)
                             </label>
                             <button
@@ -182,7 +182,7 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
 
                 {/* Interpolation preview */}
                 <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-600 tracking-widest">Variable Interpolation</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-wide">Variable Interpolation</label>
                     <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3 space-y-1">
                         <p className="text-xs text-gray-500">
                             Use <span className="text-cyan-400 font-mono">{'{$varName}'}</span> syntax in actions. Example:
@@ -195,7 +195,7 @@ const VariableTablesTab: React.FC<VariableTablesTabProps> = ({ rows, onNotify })
 
                 {/* Worker ↔ Row mapping info */}
                 <div className="space-y-1 pt-2 border-t border-white/5">
-                    <label className="text-xs font-bold text-gray-600 tracking-widest">Worker Mapping</label>
+                    <label className="text-xs font-bold text-gray-600 tracking-wide">Worker Mapping</label>
                     <p className="text-xs text-gray-500">Each worker N is mapped to CSV row N. The variable table below maps worker IDs to their current row data.</p>
                     <div className="grid grid-cols-[120px_1fr_80px] gap-1 text-xs">
                         <div className="text-gray-500 font-bold ">Worker ID</div>

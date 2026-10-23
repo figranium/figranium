@@ -98,7 +98,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                     {/* Script */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Script</label>
+                            <label className="text-xs font-bold text-gray-600 tracking-wide pl-1">Script</label>
                             <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
                                 {(['visual', 'javascript'] as const).map(mode => (
                                     <button
@@ -214,7 +214,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
 
                                 <div className="pt-2 mt-2 border-t border-dashed border-white/10 space-y-3">
                                     <div>
-                                        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Repeating Groups</label>
+                                        <label className="text-xs font-bold text-gray-600 tracking-wide pl-1">Repeating Groups</label>
                                         <p className="text-xs text-gray-500 mt-0.5">One row per matched container — e.g. every product card on a search results page — with a column per sub-field. Produces a multi-row CSV.</p>
                                     </div>
                                     {groups.map(group => (
@@ -382,7 +382,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
 
                     {/* Format */}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1">Output Format</label>
+                        <label className="text-xs font-bold text-gray-600 tracking-wide pl-1">Output Format</label>
                         <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 focus-within:border-white/20 transition-all">
                             <CustomSelect
                                 value={task.extractionFormat || 'json'}
@@ -440,7 +440,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
                         <TablerIcon name="data_object" className="text-[12px] text-white" />
                     </div>
-                    <span className="text-xs font-bold tracking-[0.2em] text-white shrink-0">Extraction Script</span>
+                    <span className="text-xs font-bold tracking-wide text-white shrink-0">Extraction Script</span>
                     {scriptPreview && (
                         <span className="text-white/40 text-xs font-mono truncate min-w-0 pointer-events-none">
                             {scriptPreview.trim()}

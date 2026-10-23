@@ -98,7 +98,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b theme-border bg-[var(--app-glass-card)] gap-4">
                     <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold tracking-widest theme-text">Active Browser Session</span>
+                            <span className="text-xs font-bold tracking-wide theme-text">Active Browser Session</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             onClick={onToggleInspect}
                             disabled={isExecuting}
                             aria-busy={isInspectLoading}
-                            className={`px-3 py-1.5 rounded-xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${isInspectMode
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-bold tracking-wide transition-all flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${isInspectMode
                                 ? 'border-green-500/30 bg-green-500/20 text-green-400 hover:bg-green-500/30'
                                 : 'theme-border theme-text-muted hover:theme-text theme-hover'}`}
                             title={isInspectMode ? 'Stop inspecting elements' : 'Highlight elements on hover'}
@@ -144,7 +144,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                     {useNovnc === null ? (
                         <div className="text-center p-8 flex flex-col items-center justify-center gap-3">
                             <div className="w-8 h-8 border-2 theme-border border-t-[var(--app-text)] rounded-full animate-spin" />
-                            <p className="theme-text-muted text-xs tracking-wider ">Checking browser status...</p>
+                            <p className="theme-text-muted text-xs tracking-normal ">Checking browser status...</p>
                         </div>
                     ) : useNovnc === false ? (
                         <div className="text-center p-8 animate-in fade-in duration-300">

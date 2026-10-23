@@ -19,7 +19,6 @@ interface EditorLoaderProps {
     isStopping: boolean;
     onSave: (task?: Task, createVersion?: boolean) => Promise<void>;
     onRun: () => void;
-    onRunSnapshot?: (task: Task) => void;
     results: any;
     pinnedResults?: any;
     onPinResults?: any;

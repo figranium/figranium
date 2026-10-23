@@ -97,7 +97,7 @@ export type { ActionConfigModalProps };
 
 export const field = (labelText: string, children: React.ReactNode) => (
     <div className="flex min-w-0 flex-col gap-1.5 self-stretch">
-        <label className="text-xs font-bold text-gray-600 tracking-widest pl-1 block">{labelText}</label>
+        <label className="text-xs font-bold text-gray-600 tracking-wide pl-1 block">{labelText}</label>
         {children}
     </div>
 );

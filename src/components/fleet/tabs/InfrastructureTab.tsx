@@ -81,7 +81,7 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                 </div>
 
                 <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-4 space-y-3">
-                    <h4 className="text-xs font-bold text-gray-600 tracking-widest">Add Proxy Preset</h4>
+                    <h4 className="text-xs font-bold text-gray-600 tracking-wide">Add Proxy Preset</h4>
                     <div className="grid grid-cols-2 gap-3">
                         <input
                             type="text"
@@ -122,14 +122,14 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                     </div>
                     <button
                         onClick={handleAddProxy}
-                        className="w-full py-2 rounded-xl bg-cyan-400 text-black text-xs font-bold tracking-widest hover:scale-[1.02] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                        className="w-full py-2 rounded-xl bg-cyan-400 text-black text-xs font-bold tracking-wide hover:scale-[1.02] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
                     >
                         Add Preset
                     </button>
                 </div>
 
                 <div className="space-y-2">
-                    <h4 className="text-xs font-bold text-gray-600 tracking-widest">Saved Presets</h4>
+                    <h4 className="text-xs font-bold text-gray-600 tracking-wide">Saved Presets</h4>
                     {proxies.length === 0 ? (
                         <p className="text-xs text-gray-600">No proxy presets configured. Add one above.</p>
                     ) : (
@@ -163,7 +163,7 @@ const InfrastructureTab: React.FC<InfrastructureTabProps> = ({ proxies, fleetCon
                 </div>
 
                 <div className="space-y-2 pt-2 border-t border-white/5">
-                    <h4 className="text-xs font-bold text-gray-600 tracking-widest">Infrastructure Config</h4>
+                    <h4 className="text-xs font-bold text-gray-600 tracking-wide">Infrastructure Config</h4>
                     <div className="grid grid-cols-[120px_1fr] gap-2 text-xs">
                         <span className="text-gray-500">Browser pool size</span>
                         <span className="text-white/60">{fleetConfig?.poolSize || 10}</span>

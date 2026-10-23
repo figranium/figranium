@@ -33,5 +33,5 @@ export function LoadingState({ label }: { label: string }) {
 }
 
 export function EmptyState({ label }: { label: string }) {
-    return <div className="text-xs theme-text-faint tracking-widest">No {label} found.</div>;
+    return <div className="text-xs theme-text-faint tracking-wide">No {label} found.</div>;
 }

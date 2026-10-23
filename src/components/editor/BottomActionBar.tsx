@@ -59,7 +59,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
                 }}
                 disabled={isExecuting || isHeadfulStarting}
                 aria-busy={isHeadfulStarting}
-                className={`px-4 h-12 rounded-2xl border text-xs font-bold tracking-widest transition-all flex items-center gap-2 ${isHeadfulStarting ? 'cursor-wait' : 'disabled:opacity-30 disabled:cursor-not-allowed'} ${isHeadfulOpen
+                className={`px-4 h-12 rounded-2xl border text-xs font-bold tracking-wide transition-all flex items-center gap-2 ${isHeadfulStarting ? 'cursor-wait' : 'disabled:opacity-30 disabled:cursor-not-allowed'} ${isHeadfulOpen
                     ? 'border-blue-500/30 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
                     : 'editor-action-secondary'
                     }`}

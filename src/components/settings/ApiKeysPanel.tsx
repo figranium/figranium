@@ -104,15 +104,15 @@ const ApiKeyRow: React.FC<{
                 {icon}
                 <div>
                     <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-white tracking-widest">{config.name}</h4>
+                        <h4 className="text-sm font-bold text-white tracking-wide">{config.name}</h4>
                         {config.badge && (
-                            <span className={`text-xs font-bold tracking-widest px-2 py-0.5 rounded-full ${config.badge === 'Primary'
+                            <span className={`text-xs font-bold tracking-wide px-2 py-0.5 rounded-full ${config.badge === 'Primary'
                                     ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                     : 'bg-white/10 text-white/50 border border-white/10'
                                 }`}>{config.badge}</span>
                         )}
                     </div>
-                    <p className="text-xs text-gray-500 tracking-widest mt-1">{config.description}</p>
+                    <p className="text-xs text-gray-500 tracking-wide mt-1">{config.description}</p>
                 </div>
             </div>
 
@@ -127,7 +127,7 @@ const ApiKeyRow: React.FC<{
                         <button
                             onClick={handleEditStart}
                             disabled={config.loading || config.saving}
-                            className="app-button-secondary px-6 text-xs font-bold tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="app-button-secondary px-6 text-xs font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             <TablerIcon name="edit" className="text-base" />
                             Edit
@@ -137,7 +137,7 @@ const ApiKeyRow: React.FC<{
                         <button
                             onClick={handleRegenerate}
                             disabled={config.loading || config.saving}
-                            className="app-button-primary px-6 text-xs font-bold tracking-widest disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="app-button-primary px-6 text-xs font-bold tracking-wide disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             <TablerIcon name="autorenew" className="text-base" />
                             {config.saving ? 'Generating...' : 'Regenerate'}
@@ -177,14 +177,14 @@ const ApiKeyRow: React.FC<{
                     <button
                         onClick={handleCancel}
                         disabled={config.saving}
-                        className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-transparent border border-white/20 text-white hover:bg-white/10 transition-all disabled:opacity-50"
+                        className="px-6 py-3 rounded-2xl text-xs font-bold tracking-wide bg-transparent border border-white/20 text-white hover:bg-white/10 transition-all disabled:opacity-50"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={config.saving}
-                        className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-blue-500 text-white hover:bg-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-6 py-3 rounded-2xl text-xs font-bold tracking-wide bg-blue-500 text-white hover:bg-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         <TablerIcon name="save" className="text-base" />
                         {config.saving ? 'Saving...' : 'Save'}
@@ -274,7 +274,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
                     <div>
                         <button
                             onClick={() => setShowAddMenu(true)}
-                            className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all flex items-center gap-2 border border-blue-500/10"
+                            className="px-6 py-3 rounded-2xl text-xs font-bold tracking-wide bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all flex items-center gap-2 border border-blue-500/10"
                         >
                             <TablerIcon name="add" className="text-base" />
                             Add API Key
@@ -302,7 +302,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
 
                                             {dbProviders && dbProviders.length > 0 && (
                                                 <div>
-                                                    <p className="text-xs font-bold text-gray-500 tracking-[0.2em] mb-4">Database / Output</p>
+                                                    <p className="text-xs font-bold text-gray-500 tracking-wide mb-4">Database / Output</p>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                         {dbProviders.map(p => (
                                                             <button
@@ -323,7 +323,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
                                                                 </div>
                                                                 <div className="flex-1">
                                                                     <div className="text-base font-bold text-white mb-1">{p.name}</div>
-                                                                    <div className="text-xs text-white/50 tracking-widest">{p.disabled ? 'Coming Soon' : 'Available'}</div>
+                                                                    <div className="text-xs text-white/50 tracking-wide">{p.disabled ? 'Coming Soon' : 'Available'}</div>
                                                                 </div>
                                                             </button>
                                                         ))}
@@ -337,7 +337,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
                                         <>
                                             <button
                                                 onClick={() => setModalView('list')}
-                                                className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-white tracking-widest mb-6 transition-colors"
+                                                className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-white tracking-wide mb-6 transition-colors"
                                             >
                                                 <TablerIcon name="arrow_back" className="text-sm" />
                                                 Back
@@ -347,7 +347,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
 
                                             <div className="space-y-4">
                                                 <div className="space-y-1">
-                                                    <label className="text-xs font-bold text-gray-500 tracking-[0.2em]">Name</label>
+                                                    <label className="text-xs font-bold text-gray-500 tracking-wide">Name</label>
                                                     <input
                                                         className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 transition-colors"
                                                         placeholder="e.g. My Baserow"
@@ -358,7 +358,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
                                                 </div>
                                                 {selectedDb.providerKey === 'baserow' && (
                                                     <div className="space-y-1">
-                                                        <label className="text-xs font-bold text-gray-500 tracking-[0.2em]">Base URL</label>
+                                                        <label className="text-xs font-bold text-gray-500 tracking-wide">Base URL</label>
                                                         <input
                                                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 transition-colors"
                                                             placeholder="https://api.baserow.io"
@@ -368,7 +368,7 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
                                                     </div>
                                                 )}
                                                 <div className="space-y-1">
-                                                    <label className="text-xs font-bold text-gray-500 tracking-[0.2em]">API Token</label>
+                                                    <label className="text-xs font-bold text-gray-500 tracking-wide">API Token</label>
                                                     <input
                                                         className="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-white/30 transition-colors font-mono"
                                                         placeholder="Token"
@@ -386,14 +386,14 @@ const ApiKeysPanel: React.FC<ApiKeysPanelProps> = ({ keys, dbProviders, onAddDbC
                                             <div className="flex gap-3 mt-4">
                                                 <button
                                                     onClick={closeModal}
-                                                    className="px-6 py-3 rounded-2xl text-xs font-bold tracking-widest bg-transparent border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all"
+                                                    className="px-6 py-3 rounded-2xl text-xs font-bold tracking-wide bg-transparent border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all"
                                                 >
                                                     Cancel
                                                 </button>
                                                 <button
                                                     onClick={handleDbSave}
                                                     disabled={dbSaving || !dbForm.name || !dbForm.token}
-                                                    className="flex-1 py-3 rounded-2xl text-xs font-bold tracking-widest bg-white text-black hover:bg-white/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    className="flex-1 py-3 rounded-2xl text-xs font-bold tracking-wide bg-white text-black hover:bg-white/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                                                 >
                                                     {dbSaving ? 'Saving…' : 'Save Credential'}
                                                 </button>

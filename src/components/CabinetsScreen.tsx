@@ -92,7 +92,7 @@ export default function CabinetsScreen({ onConfirm, onNotify }: { onConfirm: (r:
                 <aside className="app-panel space-y-2 p-3" aria-label="Cabinets">
                     {cabinets.map(c => <button key={c.id} onClick={() => navigate(`/cabinets/${c.id}`)} onContextMenu={event => { event.preventDefault(); setContextMenu({ cabinet: c, x: event.clientX, y: event.clientY }); }} className={`w-full cursor-pointer rounded-xl p-3 text-left ${active === c.id ? 'theme-highlight' : 'theme-hover theme-text-faint'}`}>
                         <div className="flex justify-between gap-2"><span className="truncate text-sm font-bold">{c.name}</span>{c.isDefault && <TablerIcon name="star" className="text-sm" />}</div>
-                        <div className="mt-1 text-[10px] tracking-wider">{c.itemCount} items · {c.unuploadedCount} ready</div>
+                        <div className="mt-1 text-[10px] tracking-normal">{c.itemCount} items · {c.unuploadedCount} ready</div>
                     </button>)}
                 </aside>
                 <section className="app-panel overflow-hidden">

@@ -3,9 +3,9 @@ import { Task } from '../../types';
 import CopyButton from '../CopyButton';
 
 const ApiTab: React.FC<{ currentTask: Task; onUpdateTask: (updates: Partial<Task>) => void }> = ({ currentTask, onUpdateTask }) => (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="space-y-4">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Trigger via API</label>
+                            <div className="mx-auto grid max-w-[960px] grid-cols-1 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300 lg:grid-cols-2">
+                                <div className="space-y-4 lg:col-span-2">
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Trigger via API</label>
                                     <div className="space-y-2">
                                         <p className="text-xs text-[var(--app-text-muted)]">Send a <span className="font-mono font-bold text-[var(--app-text)]">POST</span> request from external tools to the endpoint below:</p>
                                         <div className="relative group">
@@ -26,7 +26,7 @@ const ApiTab: React.FC<{ currentTask: Task; onUpdateTask: (updates: Partial<Task
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Response Options</label>
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Response Options</label>
                                     <button
                                         role="switch"
                                         aria-checked={currentTask.includeHtml}
@@ -44,7 +44,7 @@ const ApiTab: React.FC<{ currentTask: Task; onUpdateTask: (updates: Partial<Task
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-[0.2em]">Passing Variables</label>
+                                    <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Passing Variables</label>
                                     <div className="space-y-2">
                                         <p className="text-xs text-[var(--app-text-muted)]">You can override task variables in the request body:</p>
                                         <div className="relative group">
