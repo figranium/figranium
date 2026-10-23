@@ -84,8 +84,8 @@ importers:
         specifier: ^7.11.0
         version: 7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-window:
-        specifier: ^1.8.8
-        version: 1.8.11(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ^2.0.0
+        version: 2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1(supports-color@7.2.0)
@@ -109,8 +109,8 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.14)
       '@types/react-window':
-        specifier: ^1.8.8
-        version: 1.8.8
+        specifier: ^2.0.0
+        version: 2.0.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@vitejs/plugin-react':
         specifier: ^6.0.0
         version: 6.1.1(vite@8.3.3(@types/node@25.9.9)(esbuild@0.27.4)(jiti@2.6.1))
@@ -144,10 +144,6 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
-
-  '@babel/runtime@7.28.6':
-    resolution: {integrity: sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==}
-    engines: {node: '>=6.9.0'}
 
   '@emnapi/runtime@1.11.3':
     resolution: {integrity: sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA==}
@@ -780,8 +776,9 @@ packages:
     peerDependencies:
       '@types/react': ^19.2.0
 
-  '@types/react-window@1.8.8':
-    resolution: {integrity: sha512-8Ls660bHR1AUA2kuRvVG9D/4XpRC6wjAaPT9dil7Ckc76eP9TKWZwwmgfq8Q1LANX3QNDnoU4Zp48A3w+zK69Q==}
+  '@types/react-window@2.0.0':
+    resolution: {integrity: sha512-E8hMDtImEpMk1SjswSvqoSmYvk7GEtyVaTa/GJV++FdDNuMVVEzpAClyJ0nqeKYBrMkGiyH6M1+rPLM0Nu1exQ==}
+    deprecated: This is a stub types definition. react-window provides its own type definitions, so you do not need this installed.
 
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
@@ -1872,9 +1869,6 @@ packages:
     resolution: {integrity: sha512-aisnrDP4GNe06UcKFnV5bfMNPBUw4jsLGaWwWfnH3v02GnBuXX2MCVn5RbrWo0j3pczUilYblq7fQ7Nw2t5XKw==}
     engines: {node: '>= 0.8'}
 
-  memoize-one@5.2.1:
-    resolution: {integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==}
-
   merge-deep@3.0.3:
     resolution: {integrity: sha512-qtmzAS6t6grwEkNrunqTBdn0qKwFgNWvlxUbAV8es9M7Ot1EbyApytCnvE0jALPa46ZpKDUo527kKiaWplmlFA==}
     engines: {node: '>=0.10.0'}
@@ -2325,12 +2319,11 @@ packages:
       react-dom:
         optional: true
 
-  react-window@1.8.11:
-    resolution: {integrity: sha512-+SRbUVT2scadgFSWx+R1P754xHPEqvcfSfVX10QYg6POOz+WNgkN48pS+BtZNIMGiL1HYrSEiCkwsMS15QogEQ==}
-    engines: {node: '>8.0.0'}
+  react-window@2.5.0:
+    resolution: {integrity: sha512-2oQiMo+lT5omOYaBJnloTK19yZDXqboDPMJP6li0gER0henua4iEz6BxzENJ1H5pNb6Kb2H4Lu0+YTuvqnw7QA==}
     peerDependencies:
-      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
 
   react@19.3.1:
     resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
@@ -2772,8 +2765,6 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@babel/runtime@7.28.6': {}
-
   '@emnapi/runtime@1.11.3':
     dependencies:
       tslib: 2.8.1
@@ -3181,9 +3172,12 @@ snapshots:
     dependencies:
       '@types/react': 19.2.14
 
-  '@types/react-window@1.8.8':
+  '@types/react-window@2.0.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
-      '@types/react': 19.2.14
+      react-window: 2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+    transitivePeerDependencies:
+      - react
+      - react-dom
 
   '@types/react@19.2.14':
     dependencies:
@@ -4343,8 +4337,6 @@ snapshots:
 
   media-typer@1.1.0: {}
 
-  memoize-one@5.2.1: {}
-
   merge-deep@3.0.3:
     dependencies:
       arr-union: 3.1.0
@@ -4884,10 +4876,8 @@ snapshots:
     optionalDependencies:
       react-dom: 19.3.1(react@19.3.1)
 
-  react-window@1.8.11(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-window@2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
-      '@babel/runtime': 7.28.6
-      memoize-one: 5.2.1
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
