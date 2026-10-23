@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { FixedSizeList, ListChildComponentProps } from 'react-window';
+import { List, type RowComponentProps } from 'react-window';
 import { CaptureEntry } from '../../types';
 import { PanelShell, LoadingState, EmptyState } from '../common/ListState';
 
@@ -21,8 +21,8 @@ interface CapturesPanelListData {
     onDelete: (name: string) => void;
 }
 
-const renderCaptureRow = ({ index, style, data }: ListChildComponentProps<CapturesPanelListData>) => {
-    const capture = data.captures[index];
+const renderCaptureRow = ({ index, style, captures, onDelete }: RowComponentProps<CapturesPanelListData>) => {
+    const capture = captures[index];
     if (!capture) return null;
     return (
         <div style={{ ...style, paddingBottom: CAPTURE_ROW_SPACING }}>
@@ -46,7 +46,7 @@ const renderCaptureRow = ({ index, style, data }: ListChildComponentProps<Captur
                     </a>
                     <button
                         type="button"
-                        onClick={() => data.onDelete(capture.name)}
+                        onClick={() => onDelete(capture.name)}
                         className="px-3 py-2 rounded-xl border border-red-500/20 text-xs font-bold tracking-widest text-red-300 hover:bg-red-500/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50"
                         aria-label={`Delete ${capture.name}`}
                         title={`Delete ${capture.name}`}
@@ -87,16 +87,14 @@ const CapturesPanel: React.FC<CapturesPanelProps> = ({ captures, loading, onRefr
             {loading && <LoadingState label="captures" />}
             {!loading && captures.length === 0 && <EmptyState label="captures" />}
             {!loading && captures.length > 0 && (
-                <FixedSizeList
-                    height={listHeight}
-                    width="100%"
-                    itemCount={captures.length}
-                    itemSize={CAPTURE_ROW_ITEM_SIZE}
+                <List
+                    style={{ height: listHeight, width: '100%' }}
+                    rowCount={captures.length}
+                    rowHeight={CAPTURE_ROW_ITEM_SIZE}
                     overscanCount={CAPTURE_ROW_OVERSCAN}
-                    itemData={itemData}
-                >
-                    {renderCaptureRow}
-                </FixedSizeList>
+                    rowProps={itemData}
+                    rowComponent={renderCaptureRow}
+                />
             )}
         </PanelShell>
     );
