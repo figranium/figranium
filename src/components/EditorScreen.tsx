@@ -457,6 +457,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
             {/* Zoom Controls */}
             <div
                 className="editor-floating-panel absolute bottom-24 left-6 z-30 flex flex-col gap-1 rounded-xl p-1"
+                style={{ boxShadow: 'none' }}
                 role="group"
                 aria-label="Zoom controls"
             >
