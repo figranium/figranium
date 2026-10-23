@@ -736,7 +736,7 @@ findAvailablePort(port, 20)
             }
 
             // Authentication check for WebSocket upgrade
-            const cookies = cookie.parse(req.headers.cookie || '');
+            const cookies = cookie.parseCookie(req.headers.cookie || '');
             const signedSid = cookies['connect.sid'];
             let isAuthenticated = false;
             let authenticatedSessionId = null;
