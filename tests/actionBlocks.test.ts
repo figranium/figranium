@@ -80,6 +80,19 @@ assert.deepEqual(scopeMap.scopes[getLoopBodyScopeId('loop')].actionIds, ['loop-a
 const movedDown = moveActionBlockToScope(scoped, 'true-a', getIfTrueScopeId('if'), null, () => 'unused');
 assert.deepEqual(buildActionScopeMap(movedDown).scopes[getIfTrueScopeId('if')].actionIds, ['true-b', 'true-a']);
 
+const restoredPosition = moveActionBlockToScope(
+    movedDown,
+    'true-a',
+    getIfTrueScopeId('if'),
+    'true-b',
+    () => 'unused',
+);
+assert.deepEqual(
+    buildActionScopeMap(restoredPosition).scopes[getIfTrueScopeId('if')].actionIds,
+    ['true-a', 'true-b'],
+    'A moved block can return to its former slot',
+);
+
 const swappedBranch = moveActionBlockToScope(scoped, 'true-a', getIfFalseScopeId('if'), null, () => 'unused');
 assert.deepEqual(buildActionScopeMap(swappedBranch).scopes[getIfFalseScopeId('if')].actionIds, ['false-a', 'true-a']);
 

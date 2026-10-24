@@ -13,24 +13,28 @@ interface ActionDropTarget {
     highlightActionId: string | null;
 }
 
+interface ActionDragState {
+    id: string;
+    startX: number;
+    startY: number;
+    currentY: number;
+    height: number;
+    index: number;
+    originTop: number;
+    pointerOffset: number;
+}
+
 export const useEditorActions = (
     currentTask: Task,
     setCurrentTask: (task: Task | ((prev: Task | null) => Task | null)) => void,
     onSave: (task: Task, createVersion: boolean) => void,
 ) => {
     const [selectedActionIds, setSelectedActionIds] = useState<Set<string>>(new Set());
-    const [dragState, setDragState] = useState<{
-        id: string;
-        startX: number;
-        startY: number;
-        currentY: number;
-        height: number;
-        index: number;
-        originTop: number;
-        pointerOffset: number;
-    } | null>(null);
+    const [dragState, setDragState] = useState<ActionDragState | null>(null);
     const [dragTarget, setDragTarget] = useState<ActionDropTarget | null>(null);
     const dragPointerIdRef = useRef<number | null>(null);
+    const dragStateRef = useRef<ActionDragState | null>(null);
+    const dragTargetRef = useRef<ActionDropTarget | null>(null);
 
     const updateAction = useCallback((id: string, updates: Partial<Action>, saveImmediately: boolean = false) => {
         if (saveImmediately) {
@@ -138,13 +142,16 @@ export const useEditorActions = (
         return { scopeId, beforeActionId, highlightActionId };
     }, [currentTask.actions]);
 
-    const finalizeDrag = useCallback(() => {
-        if (!dragState) return;
-        if (dragTarget) moveAction(dragState.id, dragTarget);
+    const finalizeDrag = useCallback((target: ActionDropTarget | null = dragTargetRef.current) => {
+        const activeDrag = dragStateRef.current;
+        if (!activeDrag) return;
+        if (target) moveAction(activeDrag.id, target);
         setDragState(null);
         setDragTarget(null);
+        dragStateRef.current = null;
+        dragTargetRef.current = null;
         dragPointerIdRef.current = null;
-    }, [dragState, dragTarget, moveAction]);
+    }, [moveAction]);
 
     const handleActionPointerDown = useCallback((e: React.PointerEvent, id: string, index: number) => {
         if (e.shiftKey || e.ctrlKey || e.metaKey) {
@@ -160,7 +167,7 @@ export const useEditorActions = (
         if (!el) return;
         const rect = el.getBoundingClientRect();
         dragPointerIdRef.current = e.pointerId;
-        setDragState({
+        const nextDragState = {
             id,
             startX: e.clientX,
             startY: e.clientY,
@@ -169,7 +176,10 @@ export const useEditorActions = (
             index,
             originTop: rect.top,
             pointerOffset: e.clientY - rect.top
-        });
+        };
+        dragStateRef.current = nextDragState;
+        setDragState(nextDragState);
+        dragTargetRef.current = null;
         setDragTarget(null);
     }, []);
 
@@ -177,16 +187,29 @@ export const useEditorActions = (
         if (!dragState) return;
         const handlePointerMove = (e: PointerEvent) => {
             if (dragPointerIdRef.current !== null && e.pointerId !== dragPointerIdRef.current) return;
-            setDragState((prev) => prev ? { ...prev, currentY: e.clientY } : prev);
-            if (Math.hypot(e.clientX - dragState.startX, e.clientY - dragState.startY) < 14) {
+            const activeDrag = dragStateRef.current;
+            if (!activeDrag) return;
+            const nextDragState = { ...activeDrag, currentY: e.clientY };
+            dragStateRef.current = nextDragState;
+            setDragState(nextDragState);
+            if (Math.hypot(e.clientX - activeDrag.startX, e.clientY - activeDrag.startY) < 14) {
+                dragTargetRef.current = null;
                 setDragTarget(null);
             } else {
-                setDragTarget(getDropTargetFromPoint(e.clientX, e.clientY, dragState.id));
+                const target = getDropTargetFromPoint(e.clientX, e.clientY, activeDrag.id);
+                dragTargetRef.current = target;
+                setDragTarget(target);
             }
         };
         const handlePointerUp = (e: PointerEvent) => {
             if (dragPointerIdRef.current !== null && e.pointerId !== dragPointerIdRef.current) return;
-            finalizeDrag();
+            const activeDrag = dragStateRef.current;
+            if (!activeDrag) return;
+            const movedFarEnough = Math.hypot(e.clientX - activeDrag.startX, e.clientY - activeDrag.startY) >= 14;
+            const target = movedFarEnough
+                ? getDropTargetFromPoint(e.clientX, e.clientY, activeDrag.id)
+                : null;
+            finalizeDrag(target);
         };
         window.addEventListener('pointermove', handlePointerMove);
         window.addEventListener('pointerup', handlePointerUp);

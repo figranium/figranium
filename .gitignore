@@ -8,7 +8,8 @@ storage_state.json
 proxies.json
 .env
 npm-debug.log
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .DS_Store
 .npmignore
 .gemini/
@@ -17,3 +18,4 @@ npm-debug.log
 reports/v1-qualification-report.json
 reports/v1-qualification-report.md
 reports/artifacts/
+settings.json
