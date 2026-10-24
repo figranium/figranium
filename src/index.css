@@ -134,6 +134,12 @@ body {
     color: var(--app-text);
 }
 
+/* Fade scrollable content at its boundaries instead of ending on a hard crop. */
+.soft-scroll-edges {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 36px, #000 calc(100% - 36px), transparent 100%);
+}
+
 /* ── Editor theme-aware interactive surfaces ─────────────────────────────── */
 
 .action-palette-modal {

@@ -8,7 +8,7 @@ import UserAgentPanel from './settings/UserAgentPanel';
 import VersionPanel from './settings/VersionPanel';
 import ThemePanel from './settings/ThemePanel';
 import SystemPanel, { CaptchaAssistancePanel } from './settings/SystemPanel';
-import { APP_VERSION, PLAYWRIGHT_VERSION } from '@/utils/appInfo';
+import { APP_BUILD_CHANNEL, APP_BUILD_COMMIT, APP_VERSION, PLAYWRIGHT_VERSION } from '@/utils/appInfo';
 import TablerIcon from './TablerIcon';
 import { useTheme } from '../hooks/useTheme';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -32,7 +32,7 @@ const SETTINGS_DESCRIPTIONS: Record<SettingsSection, string> = {
     'user-agent': 'Choose how your browser identifies itself to websites.',
     proxies: 'Route task traffic through managed proxy servers.',
     appearance: 'Set the look and theme of your workspace.',
-    about: 'Version and product information for Figranium.',
+    about: 'Version and product information.',
     advanced: 'Manage data, account controls, and workspace maintenance.'
 };
 
@@ -502,9 +502,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
             onSave: async () => {},
             readOnly: true,
             onDelete: async () => {
-                const confirmed = onConfirm
-                    ? await onConfirm(`Delete credential "${cred.name}"?`)
-                    : confirm(`Delete credential "${cred.name}"?`);
+                const confirmed = await onConfirm(`Delete credential "${cred.name}"?`);
                 if (confirmed) await deleteCredential(cred.id);
             }
         });
@@ -558,7 +556,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     {section === 'advanced' && <SystemPanel onConfirm={onConfirm} onNotify={onNotify} onLogout={onLogout} />}
                     {section === 'about' && (
                         <div className="space-y-5">
-                            <VersionPanel version={APP_VERSION} />
+                            <VersionPanel version={APP_VERSION} buildChannel={APP_BUILD_CHANNEL} buildCommit={APP_BUILD_COMMIT} />
                             <section className="app-panel p-7">
                                 <h3 className="text-sm font-bold theme-text">Runtime</h3>
                                 <p className="mt-1 text-xs theme-text-faint">Browser automation engine used by Figranium.</p>

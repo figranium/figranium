@@ -240,13 +240,15 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
 
                 {action.type === 'drag_and_drop' && field('Target Selector',
                     <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-xs focus-within:border-white/20 transition-all flex items-center gap-2">
-                        <RichInput
-                            value={action.targetSelector || ''}
-                            onChange={(v) => onUpdate(action.id, { targetSelector: v })}
-                            onBlur={() => onAutoSave()}
-                            variables={variables}
-                            placeholder=".drop-target"
-                        />
+                        <div className="flex-1 min-w-0">
+                            <RichInput
+                                value={action.targetSelector || ''}
+                                onChange={(v) => onUpdate(action.id, { targetSelector: v })}
+                                onBlur={() => onAutoSave()}
+                                variables={variables}
+                                placeholder=".drop-target"
+                            />
+                        </div>
                         {onStartInspect && (
                             <button
                                 onClick={() => { handleClose(); onStartInspect(action.id, 'targetSelector'); }}

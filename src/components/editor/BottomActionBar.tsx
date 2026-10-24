@@ -27,7 +27,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
             <button
                 onClick={onRun}
                 disabled={isExecuting || isHeadfulOpen || isHeadfulStarting}
-                className="editor-action-primary px-8 py-4 rounded-2xl font-bold text-xs tracking-[0.3em] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px] focus:outline-none focus-visible:ring-2"
+                className="editor-action-primary h-12 min-w-[168px] px-6 rounded-2xl font-bold text-xs tracking-[0.12em] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2"
                 title="Run Task (Ctrl + Enter)"
                 aria-label="Run Task (Ctrl + Enter)"
             >

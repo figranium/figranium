@@ -119,7 +119,7 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                         </button>
                     )}
                 </div>
-                <div ref={scrollContainerRef} className="mt-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                <div ref={scrollContainerRef} className="soft-scroll-edges mt-4 max-h-[400px] overflow-y-auto custom-scrollbar pt-4 pr-2">
                     <div className="grid grid-cols-2 gap-3 pb-2" role="listbox">
                         {filtered.map((item, idx) => (
                             <button

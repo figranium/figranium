@@ -32,7 +32,7 @@ interface TaskSettingsCabinetProps {
 }
 
 const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
-    initialTab?: 'mode' | 'variables' | 'behavior' | 'api' | 'output' | 'schedule' | 'history' | 'cabinets',
+    initialTab?: 'details' | 'mode' | 'variables' | 'behavior' | 'api' | 'output' | 'schedule' | 'history' | 'cabinets',
     versions: { id: string; timestamp: number; name: string; mode: string }[],
     versionsLoading: boolean,
     isCreatingVersion: boolean,
@@ -227,7 +227,13 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         return createPortal(
             <>
             <div className="theme-modal-backdrop fixed inset-0 z-[190] flex items-center justify-center p-3 backdrop-blur-lg sm:p-6 lg:p-10" onClick={onClose}>
-                <section role="dialog" aria-modal="true" aria-labelledby="task-settings-title" onClick={(event) => event.stopPropagation()} className="theme-modal-elevation theme-surface theme-text relative flex h-[min(720px,calc(100vh-1.5rem))] w-full max-w-[1080px] flex-col overflow-hidden rounded-[28px] border theme-border-strong p-5 animate-in fade-in zoom-in-95 duration-200 sm:h-[min(720px,88vh)] sm:w-[92vw] sm:p-7 lg:p-8">
+                <section
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="task-settings-title"
+                    onClick={(event) => event.stopPropagation()}
+                    className="theme-modal-elevation theme-surface theme-text relative flex h-[min(550px,calc(100vh-1.5rem))] w-full max-w-[1080px] flex-col overflow-hidden rounded-[28px] border theme-border-strong p-5 animate-in fade-in zoom-in-95 duration-200 sm:h-[min(550px,80vh)] sm:w-[92vw] sm:p-7 lg:p-8"
+                >
                     <div className="mx-auto flex w-full max-w-[960px] items-center justify-between">
                         <div>
                             <h2 id="task-settings-title" className="text-xl font-bold text-[var(--app-text)] tracking-tight">Task Settings</h2>
@@ -244,7 +250,8 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                     </div>
 
                     {/* Tabs Nav */}
-                    <div role="tablist" className="mx-auto mt-6 flex w-fit max-w-full flex-wrap justify-center gap-1 rounded-2xl border border-[var(--app-border)] bg-[var(--app-input)] p-1">
+                    <div role="tablist" className="mx-auto mt-6 flex w-fit max-w-full flex-wrap justify-center gap-1 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-1">
+                        {renderTabButton('details', 'Details', 'edit')}
                         {renderTabButton('mode', 'Mode', 'settings_input_component')}
                         {renderTabButton('variables', 'Vars', 'variables')}
                         {renderTabButton('behavior', 'Behavior', 'device_gamepad_3')}
@@ -255,25 +262,41 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         {renderTabButton('history', 'History', 'history_toggle')}
                     </div>
 
-                    {/* Description — always visible regardless of active tab */}
-                    <div className="mx-auto my-5 w-full max-w-[960px]">
-                        <label className="mb-2 block text-xs font-bold tracking-wide text-[var(--app-text-muted)]">Description</label>
-                        <textarea
-                            value={currentTask.description || ''}
-                            onChange={(e) => onUpdateTask({ description: e.target.value })}
-                            placeholder="What does this task do? Give AI agents and operators context..."
-                            rows={2}
-                            className="w-full resize-none rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-3 py-2.5 text-xs text-[var(--app-text)] placeholder:text-[var(--app-text-faint)] transition-all focus:border-[var(--app-border-strong)] focus:outline-none custom-scrollbar"
-                        />
-                    </div>
-
                     {/* Tab Content */}
-                    <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="mx-auto w-full max-w-[960px] py-4">
+                    <div className="soft-scroll-edges min-h-0 flex-1 overflow-y-auto custom-scrollbar">
+                    <div className="mx-auto w-full max-w-[960px] px-1 py-10 sm:px-2">
+                        {activeTab === 'details' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="space-y-5 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4 sm:p-5">
+                                    <div>
+                                        <label htmlFor="task-title" className="mb-2 block text-xs font-bold tracking-wide text-[var(--app-text-muted)]">Title</label>
+                                        <input
+                                            id="task-title"
+                                            value={currentTask.name || ''}
+                                            onChange={(event) => onUpdateTask({ name: event.target.value })}
+                                            placeholder="Untitled Task"
+                                            className="w-full rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-3 py-2.5 text-sm font-medium text-[var(--app-text)] placeholder:text-[var(--app-text-faint)] transition-all focus:border-[var(--app-border-strong)] focus:outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="task-description" className="mb-2 block text-xs font-bold tracking-wide text-[var(--app-text-muted)]">Description</label>
+                                        <textarea
+                                            id="task-description"
+                                            value={currentTask.description || ''}
+                                            onChange={(event) => onUpdateTask({ description: event.target.value })}
+                                            placeholder="What does this task do? Give AI agents and operators context..."
+                                            rows={5}
+                                            className="w-full resize-y rounded-xl border border-[var(--app-border)] bg-[var(--app-input)] px-3 py-2.5 text-xs text-[var(--app-text)] placeholder:text-[var(--app-text-faint)] transition-all focus:border-[var(--app-border-strong)] focus:outline-none custom-scrollbar"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {activeTab === 'mode' && (
                             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-5 sm:p-6">
-                                    <div className="mb-5">
+                                <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-3)] p-4 sm:p-5">
+                                    <div className="mb-4">
                                         <div>
                                             <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Execution Mode</label>
                                             <p className="mt-2 text-xs text-[var(--app-text-faint)]">Choose how this task runs. The editor remains the source of truth for its actions and extraction.</p>
@@ -282,7 +305,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <button
                                             onClick={() => onUpdateTask({ mode: 'agent' })}
-                                            className={`min-h-36 p-5 rounded-2xl border transition-all text-left space-y-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'agent'
+                                            className={`rounded-xl border p-4 text-left space-y-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'agent'
                                                 ? 'bg-[var(--app-surface-2)] border-[var(--app-border-strong)] ring-1 ring-[var(--app-border-strong)]'
                                                 : 'bg-[var(--app-surface-3)] border-[var(--app-border)] opacity-50 hover:opacity-100 hover:border-[var(--app-border-strong)]'
                                                 }`}
@@ -295,7 +318,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                         </button>
                                         <button
                                             onClick={() => onUpdateTask({ mode: 'scrape' })}
-                                            className={`min-h-36 p-5 rounded-2xl border transition-all text-left space-y-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'scrape'
+                                            className={`rounded-xl border p-4 text-left space-y-2 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${currentTask.mode === 'scrape'
                                                 ? 'bg-[var(--app-surface-2)] border-[var(--app-border-strong)] ring-1 ring-[var(--app-border-strong)]'
                                                 : 'bg-[var(--app-surface-3)] border-[var(--app-border)] opacity-50 hover:opacity-100 hover:border-[var(--app-border-strong)]'
                                                 }`}
@@ -424,7 +447,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                         )}
 
                         {activeTab === 'cabinets' && (
-                            <div className="mx-auto max-w-[960px] space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="mx-auto grid max-w-[960px] grid-cols-1 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300 sm:grid-cols-2">
                                 <div className="space-y-3">
                                     <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Cookie state</label>
                                     <p className="text-xs text-[var(--app-text-faint)]">Attached runs use and update this isolated state. Detached runs start with no cookies.</p>
@@ -437,17 +460,17 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                     <a href="/vault" className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Vault</a>
                                 </div>
 
-                                <div>
+                                <div className="space-y-3">
                                     <label className="text-xs font-bold text-[var(--app-text-muted)] tracking-wide">Download destination</label>
-                                    <p className="mt-2 text-xs text-[var(--app-text-faint)]">Downloads made by this automation are saved in this cabinet.</p>
+                                    <p className="text-xs text-[var(--app-text-faint)]">Downloads made by this automation are saved in this cabinet.</p>
+                                    <CustomSelect
+                                        value={currentTask.downloadCabinetId || ''}
+                                        onChange={(downloadCabinetId) => onUpdateTask({ downloadCabinetId })}
+                                        options={cabinets.length ? cabinets.map(c => ({ value: c.id, label: `${c.name}${c.isDefault ? ' (Default)' : ''}`, icon: 'inventory_2' })) : [{ value: '', label: 'Loading cabinets…', disabled: true }]}
+                                        ariaLabel="Download cabinet"
+                                    />
+                                    <a href="/cabinets" className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Cabinets</a>
                                 </div>
-                                <CustomSelect
-                                    value={currentTask.downloadCabinetId || ''}
-                                    onChange={(downloadCabinetId) => onUpdateTask({ downloadCabinetId })}
-                                    options={cabinets.length ? cabinets.map(c => ({ value: c.id, label: `${c.name}${c.isDefault ? ' (Default)' : ''}`, icon: 'inventory_2' })) : [{ value: '', label: 'Loading cabinets…', disabled: true }]}
-                                    ariaLabel="Download cabinet"
-                                />
-                                <a href="/cabinets" className="inline-flex items-center gap-2 text-xs font-bold tracking-wide text-[var(--app-accent)] hover:opacity-80"><TablerIcon name="open_in_new" className="text-sm" /> Manage Cabinets</a>
                             </div>
                         )}
 

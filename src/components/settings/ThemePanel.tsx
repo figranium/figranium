@@ -59,7 +59,6 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ currentThemeId, onSelect }) => 
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                                     loading="lazy"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                                 {isActive && (
                                     <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center shadow-xl">
                                         <TablerIcon name="check" className="text-lg" />

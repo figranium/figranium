@@ -16,14 +16,6 @@ npm test             # Runs tests/clipboard.test.ts via vite-node
 
 **Mandatory build step:** After modifying any file that affects runtime behavior (e.g. `src/`, `agent.js`, `server.js`, `headful.js`, `scrape.js`, etc.), you **MUST** run `npm run build`. Exceptions include but are not limited to: `package.json`, `.gitignore`, `AGENTS.md`, `README.md`, test files.
 
-## Planning Requirement
-
-Before implementing **any non-trivial change** (anything beyond a simple bug fix or minor text edit), you **MUST**:
-1. Draft an implementation plan — describe proposed changes, files affected, new components, and architectural impact.
-2. Wait for user approval before touching any code.
-
-Do not create a separate plan file unless explicitly asked. Post the plan in chat.
-
 ## Architecture
 
 **Request flow:** Frontend (React/Vite) → Express API (`server.js`) → execution engine (`scrape.js` for headless, `headful.js` for VNC browser sessions) → `src/agent/index.js` (orchestrator) → `src/agent/action-handler.js` (executes individual actions).

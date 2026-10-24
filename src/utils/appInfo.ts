@@ -5,5 +5,7 @@ import playwrightPackage from 'playwright/package.json';
 
 export const APP_VERSION = pkg.version || '0.0.0';
 export const APP_NAME = pkg.name || 'Figranium';
+export const APP_BUILD_CHANNEL = __FIGRANIUM_BUILD_CHANNEL__;
+export const APP_BUILD_COMMIT = __FIGRANIUM_BUILD_COMMIT__;
 export const FIPTCHA_VERSION = fiptchaPackage.version || 'unknown';
 export const PLAYWRIGHT_VERSION = playwrightPackage.version || 'unknown';

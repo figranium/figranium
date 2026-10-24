@@ -83,9 +83,8 @@ const ApiKeyRow: React.FC<{
     const deleteBtn = config.onDelete && (
         <button
             onClick={async () => {
-                const confirmed = onConfirm
-                    ? await onConfirm(`Are you sure you want to delete the ${config.name}?`)
-                    : confirm(`Are you sure you want to delete the ${config.name}?`);
+                if (!onConfirm) return;
+                const confirmed = await onConfirm(`Are you sure you want to delete the ${config.name}?`);
                 if (confirmed) await config.onDelete?.();
             }}
             disabled={config.loading || config.saving}

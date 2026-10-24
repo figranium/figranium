@@ -560,9 +560,6 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <TablerIcon name="settings" className="text-lg transition-transform duration-200 ease-out group-hover:rotate-45" />
                             </button>
                         </div>
-                        {currentTask.description && (
-                            <p className="text-xs text-gray-500 mt-2 leading-relaxed">{currentTask.description}</p>
-                        )}
                     </div>
                     {currentTask.mode === 'scrape' && <div className="canvas-connector w-px h-10 bg-white/25" />}
                     {currentTask.mode === 'agent' && currentTask.actions.length > 0 && (

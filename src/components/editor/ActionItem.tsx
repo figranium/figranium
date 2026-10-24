@@ -5,33 +5,91 @@ import { ACTION_CATALOG } from './actionCatalog';
 import ActionConfigModal from './ActionConfigModal';
 import { formatLabel } from '../../utils/taskUtils';
 
-const getActionSummary = (action: Action) => {
-    let summary = '';
-    if (action.type === 'click' || action.type === 'hover' || action.type === 'scroll' || action.type === 'wait_selector' || action.type === 'check' || action.type === 'uncheck') {
-        summary = action.type === 'click' && action.clickType && action.clickType !== 'single'
-            ? `${action.clickType} · ${action.selector || ''}`
-            : action.selector || '';
-    } else if (action.type === 'drag_and_drop') {
-        summary = `${action.selector || ''} → ${action.targetSelector || ''}`;
-    } else if (action.type === 'select') {
-        summary = `${action.selector || ''} → ${action.value || ''}`;
-    } else if (action.type === 'type' || action.type === 'navigate' || action.type === 'wait' || action.type === 'javascript' || action.type === 'repeat' || action.type === 'start' || action.type === 'screenshot' || action.type === 'wait_downloads' || action.type === 'stop' || action.type === 'upload') {
-        summary = action.value || '';
-    } else if (action.type === 'set' || action.type === 'foreach' || action.type === 'merge') {
-        summary = action.varName || '';
-    } else if (action.type === 'press') {
-        summary = action.key || '';
-    } else if (action.type === 'if' || action.type === 'while') {
-        summary = action.conditionVar || '';
-    } else if (action.type === 'http_request') {
-        const m = action.method || 'GET';
-        summary = action.value ? `[${m}] ${action.value}` : m;
-    } else if (action.type === 'get_content') {
-        summary = action.varName ? `→ ${action.varName}` : action.selector || '';
-    } else if (action.type === 'solve_captcha' || action.type === 'wait_captcha') {
-        summary = action.captchaType || 'Auto-detect';
+type ActionPreview = { label: string; value: string };
+
+const firstLine = (value?: string) => (value || '').split('\n').find(Boolean)?.trim() || '';
+const combine = (...values: Array<string | undefined>) => values.filter(Boolean).join(' → ');
+
+const getActionPreview = (action: Action): ActionPreview | null => {
+    const selector = action.selector || '';
+    const value = action.value || '';
+
+    switch (action.type) {
+        case 'click':
+            return selector ? { label: action.clickType && action.clickType !== 'single' ? `${action.clickType} click` : 'selector', value: selector } : null;
+        case 'check':
+        case 'uncheck':
+        case 'hover':
+            return selector ? { label: 'selector', value: selector } : null;
+        case 'drag_and_drop': {
+            const route = combine(selector, action.targetSelector);
+            return route ? { label: 'move', value: route } : null;
+        }
+        case 'select': {
+            const selection = combine(selector, value);
+            return selection ? { label: 'select', value: selection } : null;
+        }
+        case 'type': {
+            const target = selector || 'active field';
+            const content = value ? `“${value}”` : '';
+            const preview = content ? `${target} · ${content}` : target;
+            return { label: action.typeMode === 'append' ? 'append to' : 'replace in', value: preview };
+        }
+        case 'navigate':
+            return value ? { label: 'url', value } : null;
+        case 'press':
+            return action.key ? { label: 'key', value: action.key } : null;
+        case 'wait':
+            return value ? { label: 'pause', value: `${value}s` } : null;
+        case 'wait_selector':
+            return selector ? { label: value ? `within ${value}s` : 'until visible', value: selector } : null;
+        case 'wait_downloads':
+            return { label: 'downloads', value: value ? `up to ${value}s` : 'until complete' };
+        case 'scroll':
+            return { label: action.key ? `${action.key}ms` : 'scroll', value: selector || 'page' };
+        case 'javascript':
+            return value ? { label: 'script', value: firstLine(value) } : null;
+        case 'csv':
+            return value ? { label: 'csv', value: firstLine(value) } : null;
+        case 'repeat':
+            return value ? { label: 'repeat', value: `${value} times` } : null;
+        case 'foreach': {
+            const source = selector || action.varName || '';
+            return source ? { label: selector ? 'for each match' : 'for each item in', value: source } : null;
+        }
+        case 'set': {
+            const variable = action.varName || value;
+            return variable ? { label: 'assign', value: variable } : null;
+        }
+        case 'merge': {
+            const merge = combine(value, action.varName);
+            return merge ? { label: 'merge into', value: merge } : null;
+        }
+        case 'if':
+        case 'while': {
+            const condition = [action.conditionVar, action.conditionOp, action.conditionValue].filter(Boolean).join(' ');
+            return condition ? { label: 'condition', value: condition } : null;
+        }
+        case 'http_request':
+            return { label: action.method || 'GET', value: value || 'request URL' };
+        case 'get_content': {
+            const extraction = combine(selector || 'page', action.varName);
+            return extraction ? { label: 'extract', value: extraction } : null;
+        }
+        case 'start':
+            return value ? { label: 'task', value } : null;
+        case 'screenshot':
+            return value ? { label: 'label', value } : null;
+        case 'stop':
+            return { label: 'outcome', value: value || 'success' };
+        case 'upload':
+            return { label: 'upload to', value: selector || 'page upload field' };
+        case 'solve_captcha':
+        case 'wait_captcha':
+            return { label: 'captcha', value: action.captchaType || 'auto-detect' };
+        default:
+            return null;
     }
-    return summary.trim();
 };
 
 const renderBlockMarker = (type: Action['type']) => {
@@ -153,7 +211,7 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
             ? `translateY(${translateY}px)`
             : undefined;
 
-    const summary = getActionSummary(action);
+    const preview = getActionPreview(action);
     const hasConfig = !NO_CONFIG_TYPES.includes(action.type);
 
     useEffect(() => {
@@ -210,42 +268,31 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
                 style={{ transform: transformStyle }}
             >
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="text-xs font-bold text-white/20 tracking-tighter shrink-0">{(index + 1).toString().padStart(2, '0')}</div>
-                    <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                        {renderBlockMarker(action.type)}
-                    </div>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            openActionPaletteWithDelay();
-                        }}
-                        onDoubleClick={(e) => {
-                            if (!hasConfig) return;
-                            if (isInteractiveTarget(e.target)) return;
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setIsModalOpen(true);
-                        }}
-                        className="action-type-select text-xs font-bold tracking-wide text-white focus:outline-none cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-white/50 shrink-0"
-                        aria-label={`Change action type: ${action.type}`}
-                    >
-                        {ACTION_CATALOG.find((item) => item.type === action.type)?.label || formatLabel(action.type)}
-                    </button>
-                    {summary && (
-                        <span className="text-white/40 text-xs font-mono truncate min-w-0 pointer-events-none">
-                            {summary}
-                        </span>
-                    )}
-                    {hasConfig && (
+                        <div className="text-xs font-bold text-white/20 tracking-tighter shrink-0">{(index + 1).toString().padStart(2, '0')}</div>
+                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                            {renderBlockMarker(action.type)}
+                        </div>
                         <button
-                            data-no-drag="true"
-                            onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
-                            className="ml-auto shrink-0 text-white/20 hover:text-white/70 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded"
-                            aria-label="Configure block"
-                            title="Configure block"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openActionPaletteWithDelay();
+                            }}
+                            onDoubleClick={(e) => {
+                                if (!hasConfig) return;
+                                if (isInteractiveTarget(e.target)) return;
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsModalOpen(true);
+                            }}
+                            className="action-type-select text-xs font-bold tracking-wide text-white focus:outline-none cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-white/50 shrink-0"
+                            aria-label={`Change action type: ${action.type}`}
                         >
-                            <TablerIcon name="tune" className="text-sm" />
+                            {ACTION_CATALOG.find((item) => item.type === action.type)?.label || formatLabel(action.type)}
                         </button>
+                    {preview && (
+                        <span className="min-w-0 truncate text-xs font-mono text-white/45 pointer-events-none">
+                            {preview.value}
+                        </span>
                     )}
                 </div>
             </div>

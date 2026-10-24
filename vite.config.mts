@@ -1,9 +1,27 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { execFileSync } from 'child_process';
+
+const readGit = (args: string[]) => {
+    try {
+        return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    } catch {
+        return '';
+    }
+};
+
+const releaseTag = readGit(['describe', '--tags', '--exact-match', 'HEAD']);
+const commit = readGit(['rev-parse', '--short', 'HEAD']);
+const requestedChannel = process.env.FIGRANIUM_BUILD_CHANNEL || process.env.VITE_BUILD_CHANNEL;
+const buildChannel = requestedChannel === 'edge' || (!requestedChannel && !!commit && !releaseTag) ? 'edge' : 'release';
 
 export default defineConfig({
     plugins: [react()],
+    define: {
+        __FIGRANIUM_BUILD_CHANNEL__: JSON.stringify(buildChannel),
+        __FIGRANIUM_BUILD_COMMIT__: JSON.stringify(commit),
+    },
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './src'),

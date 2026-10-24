@@ -2,14 +2,18 @@ import { useState } from 'react';
 
 interface VersionPanelProps {
     version: string;
+    buildChannel: 'edge' | 'release';
+    buildCommit: string;
 }
 
-const VersionPanel = ({ version }: VersionPanelProps) => {
+const VersionPanel = ({ version, buildChannel, buildCommit }: VersionPanelProps) => {
     const [copied, setCopied] = useState(false);
     const displayVersion = version ? `v${version}` : 'Unknown';
+    const isEdgeBuild = buildChannel === 'edge';
+    const buildIdentifier = isEdgeBuild && buildCommit ? `Edge · ${buildCommit}` : 'Edge build';
 
     const handleCopy = async () => {
-        const text = version || displayVersion;
+        const text = isEdgeBuild ? `${version || displayVersion} (${buildIdentifier})` : (version || displayVersion);
         try {
             const hasClipboard = typeof navigator !== 'undefined' && navigator.clipboard && typeof window !== 'undefined' && window.isSecureContext;
             if (hasClipboard) {
@@ -40,7 +44,14 @@ const VersionPanel = ({ version }: VersionPanelProps) => {
                 </div>
             </div>
             <div className="flex items-center justify-between gap-4">
-                <div className="text-xs font-bold tracking-[0.3em] theme-text">{displayVersion}</div>
+                <div className="flex items-center gap-3">
+                    <div className="text-xs font-bold tracking-[0.3em] theme-text">{displayVersion}</div>
+                    {isEdgeBuild && (
+                        <span className="rounded-full border border-[var(--app-accent)]/30 bg-[var(--app-accent)]/10 px-2 py-1 text-[10px] font-bold tracking-wide text-[var(--app-accent)]">
+                            {buildIdentifier}
+                        </span>
+                    )}
+                </div>
                 <button
                     onClick={handleCopy}
                     className="app-button-secondary"
