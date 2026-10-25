@@ -57,6 +57,7 @@ const ResultsDrawer: React.FC<ResultsDrawerProps> = ({
                     onPin={onPinResults}
                     onUnpin={onUnpinResults}
                     fullWidth={true}
+                    stackCaptureAndLog
                 />
             </div>
         </div>

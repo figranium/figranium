@@ -7,7 +7,7 @@ This document is a concise, implementation-focused reference for AI agents that 
 ### Task design
 - Prefer the simplest native Figranium workflow that reliably satisfies the request.
 - Do not add actions that duplicate task-level behavior. Never add duplicate `start` / “On Execution” behavior, and do not add redundant `navigate` or wait blocks when task-level behavior already handles them.
-- Do not add variables, waits, navigation, JavaScript, loops, or other blocks unless they serve a concrete purpose.
+- Do not add variables, waits, nzxavigation, JavaScript, loops, or other blocks unless they serve a concrete purpose.
 - Do not create configuration options the task does not actually use.
 - Prefer native Figranium actions over JavaScript. Use JavaScript only when native actions cannot reliably accomplish the required behavior.
 - Preserve intentional ambiguity when it represents a reasonable implementation choice. Do not invent unnecessary requirements, but make sensible implementation decisions when needed to complete the task.

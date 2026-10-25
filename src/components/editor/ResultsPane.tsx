@@ -21,11 +21,12 @@ interface ResultsPaneProps {
     onPin?: (results: Results) => void;
     onUnpin?: () => void;
     fullWidth?: boolean;
+    stackCaptureAndLog?: boolean;
 }
 
 import { MAX_COPY_CHARS, ResultsSkeleton, formatSize, normalizeBoolean, getResultsCopyPayload, getTruncatedCopyText, getFullCopyText, getResultsPreview, getTableData, getExportPayload, downloadText } from './resultsUtils';
 
-const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExecuting, isHeadful, runId, onConfirm, onNotify, onPin, onUnpin, fullWidth }) => {
+const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExecuting, isHeadful, runId, onConfirm, onNotify, onPin, onUnpin, fullWidth, stackCaptureAndLog = false }) => {
     const [copied, setCopied] = useState<string | null>(null);
     const [dataView, setDataView] = useState<'raw' | 'table'>('raw');
     const [mainView, setMainView] = useState<'data' | 'downloads'>('data');
@@ -265,7 +266,14 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                 </div>
             </div>
 
-            <div className={`grid grid-cols-1 ${showCapture ? (fullWidth ? 'xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]' : 'xl:grid-cols-2') : ''} ${fullWidth ? 'gap-6' : 'gap-8'}`}>
+            {/*
+                The results drawer is fixed-width, while Tailwind's `xl` breakpoint
+                is evaluated against the viewport.  At wide viewport sizes the old
+                two-column rule therefore squeezed both cards into the 420px drawer.
+                Only the fixed-width drawer uses the stacked presentation; the
+                full execution-detail screen keeps its desktop split layout.
+            */}
+            <div className={`grid grid-cols-1 ${showCapture && !stackCaptureAndLog ? (fullWidth ? 'xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]' : 'xl:grid-cols-2') : ''} ${fullWidth ? 'gap-6' : 'gap-8'}`}>
                 {showCapture && <div className={`glass-card overflow-hidden flex flex-col ${fullWidth ? 'rounded-2xl min-h-[260px]' : 'rounded-[32px] min-h-[400px]'}`}>
                     <div className={`border-b border-white/5 flex items-center justify-between text-xs font-bold text-gray-500 tracking-wide ${fullWidth ? 'p-4' : 'p-6'}`}>
                         <span>Screenshot</span>
