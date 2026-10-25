@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect, useState } from 'react';
 import TablerIcon from '../TablerIcon';
 import { Action } from '../../types';
-import { EDITOR_ACTION_CATALOG } from './actionCatalog';
+import { EDITOR_ACTION_CATALOG, getActionIconColor } from './actionCatalog';
 
 interface ActionPaletteProps {
     open: boolean;
@@ -131,9 +131,13 @@ const ActionPalette: React.FC<ActionPaletteProps> = ({ open, query, onQueryChang
                                 onClick={() => onSelect(item.type)}
                                 className={`action-palette-item flex flex-col items-start gap-2 text-left p-4 rounded-2xl border transition-[background-color,border-color,box-shadow] group focus:outline-none focus-visible:ring-2 ${idx === activeIndex ? 'action-palette-item-active ring-1' : ''}`}
                             >
-                                <TablerIcon name={item.icon || 'extension'} className="action-palette-item-icon text-2xl transition-colors shrink-0 mb-1" />
+                                <TablerIcon
+                                    name={item.icon || 'extension'}
+                                    className="action-palette-item-icon text-2xl transition-colors shrink-0 mb-1"
+                                    style={{ color: getActionIconColor(item.type) }}
+                                />
                                 <div>
-                                    <div className="action-palette-item-title text-xs font-bold tracking-wide mb-1">{item.label}</div>
+                                    <div className="action-palette-item-title text-xs font-bold mb-1">{item.label}</div>
                                     <div className="action-palette-item-description text-xs line-clamp-2 leading-relaxed">{item.description}</div>
                                 </div>
                             </button>

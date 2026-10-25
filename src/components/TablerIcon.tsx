@@ -7,6 +7,7 @@ type TablerIconProps = {
     name: string;
     className?: string;
     fill?: boolean;
+    style?: React.CSSProperties;
 };
 
 type IconComponent = React.ElementType;
@@ -189,11 +190,11 @@ const tablerIcons: Record<string, IconComponent> = {
 
 const fallback = IconCircle as IconComponent;
 
-const TablerIcon = React.memo(({ name, className = '', fill = false }: TablerIconProps) => {
+const TablerIcon = React.memo(({ name, className = '', fill = false, style }: TablerIconProps) => {
     const componentName = iconNames[name] || name;
     const Icon = tablerIcons[componentName] || fallback;
 
-    return <Icon size="1.1em" className={`inline-block shrink-0 ${className}`} stroke={1.8} fill={fill ? 'currentColor' : 'none'} aria-hidden="true" />;
+    return <Icon size="1.1em" className={`inline-block shrink-0 ${className}`} style={style} stroke={1.8} fill={fill ? 'currentColor' : 'none'} aria-hidden="true" />;
 });
 
 export default TablerIcon;

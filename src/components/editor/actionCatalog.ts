@@ -1,5 +1,25 @@
 import { Action } from '../../types';
 
+type ActionIconCategory = 'interaction' | 'input' | 'navigation' | 'wait' | 'code' | 'data' | 'logic' | 'danger' | 'start' | 'neutral';
+
+const getActionIconCategory = (type: Action['type']): ActionIconCategory => {
+    if (['click', 'check', 'uncheck', 'drag_and_drop', 'hover'].includes(type)) return 'interaction';
+    if (['type', 'press', 'select', 'upload'].includes(type)) return 'input';
+    if (['navigate', 'reload', 'scroll'].includes(type)) return 'navigation';
+    if (['wait', 'wait_selector', 'wait_downloads', 'wait_captcha'].includes(type)) return 'wait';
+    if (['javascript', 'http_request'].includes(type)) return 'code';
+    if (['csv', 'get_content', 'merge', 'set', 'screenshot', 'finalize_uploads'].includes(type)) return 'data';
+    if (['if', 'else', 'end', 'while', 'repeat', 'foreach'].includes(type)) return 'logic';
+    if (['stop', 'on_error', 'solve_captcha'].includes(type)) return 'danger';
+    if (type === 'start') return 'start';
+    return 'neutral';
+};
+
+export const getActionIconColor = (type: Action['type']) => {
+    const category = getActionIconCategory(type);
+    return category === 'neutral' ? 'var(--app-text-muted)' : `var(--action-icon-${category})`;
+};
+
 export const ACTION_CATALOG: { type: Action['type']; label: string; description: string; icon?: string }[] = [
     { type: 'click', label: 'Click', description: 'Click an element', icon: 'ads_click' },
     { type: 'check', label: 'Check', description: 'Ensure a checkbox is checked', icon: 'check_box' },

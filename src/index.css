@@ -60,12 +60,57 @@
     --app-sticky-control: rgba(255, 255, 255, 0.55);
     --app-sticky-control-hover: rgba(255, 255, 255, 0.10);
     --app-sticky-code-bg: rgba(0, 0, 0, 0.18);
+    --action-icon-interaction: #38bdf8;
+    --action-icon-input: #a78bfa;
+    --action-icon-navigation: #22d3ee;
+    --action-icon-wait: #fbbf24;
+    --action-icon-code: #fb923c;
+    --action-icon-data: #34d399;
+    --action-icon-logic: #e879f9;
+    --action-icon-danger: #fb7185;
+    --action-icon-start: #a3e635;
     color-scheme: dark;
 }
 
 [data-theme='light'],
 [data-theme='solarized-light'] {
     color-scheme: light;
+}
+
+[data-theme='light'] {
+    --action-icon-interaction: #0284c7;
+    --action-icon-input: #7c3aed;
+    --action-icon-navigation: #0891b2;
+    --action-icon-wait: #b45309;
+    --action-icon-code: #ea580c;
+    --action-icon-data: #059669;
+    --action-icon-logic: #c026d3;
+    --action-icon-danger: #e11d48;
+    --action-icon-start: #65a30d;
+}
+
+[data-theme='solarized-light'] {
+    --action-icon-interaction: #268bd2;
+    --action-icon-input: #6c71c4;
+    --action-icon-navigation: #2aa198;
+    --action-icon-wait: #b58900;
+    --action-icon-code: #cb4b16;
+    --action-icon-data: #859900;
+    --action-icon-logic: #d33682;
+    --action-icon-danger: #dc322f;
+    --action-icon-start: #719c00;
+}
+
+[data-theme='solarized-dark'] {
+    --action-icon-interaction: #4db6e8;
+    --action-icon-input: #a7a8eb;
+    --action-icon-navigation: #4dc4b8;
+    --action-icon-wait: #e5c06b;
+    --action-icon-code: #f08a5d;
+    --action-icon-data: #a3be3d;
+    --action-icon-logic: #e88db7;
+    --action-icon-danger: #ef6f6c;
+    --action-icon-start: #b4d455;
 }
 
 [data-theme='solarized-dark'],
@@ -160,7 +205,6 @@ body {
 .action-palette-item:hover { background: var(--app-glass-card-hover); border-color: var(--app-border-strong); }
 .action-palette-item-active { background: var(--app-input); border-color: var(--app-border-strong); --tw-ring-color: var(--app-border-strong); }
 .action-palette-item-icon { color: var(--app-text-muted); }
-.action-palette-item:hover .action-palette-item-icon { color: var(--app-text); }
 .action-palette-item-title { color: var(--app-text); }
 .action-palette-item-description { color: var(--app-text-muted); }
 
@@ -246,3 +290,11 @@ input:disabled {
 .app-skeleton::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--app-surface) 76%, transparent), transparent); animation: app-skeleton-shimmer 1.35s ease-in-out infinite; }
 @keyframes app-skeleton-shimmer { to { transform: translateX(100%); } }
 @media (prefers-reduced-motion: reduce) { .app-skeleton::after { animation: none; } }
+
+/* Use the font's natural spacing throughout the interface. This also neutralizes
+   legacy Tailwind tracking utilities and page-specific label styles. */
+*,
+*::before,
+*::after {
+    letter-spacing: normal !important;
+}

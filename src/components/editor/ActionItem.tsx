@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Action, BlockTestResult, Task, Variable } from '../../types';
 import TablerIcon from '../TablerIcon';
-import { ACTION_CATALOG } from './actionCatalog';
+import { ACTION_CATALOG, getActionIconColor } from './actionCatalog';
 import ActionConfigModal from './ActionConfigModal';
 import { formatLabel } from '../../utils/taskUtils';
 
@@ -93,7 +93,7 @@ const getActionPreview = (action: Action): ActionPreview | null => {
 };
 
 const renderBlockMarker = (type: Action['type']) => {
-    const iconClass = "text-[12px]";
+    const iconClass = "text-[12px] !text-[color:var(--action-icon-color)]";
     if (type === 'if' || type === 'else') return <TablerIcon name="call_split" className={`${iconClass} text-white`} />;
     if (type === 'end') return <TablerIcon name="subdirectory_arrow_right" className={`${iconClass} text-gray-500`} />;
     if (type === 'while' || type === 'repeat') return <TablerIcon name="repeat" className={`${iconClass} text-white`} />;
@@ -269,7 +269,10 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
             >
                 <div className="flex items-center gap-3 min-w-0">
                         <div className="text-xs font-bold text-white/20 tracking-tighter shrink-0">{(index + 1).toString().padStart(2, '0')}</div>
-                        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                        <div
+                            className="w-4 h-4 flex items-center justify-center shrink-0"
+                            style={{ '--action-icon-color': getActionIconColor(action.type) } as React.CSSProperties}
+                        >
                             {renderBlockMarker(action.type)}
                         </div>
                         <button
@@ -284,7 +287,7 @@ const ActionItem: React.FC<ActionItemProps> = React.memo(({
                                 e.stopPropagation();
                                 setIsModalOpen(true);
                             }}
-                            className="action-type-select text-xs font-bold tracking-wide text-white focus:outline-none cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-white/50 shrink-0"
+                            className="action-type-select text-xs font-bold text-white focus:outline-none cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-white/50 shrink-0"
                             aria-label={`Change action type: ${action.type}`}
                         >
                             {ACTION_CATALOG.find((item) => item.type === action.type)?.label || formatLabel(action.type)}
