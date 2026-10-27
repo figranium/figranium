@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.22.0] - 2026-10-27
+
+### API keys and authorization
+- Added API key renaming in Settings, with validation and regression coverage.
+- Prevented Task-allowlisted API keys from accessing global management resources that have no Task context to authorize.
+
+### Editor and execution interface
+- Redesigned workflow action rows with concise, action-specific previews and semantic icon colors, making configured steps easier to scan.
+- Fixed action dragging so pointer-up uses the final drop target reliably, including rapid movements.
+- Improved execution source labels and URL-variable display, refined scheduling and settings surfaces, and removed obsolete editor UI components.
+- Added optional stacked capture-and-log presentation controls to Results pane and drawer consumers.
+
+### Runtime, dependencies, and maintenance
+- Updated CloakBrowser to 0.6.4, Express to 5.3.0, React to 19.3.1, Vite to 8.3.5, plus cookie, jsdom, react-window, PostCSS, and related lockfiles.
+- Refreshed Docker publishing metadata, project screenshots, and UI styling for clearer typography and lighter controls.
+
 ## [0.21.2] - 2026-10-22
 
 ### API access and security
