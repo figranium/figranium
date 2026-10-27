@@ -85,7 +85,7 @@ importers:
         version: 7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-window:
         specifier: ^2.0.0
-        version: 2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 2.5.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1(supports-color@7.2.0)
@@ -2336,8 +2336,8 @@ packages:
       react-dom:
         optional: true
 
-  react-window@2.5.0:
-    resolution: {integrity: sha512-2oQiMo+lT5omOYaBJnloTK19yZDXqboDPMJP6li0gER0henua4iEz6BxzENJ1H5pNb6Kb2H4Lu0+YTuvqnw7QA==}
+  react-window@2.5.1:
+    resolution: {integrity: sha512-UgN90PCLkLshBXyMCmcpI4fOmcCwFnyYSN2/3/m/DDAzxCQInMwmVuEtJZE1+Wy060KjA1XH6ASaxb2aAxwsfw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -3216,7 +3216,7 @@ snapshots:
 
   '@types/react-window@2.0.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
-      react-window: 2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react-window: 2.5.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -4871,7 +4871,7 @@ snapshots:
     optionalDependencies:
       react-dom: 19.3.1(react@19.3.1)
 
-  react-window@2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-window@2.5.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
