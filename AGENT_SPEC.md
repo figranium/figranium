@@ -245,10 +245,9 @@ Structured example:
 {
   "id": "act_if",
   "type": "if",
-  "conditionVarType": "string",
-  "conditionVar": ".login",
-  "conditionOp": "exists",
-  "conditionValue": ""
+  "conditionVarType": "selector",
+  "selector": ".login",
+  "conditionOp": "exists"
 }
 ```
 
