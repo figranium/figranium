@@ -1,3 +1,4 @@
+import { taskFetch } from '../platform/api';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Task } from '../types';
 import { normalizeImportedTask, buildNewTask, parseBooleanFlag, ensureActionIds } from '../utils/taskUtils';
@@ -19,7 +20,7 @@ export function useTasks(
 
     const loadTasks = useCallback(async () => {
         try {
-            const res = await fetch('/api/tasks', { credentials: 'include' });
+            const res = await taskFetch('/api/tasks', { credentials: 'include' });
             const data = await res.json();
             if (!res.ok || !Array.isArray(data)) throw new Error('Unable to load tasks');
             const list = Array.isArray(data) ? data : [];
@@ -35,7 +36,7 @@ export function useTasks(
 
     const touchTask = useCallback(async (id: string) => {
         try {
-            await fetch(`/api/tasks/${id}/touch`, { method: 'POST' });
+            await taskFetch(`/api/tasks/${id}/touch`, { method: 'POST' });
             loadTasks();
         } catch (e) {
             console.error("Failed to touch task", e);
@@ -87,7 +88,7 @@ export function useTasks(
 
     const deleteTask = useCallback(async (id: string, currentPath: string) => {
         if (!await requestConfirm('Are you sure you want to delete this task?')) return;
-        await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        await taskFetch(`/api/tasks/${id}`, { method: 'DELETE' });
         loadTasks();
         if (currentPath.includes(id)) {
             navigate('/dashboard');
@@ -102,7 +103,7 @@ export function useTasks(
         const params = new URLSearchParams();
         params.set(currentPath.includes('new') ? 'create' : 'update', 'true');
         if (createVersion) params.set('version', 'true');
-        const res = await fetch(`/api/tasks?${params.toString()}`, {
+        const res = await taskFetch(`/api/tasks?${params.toString()}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(taskToSave)
@@ -192,7 +193,7 @@ export function useTasks(
             }
 
             await Promise.all(prepared.map((task) => (
-                fetch('/api/tasks?create=true', {
+                taskFetch('/api/tasks?create=true', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(task)
@@ -214,7 +215,7 @@ export function useTasks(
             ...normalized,
             id: `task_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
         };
-        const response = await fetch('/api/tasks?create=true', {
+        const response = await taskFetch('/api/tasks?create=true', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(taskToCreate)

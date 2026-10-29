@@ -1,3 +1,4 @@
+import { requireLocalExecution } from '../platform/api';
 import { useState, useRef } from 'react';
 import { Task, Results } from '../types';
 import { formatExecutionError, isDisplayUnavailable } from '../utils/executionUtils';
@@ -42,6 +43,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const stopHeadful = async () => {
+        requireLocalExecution();
         if (headfulBusyRef.current) return;
         headfulBusyRef.current = true;
         try {
@@ -55,6 +57,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const openHeadful = async (url: string, targetActionId?: string, taskSnapshot?: Task, variables?: any) => {
+        requireLocalExecution();
         if (headfulBusyRef.current) return;
         if (isHeadfulOpen) {
             await stopHeadful();
@@ -86,6 +89,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const stopTask = async () => {
+        requireLocalExecution();
         if (!activeRunId || isStopping) return;
         setIsStopping(true);
 
@@ -121,6 +125,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const runTaskWithSnapshot = async (taskToRunRaw: Task | null, currentTask: Task | null, setCurrentTask: (t: Task) => void) => {
+        requireLocalExecution();
         if (!taskToRunRaw || !taskToRunRaw.url) return;
         const taskToRun = ensureActionIds(taskToRunRaw);
         if (isExecuting) return;
