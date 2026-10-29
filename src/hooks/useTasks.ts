@@ -2,7 +2,7 @@ import { taskFetch, localTaskStreamUrl } from '../platform/api';
 import { isCloud } from '../platform/runtime';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Task } from '../types';
-import { normalizeImportedTask, buildNewTask, parseBooleanFlag, ensureActionIds } from '../utils/taskUtils';
+import { normalizeImportedTask, buildNewTask, parseBooleanFlag, ensureActionIds, createImportedTasks } from '../utils/taskUtils';
 
 export function useTasks(
     navigate: (path: string, options?: any) => void,
@@ -203,15 +203,26 @@ export function useTasks(
                 return;
             }
 
-            await Promise.all(prepared.map((task) => (
+            const result = await createImportedTasks(prepared, (task) => (
                 taskFetch('/api/tasks?create=true', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(task)
                 })
-            )));
+            ));
+            // Some requests may succeed even if others fail. Refresh the list
+            // before reporting the actual result, never a false full success.
             await loadTasks();
-            showAlert(`Imported ${prepared.length} task(s).`, 'success');
+            if (result.failed > 0) {
+                const detail = result.firstError ? ` (${result.firstError})` : '';
+                if (result.imported === 0) {
+                    showAlert(`Import failed: ${result.failed} task(s) rejected${detail}.`, 'error');
+                } else {
+                    showAlert(`Imported ${result.imported} of ${prepared.length} task(s); ${result.failed} failed${detail}.`, 'error');
+                }
+                return;
+            }
+            showAlert(`Imported ${result.imported} task(s).`, 'success');
         } catch (e: any) {
             showAlert(`Import failed: ${e.message || 'Unknown error'}`, 'error');
         }
