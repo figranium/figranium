@@ -217,7 +217,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 const response = await authorizedCloudFetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ taskId: task.id })
+                    body: JSON.stringify({ taskId: task.id, source: 'editor' })
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
