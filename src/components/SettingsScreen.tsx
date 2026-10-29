@@ -19,7 +19,7 @@ import { formatLabel } from '../utils/taskUtils';
 type SettingsSection = 'account' | 'api-keys' | 'connections' | 'user-agent' | 'proxies' | 'advanced' | 'appearance' | 'about';
 
 const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
-    ...(isCloud ? [{ id: 'account' as const, label: 'Account', icon: 'person' }] : []),
+    ...(isCloud ? [{ id: 'account' as const, label: 'Account', icon: 'user-circle' }] : []),
     { id: 'api-keys', label: 'API Keys', icon: 'key' },
     { id: 'connections', label: 'Connections', icon: 'link' },
     { id: 'user-agent', label: 'User Agent', icon: 'language' },
@@ -37,7 +37,7 @@ const SETTINGS_DESCRIPTIONS: Record<SettingsSection, string> = {
     proxies: 'Route task traffic through managed proxy servers.',
     appearance: 'Set the look and theme of your workspace.',
     about: 'Version and product information.',
-    advanced: 'Manage data, account controls, and workspace maintenance.'
+    advanced: isCloud ? 'Manage workspace data and maintenance.' : 'Manage data, account controls, and workspace maintenance.'
 };
 
 interface SettingsScreenProps {
