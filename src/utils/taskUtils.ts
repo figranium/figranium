@@ -148,3 +148,27 @@ export const buildNewTask = (downloadCabinetId = 'cab_basic'): Task => {
         downloadCabinetId
     };
 };
+
+/**
+ * Import requests are independent. A rejected fetch or a non-2xx HTTP
+ * response must not be counted as a successfully imported Task.
+ */
+export const createImportedTasks = async (
+    tasks: Task[],
+    createTask: (task: Task) => Promise<Response>
+): Promise<{ imported: number; failed: number; firstError?: string }> => {
+    const settled = await Promise.allSettled(tasks.map(async (task) => {
+        const response = await createTask(task);
+        if (!response.ok) {
+            const payload = await response.json().catch(() => null);
+            throw new Error(typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`);
+        }
+    }));
+    const failures = settled.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
+    const firstReason = failures[0]?.reason;
+    return {
+        imported: tasks.length - failures.length,
+        failed: failures.length,
+        firstError: failures.length ? (firstReason instanceof Error ? firstReason.message : String(firstReason)) : undefined
+    };
+};

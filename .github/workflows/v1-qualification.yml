@@ -65,6 +65,9 @@ jobs:
       - name: Run migrated agent HTML verification
         run: npm run verify:agent-html
 
+      - name: Test Task import HTTP failure handling
+        run: npx -y vite-node tests/task-import.test.ts
+
       - name: Build frontend
         run: npm run build
 
