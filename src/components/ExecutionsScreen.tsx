@@ -1,6 +1,6 @@
 import { authorizedCloudFetch } from '../platform/api';
 import { isCloud } from '../platform/runtime';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router-dom';
 import TablerIcon from './TablerIcon';
 import OutcomeIcon from './OutcomeIcon';
@@ -95,18 +95,27 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
     const [executions, setExecutions] = useState<Execution[]>([]);
     const [filter, setFilter] = useState<'all' | 'editor' | 'api' | 'scheduler'>('all');
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const loadedOnce = useRef(false);
+    const requestInFlight = useRef(false);
 
     const loadExecutions = useCallback(async () => {
-        setLoading(true);
+        if (requestInFlight.current) return;
+        requestInFlight.current = true;
+        if (!loadedOnce.current) setLoading(true);
+        else setRefreshing(true);
         try {
             const response = await (isCloud ? authorizedCloudFetch : fetch)(isCloud ? '/api/v1/executions' : '/api/executions');
             if (!response.ok) throw new Error('Failed to load');
             const data = await response.json();
             setExecutions(Array.isArray(data.executions) ? data.executions : []);
         } catch {
-            setExecutions([]);
+            // Keep the last successful snapshot visible during transient polling failures.
         } finally {
+            loadedOnce.current = true;
+            requestInFlight.current = false;
             setLoading(false);
+            setRefreshing(false);
         }
     }, []);
 
@@ -178,8 +187,8 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                 <header className="app-page-header">
                     <div><h1 className="app-page-title">Executions</h1><p className="app-page-subtitle">Run history and task outcomes</p></div>
                     <div className="app-toolbar">
-                        <button onClick={loadExecutions} disabled={loading} className="app-button-secondary" aria-busy={loading}>
-                            <TablerIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} /> Refresh
+                        <button onClick={loadExecutions} disabled={loading || refreshing} className="app-button-secondary" aria-busy={loading || refreshing}>
+                            <TablerIcon name="sync" className={`text-base ${loading || refreshing ? 'animate-spin' : ''}`} /> Refresh
                         </button>
                         {!isCloud && <button onClick={clearExecutions} className="app-button-danger"><TablerIcon name="delete" className="text-base" /> Clear all</button>}
                     </div>
