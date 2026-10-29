@@ -1,3 +1,4 @@
+import { cloudAuth, isCloud } from '../platform/runtime';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../types';
@@ -27,6 +28,17 @@ export function useAuth() {
 
     const checkAuth = useCallback(async () => {
         try {
+            if (isCloud) {
+                const identity = await cloudAuth().getIdentity();
+                if (identity) {
+                    setUser({ id: identity.id, name: identity.name, email: identity.email });
+                    setAuthStatus('authenticated');
+                    return true;
+                }
+                setUser(null);
+                setAuthStatus('login');
+                return false;
+            }
             const res = await fetch('/api/auth/me', { credentials: 'include' });
             const data = await res.json();
             if (data.authenticated) {
@@ -58,6 +70,20 @@ export function useAuth() {
         }
         if (authBusy) return;
 
+        if (isCloud) {
+            setAuthBusy(true);
+            try {
+                await cloudAuth().signIn(email, pass);
+                setAuthError('');
+                if (await checkAuth()) navigate('/');
+                else setAuthError('Cloud authentication failed');
+            } catch (error) {
+                setAuthError(error instanceof Error ? error.message : 'Cloud sign-in failed');
+            } finally {
+                setAuthBusy(false);
+            }
+            return;
+        }
         const endpoint = authStatus === 'setup' ? '/api/auth/setup' : '/api/auth/login';
         const payload = authStatus === 'setup'
             ? { name, email, password: pass }
@@ -96,7 +122,8 @@ export function useAuth() {
     const logout = useCallback(async (requestConfirm: (msg: string) => Promise<boolean>) => {
         const confirmed = await requestConfirm('Are you sure you want to log out?');
         if (!confirmed) return;
-        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        if (isCloud) await cloudAuth().signOut();
+        else await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
         setUser(null);
         setAuthStatus('login');
         navigate('/');
