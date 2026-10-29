@@ -1,6 +1,9 @@
 @import './styles/pages.css';
 @import './styles/theme-overrides.css';
-@import 'tailwindcss';
+/* Scan the actual shared React source, regardless of whether Vite runs from
+   the self-hosted or sibling Cloud repository. Without this, utilities used
+   only by dashboard/editor components disappear in Cloud builds. */
+@import 'tailwindcss' source('./');
 
 @theme {
     --color-bg: #101114;
