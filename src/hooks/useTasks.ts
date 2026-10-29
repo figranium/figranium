@@ -1,4 +1,5 @@
-import { taskFetch } from '../platform/api';
+import { taskFetch, localTaskStreamUrl } from '../platform/api';
+import { isCloud } from '../platform/runtime';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Task } from '../types';
 import { normalizeImportedTask, buildNewTask, parseBooleanFlag, ensureActionIds } from '../utils/taskUtils';
@@ -35,6 +36,8 @@ export function useTasks(
     }, []);
 
     const touchTask = useCallback(async (id: string) => {
+        // Cloud has no tenant-scoped touch endpoint; never call the local one.
+        if (isCloud) return;
         try {
             await taskFetch(`/api/tasks/${id}/touch`, { method: 'POST' });
             loadTasks();
@@ -232,8 +235,9 @@ export function useTasks(
 
     useEffect(() => {
         const taskId = currentTask?.id;
-        if (!taskId || taskId.startsWith('new_')) return;
-        const source = new EventSource(`/api/tasks/${encodeURIComponent(taskId)}/stream`, { withCredentials: true });
+        const streamUrl = localTaskStreamUrl(taskId);
+        if (!taskId || !streamUrl) return;
+        const source = new EventSource(streamUrl, { withCredentials: true });
         source.onmessage = (event) => {
             if (!event.data) return;
             try {

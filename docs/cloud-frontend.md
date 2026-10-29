@@ -12,6 +12,8 @@ The shared Task hook adapts the legacy editor API to `/api/v1/tasks`: list,
 create, update by ID and delete by ID. Cloud must implement those endpoints
 with workspace-scoped authorization and compatible response Task shapes.
 Other APIs have not yet been adapted and must not be exposed without review.
+The local Task touch endpoint and cookie-authenticated EventSource stream are
+explicitly disabled in Cloud until tenant-scoped equivalents are implemented.
 Execution/headful actions are explicitly unavailable in Cloud until CU
 reservation, dispatcher, security checks, and artifact persistence are ready.
 

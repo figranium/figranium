@@ -28,6 +28,12 @@ export async function taskFetch(path: string, init: RequestInit = {}): Promise<R
     return authorizedCloudFetch('/api/v1/tasks/' + encodeURIComponent(match[1]), init);
   throw new Error('UNSUPPORTED_CLOUD_TASK_API');
 }
+// The legacy EventSource endpoint authenticates with self-hosted cookies.
+// Cloud has no tenant-scoped Task stream yet and must never open it.
+export function localTaskStreamUrl(taskId: string | undefined, cloudMode: boolean = isCloud): string | null {
+  if (cloudMode || !taskId || taskId.startsWith('new_')) return null;
+  return `/api/tasks/${encodeURIComponent(taskId)}/stream`;
+}
 export function requireLocalExecution(): void {
   if (isCloud) throw new Error('CLOUD_EXECUTIONS_NOT_AVAILABLE');
 }
