@@ -11,6 +11,7 @@ import CenterConfirm from './components/app/CenterConfirm';
 import ReleaseNotesModal from './components/app/ReleaseNotesModal';
 import type { MarketplaceTemplate } from './components/TemplateGallery';
 
+import { isCloud } from './platform/runtime';
 import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
 import { useExecution } from './hooks/useExecution';
@@ -318,7 +319,12 @@ export default function App() {
 
     let content: React.ReactNode;
     if (authStatus === 'login' || authStatus === 'setup') {
-        content = <AuthScreen status={authStatus} onSubmit={handleAuthSubmit} error={authError} busy={authBusy} />;
+        if (isCloud) {
+            const OfficialAuthUI = window.__FIGRANIUM_CLOUD_AUTH_UI__;
+            content = OfficialAuthUI ? <OfficialAuthUI /> : <LoadingScreen variant="auth" title="Authentication unavailable" subtitle="Neon Auth UI is not configured" />;
+        } else {
+            content = <AuthScreen status={authStatus} onSubmit={handleAuthSubmit} error={authError} busy={authBusy} />;
+        }
     } else if (authStatus === 'checking') {
         content = <LoadingScreen variant="auth" title="Authenticating" subtitle="Verifying session state" />;
     } else {

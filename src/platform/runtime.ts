@@ -7,7 +7,8 @@ export interface CloudAuthAdapter {
   signOut(): Promise<void>;
   getAccessToken(): Promise<string | null>;
 }
-declare global { interface Window { __FIGRANIUM_CLOUD_AUTH__?: CloudAuthAdapter } }
+import type { ComponentType } from 'react';
+declare global { interface Window { __FIGRANIUM_CLOUD_AUTH__?: CloudAuthAdapter; __FIGRANIUM_CLOUD_AUTH_UI__?: ComponentType } }
 export function cloudAuth(): CloudAuthAdapter {
   const provider = window.__FIGRANIUM_CLOUD_AUTH__;
   if (!isCloud || !provider) throw new Error('CLOUD_AUTH_NOT_CONFIGURED');

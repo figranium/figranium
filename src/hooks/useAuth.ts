@@ -57,6 +57,10 @@ export function useAuth() {
 
     useEffect(() => {
         checkAuth();
+        if (!isCloud) return;
+        const onChange = () => { void checkAuth(); };
+        window.addEventListener('figranium:cloud-session-changed', onChange);
+        return () => window.removeEventListener('figranium:cloud-session-changed', onChange);
     }, [checkAuth]);
 
     const handleAuthSubmit = useCallback(async (email: string, pass: string, name?: string, passConfirm?: string) => {
