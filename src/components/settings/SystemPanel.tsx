@@ -1,3 +1,4 @@
+import { isCloud } from '../../platform/runtime';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import TablerIcon from '../TablerIcon';
 import { ConfirmRequest } from '../../types';
@@ -62,6 +63,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
     }, [onNotify]);
     useEffect(() => { load(); }, [load]);
     useEffect(() => {
+        if (isCloud) return;
         fetch('/api/auth/me', { credentials: 'include' })
             .then((response) => response.ok ? response.json() : null)
             .then((account) => { if (account?.user?.email) setEmail(account.user.email); })
@@ -158,7 +160,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
         } catch { onNotify('Could not clear workspace data. Check your current password.', 'error'); } finally { setSaving(false); }
     };
     return <div className="space-y-5">
-        <section className="app-panel p-7 flex flex-wrap items-center justify-between gap-4">
+        {!isCloud && <><section className="app-panel p-7 flex flex-wrap items-center justify-between gap-4">
             <div><h3 className="text-sm font-bold theme-text">Session</h3><p className="text-xs theme-text-faint mt-1">Sign out of this Figranium workspace on this device.</p></div>
             <button type="button" onClick={onLogout} className="app-button-danger">Sign out</button>
         </section>
@@ -167,6 +169,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
             <div className="mt-5 grid gap-3 max-w-xl"><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="New email address (optional)" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="New password (optional)" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={passwordConfirm} onChange={(event) => setPasswordConfirm(event.target.value)} placeholder="Confirm new password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} placeholder="Current password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /></div>
             <button type="button" disabled={saving} onClick={saveAccount} className="app-button-primary mt-3 disabled:opacity-50">Save account</button>
         </section>
+        </>}
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Data retention</h3><p className="text-xs theme-text-faint mt-1">Captures and execution history older than this period are deleted automatically.</p>
             <div className="mt-5 flex flex-wrap gap-3 items-center"><CustomSelect value={choice} options={RETENTION_OPTIONS} onChange={setChoice} ariaLabel="Data retention period" disabled={saving} className="min-w-36" /><button type="button" disabled={saving} onClick={saveRetention} className="app-button-primary disabled:opacity-50">Save retention</button></div>

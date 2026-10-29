@@ -3,6 +3,8 @@ export const isCloud = import.meta.env.VITE_FIGRANIUM_DEPLOYMENT === 'cloud';
 export type CloudIdentity = { id: string; name: string; email: string };
 export interface CloudAuthAdapter {
   getIdentity(): Promise<CloudIdentity | null>;
+  updateName?(name: string): Promise<void>;
+  changePassword?(currentPassword: string, newPassword: string): Promise<void>;
   signIn(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
   getAccessToken(): Promise<string | null>;

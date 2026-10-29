@@ -1,3 +1,5 @@
+import { isCloud } from '../platform/runtime';
+import CloudAccountPanel from './settings/CloudAccountPanel';
 import React, { useState, useEffect, useCallback } from 'react';
 import { ConfirmRequest, Credential } from '../types';
 import type { ApiKeyConfig, DbProviderConfig } from './settings/ApiKeysPanel';
@@ -14,9 +16,10 @@ import { useTheme } from '../hooks/useTheme';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatLabel } from '../utils/taskUtils';
 
-type SettingsSection = 'api-keys' | 'connections' | 'user-agent' | 'proxies' | 'advanced' | 'appearance' | 'about';
+type SettingsSection = 'account' | 'api-keys' | 'connections' | 'user-agent' | 'proxies' | 'advanced' | 'appearance' | 'about';
 
 const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
+    ...(isCloud ? [{ id: 'account' as const, label: 'Account', icon: 'user-circle' }] : []),
     { id: 'api-keys', label: 'API Keys', icon: 'key' },
     { id: 'connections', label: 'Connections', icon: 'link' },
     { id: 'user-agent', label: 'User Agent', icon: 'language' },
@@ -27,13 +30,14 @@ const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] 
 ];
 
 const SETTINGS_DESCRIPTIONS: Record<SettingsSection, string> = {
+    account: 'Manage your Figranium Cloud account.',
     'api-keys': 'Create and manage access for your integrations.',
     connections: 'Connect the services your automations use.',
     'user-agent': 'Choose how your browser identifies itself to websites.',
     proxies: 'Route task traffic through managed proxy servers.',
     appearance: 'Set the look and theme of your workspace.',
     about: 'Version and product information.',
-    advanced: 'Manage data, account controls, and workspace maintenance.'
+    advanced: isCloud ? 'Manage workspace data and maintenance.' : 'Manage data, account controls, and workspace maintenance.'
 };
 
 interface SettingsScreenProps {
@@ -537,6 +541,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                         </div>
                     </header>
 
+                    {section === 'account' && isCloud && <CloudAccountPanel onLogout={onLogout} />}
                     {section === 'api-keys' && <ScopedApiKeysPanel onNotify={onNotify} onConfirm={onConfirm} />}
                     {section === 'connections' && <ConnectionsPanel onNotify={onNotify} />}
                     {section === 'user-agent' && (
