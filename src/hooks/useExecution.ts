@@ -90,9 +90,20 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const stopTask = async () => {
-        requireLocalExecution();
         if (!activeRunId || isStopping) return;
         setIsStopping(true);
+
+        if (isCloud) {
+            try {
+                const response = await authorizedCloudFetch(`/api/v1/executions/${encodeURIComponent(activeRunId)}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || 'Could not cancel Cloud execution.');
+                setResults((current) => current ? { ...current, outcome: 'stopped', timestamp: new Date().toLocaleTimeString() } : current);
+                showAlert('Cloud execution cancellation requested.', 'success');
+            } catch (error: any) { showAlert(error?.message || 'Could not cancel Cloud execution.', 'error'); }
+            finally { setIsExecuting(false); setIsStopping(false); setActiveRunId(null); setActiveTaskId(null); }
+            return;
+        }
+        requireLocalExecution();
 
         if (activeRunId) {
             try {
@@ -161,6 +172,8 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 }
                 // Successful acceptance is an async queue acknowledgement, not
                 // execution completion. Never report a finished run here.
+                setActiveRunId(typeof data?.id === 'string' ? data.id : null);
+                setActiveTaskId(task.id);
                 showAlert('Task queued for Cloud execution.', 'success');
             } catch (error) {
                 reportExecutionFailure(task, runId, endpoint, error);
