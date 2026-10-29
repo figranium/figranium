@@ -21,7 +21,9 @@
     "test:telemetry": "node tests/telemetry.test.js",
     "test:v1-qualification": "node tests/v1-qualification/runner.js",
     "test:verification:typecheck": "tsc -p tsconfig.verification.json",
-    "verify:agent-html": "npx -y vite-node tests/verify_agent_html_opt.ts"
+    "verify:agent-html": "npx -y vite-node tests/verify_agent_html_opt.ts",
+    "cloud:execute": "node cloud-runner.js",
+    "test:cloud-runner": "node --test tests/cloud-runner.test.js"
   },
   "files": [
     "bin",
@@ -51,7 +53,8 @@
     "!public/captures",
     "!dist/captures",
     "!public/screenshots",
-    "!dist/screenshots"
+    "!dist/screenshots",
+    "cloud-runner.js"
   ],
   "keywords": [
     "browser-automation",
