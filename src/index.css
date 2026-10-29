@@ -3,7 +3,10 @@
 /* Scan the actual shared React source, regardless of whether Vite runs from
    the self-hosted or sibling Cloud repository. Without this, utilities used
    only by dashboard/editor components disappear in Cloud builds. */
-@import 'tailwindcss' source('./');
+@import 'tailwindcss' source(none);
+/* Explicitly scan the UI components even when Vite runs from the sibling
+   figranium-cloud repository (which is outside Tailwind's auto-scan root). */
+@source './';
 
 @theme {
     --color-bg: #101114;
