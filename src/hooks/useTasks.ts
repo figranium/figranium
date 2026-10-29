@@ -238,7 +238,9 @@ export function useTasks(
     }, []);
 
     useEffect(() => {
-        loadTasks();
+        // Cloud must wait for a verified Neon Auth session before fetching.
+        // App triggers loadTasks when authStatus becomes authenticated.
+        if (!isCloud) void loadTasks();
     }, [loadTasks]);
 
     useEffect(() => {
