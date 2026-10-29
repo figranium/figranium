@@ -13,6 +13,8 @@ import { lazyWithRetry } from '../utils/lazyWithRetry';
 interface DashboardScreenProps {
     tasks: Task[];
     tasksLoaded: boolean;
+    tasksError?: string | null;
+    onRetryTasks?: () => void;
     onNewTask: () => void;
     onEditTask: (task: Task) => void;
     onDeleteTask: (id: string) => void;
@@ -26,7 +28,7 @@ type TaskSort = 'recent' | 'name' | 'mode' | 'actions';
 
 const FeaturedTemplates = lazyWithRetry(() => import('./FeaturedTemplates'));
 
-const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, onNewTask, onEditTask, onDeleteTask, onExportTasks, onImportTasks, onCreateFromTemplate, onImportTemplate }) => {
+const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, tasksError, onRetryTasks, onNewTask, onEditTask, onDeleteTask, onExportTasks, onImportTasks, onCreateFromTemplate, onImportTemplate }) => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -103,6 +105,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, o
     };
 
     if (!tasksLoaded) return <LoadingScreen variant="dashboard" title="Loading dashboard" subtitle="Preparing your task overview" />;
+    if (tasksError) return (
+        <main className="app-page flex items-center justify-center p-6">
+            <div className="app-panel w-full max-w-lg p-8 text-center">
+                <h1 className="text-xl font-semibold theme-text">Unable to load Tasks</h1>
+                <p className="mt-3 text-sm theme-text-muted">The Cloud Task API could not load your workspace. Your Tasks have not been deleted.</p>
+                <code className="mt-4 block break-words rounded-lg border theme-border p-3 text-xs theme-text-muted">{tasksError}</code>
+                <button className="app-button-primary mt-6 mx-auto" type="button" onClick={onRetryTasks}>Try again</button>
+            </div>
+        </main>
+    );
 
     return (
         <>

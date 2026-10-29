@@ -11,6 +11,7 @@ export function useTasks(
 ) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [tasksLoaded, setTasksLoaded] = useState(false);
+    const [tasksError, setTasksError] = useState<string | null>(null);
     const [currentTask, setCurrentTask] = useState<Task | null>(null);
     const currentTaskRef = useRef<Task | null>(null);
     const latestSaveRequestRef = useRef(0);
@@ -20,21 +21,28 @@ export function useTasks(
     }, [currentTask]);
 
     const loadTasks = useCallback(async () => {
+        if (isCloud) { setTasksLoaded(false); setTasksError(null); }
         try {
-            const res = await taskFetch('/api/tasks', { credentials: 'include' });
-            const data = await res.json();
-            if (!res.ok || !Array.isArray(data)) throw new Error('Unable to load tasks');
-            const list = Array.isArray(data) ? data : [];
-            const sorted = [...list].sort((a: Task, b: Task) => (b.last_opened || 0) - (a.last_opened || 0));
+            const response = await taskFetch('/api/tasks', { credentials: 'include' });
+            const data = await response.json().catch(() => null);
+            if (!response.ok) {
+                const code = data && typeof data.error === 'string' ? data.error : 'UNKNOWN_ERROR';
+                throw new Error(`Task API HTTP ${response.status} (${code})`);
+            }
+            if (!Array.isArray(data)) throw new Error('Unexpected Task API response format');
+            const sorted = [...data].sort((a: Task, b: Task) => (b.last_opened || 0) - (a.last_opened || 0));
             setTasks(sorted);
-            setTasksLoaded(true);
+            setTasksError(null);
             return sorted;
-        } catch (e) {
-            console.error("Failed to load tasks", e);
+        } catch (error) {
+            console.error('Failed to load Tasks', error);
+            if (isCloud) setTasksError(error instanceof Error ? error.message : 'Unable to load Tasks');
             return [];
+        } finally {
+            // Never leave Cloud stuck in a spinner after a rejected request.
+            setTasksLoaded(true);
         }
     }, []);
-
     const touchTask = useCallback(async (id: string) => {
         // Cloud has no tenant-scoped touch endpoint; never call the local one.
         if (isCloud) return;
@@ -266,6 +274,7 @@ export function useTasks(
     return {
         tasks,
         tasksLoaded,
+        tasksError,
         setTasks,
         currentTask,
         setCurrentTask,

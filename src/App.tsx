@@ -59,6 +59,7 @@ export default function App() {
     const {
         tasks,
         tasksLoaded,
+        tasksError,
         currentTask,
         setCurrentTask,
         loadTasks,
@@ -342,8 +343,8 @@ export default function App() {
                     <Routes>
                     <Route path="/login" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/signup" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
-                    <Route path="/dashboard" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
+                    <Route path="/" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} tasksError={tasksError} onRetryTasks={() => { void loadTasks(); }} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
+                    <Route path="/dashboard" element={<DashboardScreen tasks={tasks} tasksLoaded={tasksLoaded} tasksError={tasksError} onRetryTasks={() => { void loadTasks(); }} onNewTask={handleNewTask} onEditTask={handleEditTask} onDeleteTask={handleDeleteTask} onExportTasks={exportTasks} onImportTasks={importTasks} onCreateFromTemplate={() => navigate('/templates')} onImportTemplate={handleImportTemplate} />} />
                     <Route path="/templates" element={<TemplatesScreen onImport={handleImportTemplate} />} />
                     <Route path="/vault" element={<CookiesScreen onNotify={showAlert} onConfirm={requestConfirm} />} />
                     <Route path="/cookies" element={<Navigate to="/vault" replace />} />
