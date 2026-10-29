@@ -212,6 +212,11 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             }
             if (isExecuting) return;
             setIsExecuting(true);
+            setIsStopping(false);
+            // Respond immediately to the click, before awaiting network I/O.
+            // This is a pending UI state, not a claim that Cloud accepted the run.
+            setResults({ url: task.url, logs: [], timestamp: 'Starting...' });
+            setActiveTaskId(task.id);
             let accepted = false;
             try {
                 const response = await authorizedCloudFetch(endpoint, {
@@ -238,11 +243,14 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 setResults({ url: task.url, logs: [], timestamp: 'Queued...' });
                 setActiveRunId(data.id);
                 setActiveTaskId(task.id);
-                showAlert('Task accepted by Cloud.', 'success');
             } catch (error) {
                 reportExecutionFailure(task, runId, endpoint, error);
             } finally {
-                if (!accepted) setIsExecuting(false);
+                if (!accepted) {
+                    setIsExecuting(false);
+                    setActiveRunId(null);
+                    setActiveTaskId(null);
+                }
             }
             return;
         }
