@@ -1,9 +1,11 @@
+import { isCloud } from '../platform/runtime';
 import { useState, useEffect } from 'react';
 
 export function useHeadfulStatus() {
     const [useNovnc, setUseNovnc] = useState<boolean | null>(null);
 
     useEffect(() => {
+        if (isCloud) { setUseNovnc(false); return; }
         let cancelled = false;
         const checkStatus = async () => {
             try {

@@ -1,3 +1,4 @@
+import { isCloud } from '../platform/runtime';
 import { useState, useCallback, useEffect } from 'react';
 import { THEMES, ThemeDefinition, ThemePreference, AUTO_THEME_ID, DEFAULT_THEME_PREFERENCE, isThemePreference, resolveThemePreference, applyThemeVars } from '../utils/theme';
 
@@ -57,6 +58,7 @@ export function useTheme() {
 
     // Fetch persisted theme from backend data on mount and sync
     useEffect(() => {
+        if (isCloud) return;
         let mounted = true;
         fetch('/api/settings/theme', { credentials: 'include' })
             .then(res => res.ok ? res.json() : null)
@@ -89,6 +91,8 @@ export function useTheme() {
         } catch {
             // ignore
         }
+        // Cloud theme is local until a tenant-scoped setting endpoint exists.
+        if (isCloud) return;
         // Persist theme to backend data storage
         fetch('/api/settings/theme', {
             method: 'POST',
