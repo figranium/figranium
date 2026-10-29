@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import TablerIcon from './TablerIcon';
 import PasswordsScreen from './PasswordsScreen';
 import { ConfirmRequest } from '../types';
+import { isCloud } from '../platform/runtime';
+import { authorizedCloudFetch } from '../platform/api';
 
 type State = { id: string; name: string; cookies: number; origins: number; updatedAt: string };
 type Source = 'fresh' | 'import';
@@ -18,9 +20,9 @@ export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (mess
     const fileRef = useRef<HTMLInputElement>(null);
 
     const load = async () => {
-        const response = await fetch('/api/cookie-states');
+        const response = await (isCloud ? authorizedCloudFetch('/api/v1/cookie-states') : fetch('/api/cookie-states'));
         const data = await response.json();
-        setStates(data.states || []);
+        setStates(isCloud ? (data.items || []).map((item: any) => ({ ...item, cookies: item.cookies || 0, origins: item.origins || 0, updatedAt: item.updatedAt })) : (data.states || []));
     };
 
     useEffect(() => { load(); }, []);
@@ -39,7 +41,10 @@ export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (mess
                 if (!file) return onNotify('Choose a Playwright storage-state JSON file.', 'error');
                 payload.state = JSON.parse(await file.text());
             }
-            const response = await fetch('/api/cookie-states', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const request = isCloud
+                ? authorizedCloudFetch('/api/v1/cookie-states', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: payload.name, secret: payload.state, cookies: Array.isArray((payload.state as any)?.cookies) ? (payload.state as any).cookies.length : 0, origins: Array.isArray((payload.state as any)?.origins) ? (payload.state as any).origins.length : 0 }) })
+                : fetch('/api/cookie-states', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const response = await request;
             if (!response.ok) throw new Error();
             closeCreate(); await load();
             onNotify(source === 'fresh' ? 'Fresh cookie state created.' : 'Cookie state imported.', 'success');
@@ -50,7 +55,7 @@ export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (mess
 
     const rename = async (id: string) => {
         const trimmed = editingName.trim(); if (!trimmed) return;
-        const response = await fetch(`/api/cookie-states/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: trimmed }) });
+        const response = await (isCloud ? authorizedCloudFetch(`/api/v1/cookie-states/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: trimmed }) }) : fetch(`/api/cookie-states/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: trimmed }) }));
         if (!response.ok) return onNotify('Cookie state could not be renamed.', 'error');
         setEditingId(null); await load();
     };
@@ -58,7 +63,7 @@ export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (mess
     const remove = async (state: State) => {
         if (!await onConfirm({ title: 'Delete cookie state', message: `Permanently delete ${state.name}? This cannot be undone.`, confirmLabel: 'Delete state' })) return;
         const { id } = state;
-        const response = await fetch(`/api/cookie-states/${id}`, { method: 'DELETE' });
+        const response = await (isCloud ? authorizedCloudFetch(`/api/v1/cookie-states/${id}`, { method: 'DELETE' }) : fetch(`/api/cookie-states/${id}`, { method: 'DELETE' }));
         if (!response.ok) return onNotify('Cookie state could not be deleted.', 'error');
         await load(); onNotify('Cookie state deleted.', 'success');
     };

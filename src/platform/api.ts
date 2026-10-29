@@ -8,6 +8,26 @@ export async function authorizedCloudFetch(path: string, init: RequestInit = {})
   headers.set('Authorization', 'Bearer ' + token);
   return fetch(path, { ...init, headers, credentials: 'omit', redirect: 'error' });
 }
+
+/** Install once from the Cloud entry point. Existing shared screens deliberately
+ * use ordinary relative fetches; this boundary supplies a short-lived bearer
+ * token without changing self-hosted cookies or permitting cross-origin calls. */
+export function installCloudApiAdapter(): void {
+  if (!isCloud || (window as any).__figraniumCloudFetchInstalled) return;
+  (window as any).__figraniumCloudFetchInstalled = true;
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const raw = input instanceof Request ? input.url : String(input);
+    const url = new URL(raw, window.location.origin);
+    if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/')) return nativeFetch(input, init);
+    const token = await cloudAuth().getAccessToken();
+    if (!token) throw new Error('CLOUD_AUTH_REQUIRED');
+    const headers = new Headers(input instanceof Request ? input.headers : undefined);
+    new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
+    headers.set('Authorization', `Bearer ${token}`);
+    return nativeFetch(input, { ...init, headers, credentials: 'omit', redirect: 'error' });
+  };
+}
 export async function taskFetch(path: string, init: RequestInit = {}): Promise<Response> {
   if (!isCloud) return fetch(path, init);
   const url = new URL(path, window.location.origin);
