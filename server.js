@@ -1,3 +1,6 @@
+if (process.env.FIGRANIUM_RUNTIME === 'cloud-runner') {
+    throw new Error('Cloud runner mode cannot start the self-hosted HTTP/auth server. Use cloud-runner.js.');
+}
 const express = require('express');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
