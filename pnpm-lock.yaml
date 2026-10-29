@@ -39,8 +39,8 @@ importers:
         specifier: ^5.2.1
         version: 5.3.0(supports-color@7.2.0)
       express-rate-limit:
-        specifier: ^8.2.1
-        version: 8.3.1(express@5.3.0(supports-color@7.2.0))
+        specifier: ^8.7.2
+        version: 8.7.2(express@5.3.0(supports-color@7.2.0))(supports-color@7.2.0)
       express-session:
         specifier: ^1.18.2
         version: 1.19.0(supports-color@7.2.0)
@@ -1350,8 +1350,8 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
-  express-rate-limit@8.3.1:
-    resolution: {integrity: sha512-D1dKN+cmyPWuvB+G2SREQDzPY1agpBIcTa9sJxOPMCNeH3gwzhqJRDWCXW3gg0y//+LQ/8j52JbMROWyrKdMdw==}
+  express-rate-limit@8.7.2:
+    resolution: {integrity: sha512-U1ScocxDD9WI09LaBVypvNkOtNR5yWAmZLkuKJdAzIchA4YKFYF6GT5IKER7epG58oXtjvGlV0/6ii0F83EyZg==}
     engines: {node: '>= 16'}
     peerDependencies:
       express: '>= 4.11'
@@ -1551,8 +1551,8 @@ packages:
   inline-style-parser@0.2.7:
     resolution: {integrity: sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==}
 
-  ip-address@10.1.0:
-    resolution: {integrity: sha512-XXADHxXmvT9+CRxhXg56LJovE+bmWnEWB78LB83VZTprKTmaC5QfruXocxzTZ2Kl0DNwKuBdlIhjL8LeY8Sf8Q==}
+  ip-address@10.7.5:
+    resolution: {integrity: sha512-t2v0rkILYv9WXmSL7TpAaU3HXgaFYOPUcH3QHgwQ++gpJuH3bqyMy4Fvt/DJCTKwzH3Cf+bAp5W/mFL39KPLzA==}
     engines: {node: '>= 12'}
 
   ipaddr.js@1.9.1:
@@ -3660,10 +3660,13 @@ snapshots:
 
   etag@1.8.1: {}
 
-  express-rate-limit@8.3.1(express@5.3.0(supports-color@7.2.0)):
+  express-rate-limit@8.7.2(express@5.3.0(supports-color@7.2.0))(supports-color@7.2.0):
     dependencies:
+      debug: 4.4.3(supports-color@7.2.0)
       express: 5.3.0(supports-color@7.2.0)
-      ip-address: 10.1.0
+      ip-address: 10.7.5
+    transitivePeerDependencies:
+      - supports-color
 
   express-session@1.19.0(supports-color@7.2.0):
     dependencies:
@@ -3948,7 +3951,7 @@ snapshots:
 
   inline-style-parser@0.2.7: {}
 
-  ip-address@10.1.0: {}
+  ip-address@10.7.5: {}
 
   ipaddr.js@1.9.1: {}
 
@@ -5303,7 +5306,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.31
+      postcss: 8.5.32
       rolldown: 1.2.14
       tinyglobby: 0.2.17
     optionalDependencies:
