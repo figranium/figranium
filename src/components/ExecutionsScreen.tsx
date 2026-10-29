@@ -1,3 +1,5 @@
+import { authorizedCloudFetch } from '../platform/api';
+import { isCloud } from '../platform/runtime';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router-dom';
 import TablerIcon from './TablerIcon';
@@ -97,7 +99,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
     const loadExecutions = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/executions');
+            const response = await (isCloud ? authorizedCloudFetch : fetch)(isCloud ? '/api/v1/executions' : '/api/executions');
             if (!response.ok) throw new Error('Failed to load');
             const data = await response.json();
             setExecutions(Array.isArray(data.executions) ? data.executions : []);
@@ -129,6 +131,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
     useEffect(() => { loadExecutions(); }, [loadExecutions]);
 
     useEffect(() => {
+        if (isCloud) return;
         const source = new EventSource('/api/executions/live', { withCredentials: true });
         source.onmessage = () => { loadExecutions(); };
         return () => source.close();

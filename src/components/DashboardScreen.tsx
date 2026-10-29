@@ -1,3 +1,5 @@
+import { authorizedCloudFetch } from '../platform/api';
+import { isCloud } from '../platform/runtime';
 import React, { memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Execution, Task } from '../types';
 import TablerIcon from './TablerIcon';
@@ -39,7 +41,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
 
     useEffect(() => {
         const controller = new AbortController();
-        fetch('/api/executions', { signal: controller.signal })
+        (isCloud ? authorizedCloudFetch : fetch)(isCloud ? '/api/v1/executions' : '/api/executions', { signal: controller.signal })
             .then((response) => response.ok ? response.json() : { executions: [] })
             .then((data) => setExecutions(Array.isArray(data.executions) ? data.executions : []))
             .catch((error) => {
