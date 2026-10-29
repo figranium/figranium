@@ -315,10 +315,9 @@ exists('.load-more') && text('.count') !== ''
     {
       "id": "act_while_load_more",
       "type": "while",
-      "conditionVarType": "string",
-      "conditionVar": ".load-more",
-      "conditionOp": "exists",
-      "conditionValue": ""
+      "conditionVarType": "selector",
+      "selector": ".load-more",
+      "conditionOp": "exists"
     },
     {
       "id": "act_click_load_more",
