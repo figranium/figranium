@@ -1,6 +1,6 @@
 import { requireLocalExecution, authorizedCloudFetch } from '../platform/api';
 import { isCloud } from '../platform/runtime';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Task, Results } from '../types';
 import { formatExecutionError, isDisplayUnavailable } from '../utils/executionUtils';
 import { ensureActionIds } from '../utils/taskUtils';
@@ -18,6 +18,66 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     const executeAbortRef = useRef<AbortController | null>(null);
     const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const headfulBusyRef = useRef(false);
+
+    // A Cloud POST acknowledges queue acceptance, not execution completion.
+    // Keep the editor bound to the authenticated execution record until terminal.
+    useEffect(() => {
+        if (!isCloud || !activeRunId) return;
+        const executionId = activeRunId;
+        let cancelled = false;
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        let failures = 0;
+        const poll = async () => {
+            try {
+                const response = await authorizedCloudFetch(`/api/v1/executions/${encodeURIComponent(executionId)}`);
+                if (!response.ok) throw new Error(`Execution status HTTP ${response.status}`);
+                const { execution } = await response.json();
+                if (cancelled || !execution) return;
+                failures = 0;
+                if (execution.phase === 'finished') {
+                    const output = execution.result || {};
+                    const outcome = execution.outcome || 'error';
+                    setResults({
+                        url: execution.url || '',
+                        finalUrl: output.final_url || output.finalUrl,
+                        html: output.html,
+                        data: output.data ?? output.html ?? null,
+                        screenshotUrl: output.screenshot_url || output.screenshotUrl,
+                        logs: output.logs || (output.error ? [String(output.error)] : []),
+                        timestamp: new Date().toLocaleTimeString(),
+                        outcome
+                    });
+                    setIsExecuting(false);
+                    setActiveRunId(null);
+                    setActiveTaskId(null);
+                    return;
+                }
+                setResults(current => ({
+                    ...(current || { url: execution.url || '', logs: [] }),
+                    timestamp: execution.phase === 'running' ? 'Running...' : 'Queued...'
+                }));
+            } catch (error) {
+                if (cancelled) return;
+                failures++;
+                if (failures >= 5) {
+                    setResults(current => ({
+                        url: current?.url || '',
+                        logs: [],
+                        timestamp: new Date().toLocaleTimeString(),
+                        outcome: 'error',
+                        error: { message: 'Could not retrieve Cloud execution status.' }
+                    }));
+                    setIsExecuting(false);
+                    setActiveRunId(null);
+                    setActiveTaskId(null);
+                    return;
+                }
+            }
+            if (!cancelled) timer = setTimeout(poll, 2000);
+        };
+        void poll();
+        return () => { cancelled = true; if (timer) clearTimeout(timer); };
+    }, [activeRunId]);
 
     const reportExecutionFailure = (task: Task, runId: string, endpoint: string, error: any) => {
         const rawMessage = error?.message || String(error);
@@ -152,6 +212,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             }
             if (isExecuting) return;
             setIsExecuting(true);
+            let accepted = false;
             try {
                 const response = await authorizedCloudFetch(endpoint, {
                     method: 'POST',
@@ -172,13 +233,16 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 }
                 // Successful acceptance is an async queue acknowledgement, not
                 // execution completion. Never report a finished run here.
-                setActiveRunId(typeof data?.id === 'string' ? data.id : null);
+                if (typeof data?.id !== 'string') throw new Error('Cloud did not return an execution ID.');
+                accepted = true;
+                setResults({ url: task.url, logs: [], timestamp: 'Queued...' });
+                setActiveRunId(data.id);
                 setActiveTaskId(task.id);
-                showAlert('Task queued for Cloud execution.', 'success');
+                showAlert('Task accepted by Cloud.', 'success');
             } catch (error) {
                 reportExecutionFailure(task, runId, endpoint, error);
             } finally {
-                setIsExecuting(false);
+                if (!accepted) setIsExecuting(false);
             }
             return;
         }

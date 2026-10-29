@@ -1,3 +1,5 @@
+import { authorizedCloudFetch } from '../platform/api';
+import { isCloud } from '../platform/runtime';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Execution, Results, ConfirmRequest } from '../types';
@@ -44,7 +46,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
             if (!id) return;
             setLoading(true);
             try {
-                const res = await fetch(`/api/executions/${id}`);
+                const res = await (isCloud ? authorizedCloudFetch : fetch)(isCloud ? `/api/v1/executions/${id}` : `/api/executions/${id}`);
                 if (!res.ok) throw new Error('Failed to load execution');
                 const data = await res.json();
                 setExecution(data.execution || null);
@@ -60,6 +62,23 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
 
     useEffect(() => {
         if (!id) return;
+        if (isCloud) {
+            let cancelled = false;
+            let fetching = false;
+            const refresh = async () => {
+                if (fetching || cancelled) return;
+                fetching = true;
+                try {
+                    const res = await authorizedCloudFetch(`/api/v1/executions/${id}`);
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    if (!cancelled) setExecution(data.execution || null);
+                } catch { /* The most recent state remains visible during network failures. */ }
+                finally { fetching = false; }
+            };
+            const interval = window.setInterval(() => void refresh(), 2000);
+            return () => { cancelled = true; window.clearInterval(interval); };
+        }
         const source = new EventSource('/api/executions/live', { withCredentials: true });
         source.onmessage = async () => {
             try {
@@ -134,7 +153,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
         { label: 'Started', value: new Date(execution.timestamp).toLocaleString(), mono: false },
         { label: 'Source', value: formatExecutionSource(execution.source), mono: false },
         { label: 'Mode', value: formatLabel(execution.mode || 'agent'), mono: false },
-        { label: 'Runtime', value: execution.durationMs === undefined ? '—' : `${execution.durationMs}ms`, mono: false },
+        { label: 'Runtime', value: execution.durationMs == null ? '—' : `${execution.durationMs}ms`, mono: false },
     ];
 
     return (

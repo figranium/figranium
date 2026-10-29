@@ -69,17 +69,17 @@ const renderExecutionRow = ({ index, style, items, deleteExecution, navigate }: 
                 </div>
                 <div className="text-[11px] theme-text-muted max-lg:hidden">{sourceLabel} · {modeLabel}</div>
                 <div className="max-lg:hidden">
-                    <div className="text-[11px] theme-text-muted">{execution.durationMs === undefined ? '—' : `${execution.durationMs}ms`}</div>
+                    <div className="text-[11px] theme-text-muted">{execution.durationMs == null ? '—' : `${execution.durationMs}ms`}</div>
                     <div className="mt-1 text-[10px] theme-text-faint">{new Date(execution.timestamp).toLocaleString()}</div>
                 </div>
-                <button
+                {!isCloud && <button
                     onClick={(event) => { event.stopPropagation(); deleteExecution(execution.id); }}
                     className="p-2 theme-text-faint hover:text-red-400 transition-colors"
                     aria-label={`Delete execution ${execution.id}`}
                     title="Delete execution"
                 >
                     <TablerIcon name="delete" className="text-base" />
-                </button>
+                </button>}}
             </div>
         </div>
     );
@@ -129,6 +129,13 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
     }, [onConfirm, onNotify]);
 
     useEffect(() => { loadExecutions(); }, [loadExecutions]);
+    // The self-hosted server has SSE; Cloud uses authenticated polling instead.
+    useEffect(() => {
+        if (!isCloud) return;
+        const interval = window.setInterval(() => { void loadExecutions(); }, 2000);
+        return () => window.clearInterval(interval);
+    }, [loadExecutions]);
+
 
     useEffect(() => {
         if (isCloud) return;
@@ -174,7 +181,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                         <button onClick={loadExecutions} disabled={loading} className="app-button-secondary" aria-busy={loading}>
                             <TablerIcon name="sync" className={`text-base ${loading ? 'animate-spin' : ''}`} /> Refresh
                         </button>
-                        <button onClick={clearExecutions} className="app-button-danger"><TablerIcon name="delete" className="text-base" /> Clear all</button>
+                        {!isCloud && <button onClick={clearExecutions} className="app-button-danger"><TablerIcon name="delete" className="text-base" /> Clear all</button>}
                     </div>
                 </header>
 
