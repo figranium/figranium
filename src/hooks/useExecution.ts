@@ -1,4 +1,5 @@
-import { requireLocalExecution } from '../platform/api';
+import { requireLocalExecution, authorizedCloudFetch } from '../platform/api';
+import { isCloud } from '../platform/runtime';
 import { useState, useRef } from 'react';
 import { Task, Results } from '../types';
 import { formatExecutionError, isDisplayUnavailable } from '../utils/executionUtils';
@@ -125,8 +126,50 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const runTaskWithSnapshot = async (taskToRunRaw: Task | null, currentTask: Task | null, setCurrentTask: (t: Task) => void) => {
-        requireLocalExecution();
         if (!taskToRunRaw || !taskToRunRaw.url) return;
+        if (isCloud) {
+            // Cloud never sends execution payloads to self-hosted /agent or
+            // /scrape endpoints. The Worker alone authorizes Task ownership,
+            // workspace limits and (eventually) queued Modal execution.
+            const task = taskToRunRaw;
+            const runId = `run_${Date.now()}`;
+            const endpoint = '/api/v1/executions';
+            if (!task.id || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(task.id)) {
+                reportExecutionFailure(task, runId, endpoint,
+                    new Error('Save this Task before running it on Cloud.'));
+                return;
+            }
+            if (isExecuting) return;
+            setIsExecuting(true);
+            try {
+                const response = await authorizedCloudFetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ taskId: task.id })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    const message = data?.error === 'EXECUTION_CONTROL_PLANE_NOT_READY'
+                        ? 'Cloud execution is not enabled yet. The Modal runner and usage reservation must be configured before Tasks can run.'
+                        : (data?.error || `Cloud execution HTTP ${response.status}`);
+                    const error = Object.assign(new Error(message), {
+                        status: response.status,
+                        code: data?.error
+                    });
+                    reportExecutionFailure(task, runId, endpoint, error);
+                    return;
+                }
+                // Successful acceptance is an async queue acknowledgement, not
+                // execution completion. Never report a finished run here.
+                showAlert('Task queued for Cloud execution.', 'success');
+            } catch (error) {
+                reportExecutionFailure(task, runId, endpoint, error);
+            } finally {
+                setIsExecuting(false);
+            }
+            return;
+        }
+        requireLocalExecution();
         const taskToRun = ensureActionIds(taskToRunRaw);
         if (isExecuting) return;
         if (currentTask && taskToRun !== currentTask) {
