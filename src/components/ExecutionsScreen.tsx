@@ -79,7 +79,7 @@ const renderExecutionRow = ({ index, style, items, deleteExecution, navigate }: 
                     title="Delete execution"
                 >
                     <TablerIcon name="delete" className="text-base" />
-                </button>}}
+                </button>}
             </div>
         </div>
     );
