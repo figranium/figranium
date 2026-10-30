@@ -16,13 +16,23 @@ export function taskEditorResourceItems<T>(kind: TaskEditorResourceKind, payload
   return Array.isArray(items) ? items as T[] : [];
 }
 
+// Normalize Cloud API requests to a relative, tenant-scoped path before a
+// bearer token is obtained. An external or legacy URL must never receive it.
+export function cloudApiRequestPath(path: string, origin: string): string {
+  const url = new URL(path, origin);
+  if (url.origin !== origin || !url.pathname.startsWith('/api/v1/'))
+    throw new Error('UNSUPPORTED_CLOUD_API');
+  return url.pathname + url.search;
+}
+
 export async function authorizedCloudFetch(path: string, init: RequestInit = {}): Promise<Response> {
   if (!isCloud) throw new Error('CLOUD_ONLY');
+  const safePath = cloudApiRequestPath(path, window.location.origin);
   const token = await cloudAuth().getAccessToken();
   if (!token) throw new Error('CLOUD_AUTH_REQUIRED');
   const headers = new Headers(init.headers);
   headers.set('Authorization', 'Bearer ' + token);
-  return fetch(path, { ...init, headers, credentials: 'omit', redirect: 'error' });
+  return fetch(safePath, { ...init, headers, credentials: 'omit', redirect: 'error' });
 }
 
 /** Install once from the Cloud entry point. Existing shared screens deliberately

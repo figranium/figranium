@@ -7,6 +7,8 @@ Cloud compilation sets `VITE_FIGRANIUM_DEPLOYMENT=cloud`, and the Cloud shell
 registers `window.__FIGRANIUM_CLOUD_AUTH__` before React mounts. The adapter
 must use Neon Auth for identity, password sign-in, sign-out and access tokens.
 Cloud mode never falls back to Figranium's local session auth.
+Cloud bearer requests are restricted to same-origin `/api/v1/` endpoints;
+external and legacy URLs are rejected before obtaining an access token.
 
 The shared Task hook adapts the legacy editor API to `/api/v1/tasks`: list,
 create, update by ID and delete by ID. Cloud must implement those endpoints
