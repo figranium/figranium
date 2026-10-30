@@ -51,7 +51,13 @@ export function installCloudApiAdapter(): void {
     const headers = new Headers(input instanceof Request ? input.headers : undefined);
     new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
     headers.set('Authorization', `Bearer ${token}`);
-    return nativeFetch(input, { ...init, headers, credentials: 'omit', redirect: 'error' });
+    // Keep this a same-origin credentialed request. Besides allowing the Neon
+    // session cookie to be refreshed, the Cloud Worker uses an HttpOnly,
+    // same-origin cookie to select the user's public Stable/Edge bundle.
+    // `omit` silently discards Set-Cookie, so an otherwise successful channel
+    // update was lost on the reload that immediately follows it. The bearer
+    // token remains mandatory server-side; cookies are not authorization.
+    return nativeFetch(input, { ...init, headers, credentials: 'same-origin', redirect: 'error' });
   };
 }
 // A failed delete must not be treated as a successful Task removal by the UI.
