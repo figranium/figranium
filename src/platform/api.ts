@@ -46,6 +46,11 @@ export function installCloudApiAdapter(): void {
     const raw = input instanceof Request ? input.url : String(input);
     const url = new URL(raw, window.location.origin);
     if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/')) return nativeFetch(input, init);
+    // The community catalog is public and must not depend on Neon token
+    // refresh. Template imports remain authenticated POST requests.
+    const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    if (method === 'GET' && (url.pathname === '/api/templates' || /^\/api\/templates\/[^/]+$/.test(url.pathname)))
+      return nativeFetch(input, init);
     const token = await cloudAuth().getAccessToken();
     if (!token) throw new Error('CLOUD_AUTH_REQUIRED');
     const headers = new Headers(input instanceof Request ? input.headers : undefined);
