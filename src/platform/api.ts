@@ -92,3 +92,26 @@ export function localTaskStreamUrl(taskId: string | undefined, cloudMode: boolea
 export function requireLocalExecution(): void {
   if (isCloud) throw new Error('CLOUD_EXECUTIONS_NOT_AVAILABLE');
 }
+
+/** Self-hosted Baserow credential management must not pretend a rejected write succeeded.
+ * Cloud's credential API has a different secret contract and is not wired to this editor yet. */
+export async function createBaserowCredentialRequest(input: { name: string; baseUrl: string; token: string }): Promise<import('../types').Credential> {
+  if (isCloud) throw new Error('Cloud Baserow credential management is not available yet');
+  const response = await fetch('/api/credentials', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: input.name, provider: 'baserow', config: { baseUrl: input.baseUrl, token: input.token } })
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error('Failed to save credential: ' + (typeof data?.error === 'string' ? data.error : 'HTTP ' + response.status));
+  if (!data || typeof data.id !== 'string') throw new Error('Invalid credential response');
+  return data as import('../types').Credential;
+}
+
+export async function deleteBaserowCredentialRequest(id: string): Promise<void> {
+  if (isCloud) throw new Error('Cloud Baserow credential management is not available yet');
+  const response = await fetch('/api/credentials/' + encodeURIComponent(id), { method: 'DELETE' });
+  if (response.ok) return;
+  const data = await response.json().catch(() => null);
+  throw new Error('Failed to delete credential: ' + (typeof data?.error === 'string' ? data.error : 'HTTP ' + response.status));
+}

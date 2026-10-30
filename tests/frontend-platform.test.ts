@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { isCloud } from '../src/platform/runtime';
-import { taskFetch, deleteTaskRequest, localTaskStreamUrl, taskEditorResourcePath, taskEditorResourceItems, cloudApiRequestPath } from '../src/platform/api';
+import { taskFetch, deleteTaskRequest, createBaserowCredentialRequest, deleteBaserowCredentialRequest, localTaskStreamUrl, taskEditorResourcePath, taskEditorResourceItems, cloudApiRequestPath } from '../src/platform/api';
 assert.equal(isCloud, false);
 assert.equal(localTaskStreamUrl('task_123', false), '/api/tasks/task_123/stream');
 assert.equal(localTaskStreamUrl('task/a', false), '/api/tasks/task%2Fa/stream');
@@ -65,5 +65,40 @@ assert.deepEqual(taskEditorResourceItems('cookie-states', { items: sample }, tru
 assert.deepEqual(taskEditorResourceItems('cabinets', { items: sample }, true), sample);
 assert.deepEqual(taskEditorResourceItems('cookie-states', { states: sample }, true), []);
 assert.deepEqual(taskEditorResourceItems('cabinets', null, true), []);
+
+
+// Credential write failures must leave the selected Baserow connection intact.
+// Verify success, API errors and non-JSON upstream failures independently.
+const originalCredentialFetch = globalThis.fetch;
+try {
+    const input = { name: 'Baserow', baseUrl: 'https://api.baserow.io', token: 'test-secret' };
+    globalThis.fetch = (async (path: RequestInfo | URL, init?: RequestInit) => {
+        assert.equal(path, '/api/credentials');
+        assert.equal(init?.method, 'POST');
+        assert.deepEqual(JSON.parse(String(init?.body)), {
+            name: 'Baserow', provider: 'baserow',
+            config: { baseUrl: 'https://api.baserow.io', token: 'test-secret' }
+        });
+        return Response.json({ id: 'cred_123', name: 'Baserow', provider: 'baserow', config: { baseUrl: input.baseUrl, token: '••••••••' } });
+    }) as typeof fetch;
+    assert.equal((await createBaserowCredentialRequest(input)).id, 'cred_123');
+    globalThis.fetch = (async () => Response.json({ error: 'INVALID_BASE_URL' }, { status: 400 })) as typeof fetch;
+    await assert.rejects(createBaserowCredentialRequest(input), /INVALID_BASE_URL/);
+    globalThis.fetch = (async () => new Response('Unavailable', { status: 503 })) as typeof fetch;
+    await assert.rejects(createBaserowCredentialRequest(input), /HTTP 503/);
+    globalThis.fetch = (async () => new Response('{}')) as typeof fetch;
+    await assert.rejects(createBaserowCredentialRequest(input), /Invalid credential response/);
+
+    globalThis.fetch = (async (path: RequestInfo | URL, init?: RequestInit) => {
+        assert.equal(path, '/api/credentials/cred_123');
+        assert.equal(init?.method, 'DELETE');
+        return Response.json({ ok: true });
+    }) as typeof fetch;
+    await deleteBaserowCredentialRequest('cred_123');
+    globalThis.fetch = (async () => Response.json({ error: 'CREDENTIAL_NOT_FOUND' }, { status: 404 })) as typeof fetch;
+    await assert.rejects(deleteBaserowCredentialRequest('cred_123'), /CREDENTIAL_NOT_FOUND/);
+    globalThis.fetch = (async () => new Response('Unavailable', { status: 503 })) as typeof fetch;
+    await assert.rejects(deleteBaserowCredentialRequest('cred_123'), /HTTP 503/);
+} finally { globalThis.fetch = originalCredentialFetch; }
 
 console.log('Default self-hosted frontend API unchanged');
