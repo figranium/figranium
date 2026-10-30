@@ -1,4 +1,4 @@
-import { taskFetch, localTaskStreamUrl } from '../platform/api';
+import { taskFetch, deleteTaskRequest, localTaskStreamUrl } from '../platform/api';
 import { isCloud } from '../platform/runtime';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Task } from '../types';
@@ -99,12 +99,17 @@ export function useTasks(
 
     const deleteTask = useCallback(async (id: string, currentPath: string) => {
         if (!await requestConfirm('Are you sure you want to delete this task?')) return;
-        await taskFetch(`/api/tasks/${id}`, { method: 'DELETE' });
-        loadTasks();
+        try {
+            await deleteTaskRequest(id);
+        } catch (error) {
+            showAlert(error instanceof Error ? error.message : 'Failed to delete task.', 'error');
+            return;
+        }
+        await loadTasks();
         if (currentPath.includes(id)) {
             navigate('/dashboard');
         }
-    }, [requestConfirm, loadTasks, navigate]);
+    }, [requestConfirm, loadTasks, navigate, showAlert]);
 
     const saveTask = useCallback(async (markTaskAsSaved: (task: Task | null) => void, currentPath: string, taskOverride?: Task, createVersion: boolean = false) => {
         const taskToUpdate = taskOverride || currentTaskRef.current;
