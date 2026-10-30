@@ -32,7 +32,7 @@ export async function authorizedCloudFetch(path: string, init: RequestInit = {})
   if (!token) throw new Error('CLOUD_AUTH_REQUIRED');
   const headers = new Headers(init.headers);
   headers.set('Authorization', 'Bearer ' + token);
-  return fetch(safePath, { ...init, headers, credentials: 'omit', redirect: 'error' });
+  return fetch(safePath, { ...init, headers, credentials: 'same-origin', redirect: 'error' });
 }
 
 /** Install once from the Cloud entry point. Existing shared screens deliberately
