@@ -28,14 +28,17 @@ const AccountPanel: React.FC<{ onNotify: (message: string, tone?: 'success' | 'e
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ channel: next })
             });
-            if (!response.ok) throw new Error('Could not save update channel');
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null);
+                throw new Error(`Could not save update channel (HTTP ${response.status}: ${payload?.error || 'UNKNOWN_ERROR'}).`);
+            }
             const data = await response.json();
             setChannel(data.channel === 'edge' ? 'edge' : 'stable');
             // The Worker selects the corresponding static bundle using the
             // HttpOnly channel cookie returned by this authenticated request.
             window.location.reload();
-        } catch {
-            onNotify('Could not save update channel.', 'error');
+        } catch (error) {
+            onNotify(error instanceof Error ? error.message : 'Could not save update channel.', 'error');
         } finally {
             setSaving(false);
         }
