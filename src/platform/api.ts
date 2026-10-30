@@ -1,5 +1,21 @@
 import { isCloud, cloudAuth } from './runtime';
 // Self-hosted requests are unchanged. Cloud requests never send local session cookies.
+
+export type TaskEditorResourceKind = 'cookie-states' | 'cabinets';
+
+// The Cloud Worker exposes tenant-scoped resource collections under /api/v1.
+// Self-hosted Figranium keeps its existing /api routes and response shapes.
+export function taskEditorResourcePath(kind: TaskEditorResourceKind, cloudMode: boolean = isCloud): string {
+  return `${cloudMode ? '/api/v1' : '/api'}/${kind}`;
+}
+
+export function taskEditorResourceItems<T>(kind: TaskEditorResourceKind, payload: unknown, cloudMode: boolean = isCloud): T[] {
+  if (!payload || typeof payload !== 'object') return [];
+  const data = payload as Record<string, unknown>;
+  const items = data[cloudMode ? 'items' : kind === 'cookie-states' ? 'states' : 'cabinets'];
+  return Array.isArray(items) ? items as T[] : [];
+}
+
 export async function authorizedCloudFetch(path: string, init: RequestInit = {}): Promise<Response> {
   if (!isCloud) throw new Error('CLOUD_ONLY');
   const token = await cloudAuth().getAccessToken();
