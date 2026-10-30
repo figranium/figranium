@@ -159,6 +159,7 @@ body {
 .theme-border-strong { border-color: var(--app-border-strong); }
 .theme-input { background-color: var(--app-input); }
 .theme-accent { color: var(--app-accent); }
+[data-theme='dark'] .sidebar-inactive-icon { color: var(--app-text-muted); }
 .theme-accent-bg { background-color: var(--app-accent); color: var(--app-accent-text); }
 .theme-modal-backdrop { background-color: var(--app-modal-backdrop); }
 .theme-modal-elevation { box-shadow: var(--app-modal-shadow); }

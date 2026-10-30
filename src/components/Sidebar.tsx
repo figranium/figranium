@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, currentScreen 
                         aria-label={title}
                         aria-current={activeScreen === screen ? 'page' : undefined}
                     >
-                        <TablerIcon name={icon} className={`text-2xl ${activeScreen === screen ? 'theme-accent' : 'theme-text'}`} />
+                        <TablerIcon name={icon} className={`text-2xl ${activeScreen === screen ? 'theme-accent' : 'theme-text sidebar-inactive-icon'}`} />
                     </button>
                 ))}
             </div>
@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, currentScreen 
                 aria-label="Settings (Alt/Option + 5)"
                 aria-current={activeScreen === 'settings' ? 'page' : undefined}
             >
-                <TablerIcon name="settings" className={`text-2xl ${activeScreen === 'settings' ? 'theme-accent' : 'theme-text'}`} />
+                <TablerIcon name="settings" className={`text-2xl ${activeScreen === 'settings' ? 'theme-accent' : 'theme-text sidebar-inactive-icon'}`} />
             </button>
         </aside>
     );
