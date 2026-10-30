@@ -9,7 +9,9 @@ interface VersionPanelProps {
 const VersionPanel = ({ version, buildChannel, buildCommit }: VersionPanelProps) => {
     const [copied, setCopied] = useState(false);
     const displayVersion = version ? `v${version}` : 'Unknown';
-    const isEdgeBuild = buildChannel === 'edge';
+    // Cloud builds Edge with Vite's /edge/ base. Keep the visible channel
+    // truthful even when an older pipeline supplies stale custom metadata.
+    const isEdgeBuild = buildChannel === 'edge' || import.meta.env.BASE_URL === '/edge/';
     const buildIdentifier = isEdgeBuild && buildCommit ? `Edge · ${buildCommit}` : 'Edge build';
 
     const handleCopy = async () => {
