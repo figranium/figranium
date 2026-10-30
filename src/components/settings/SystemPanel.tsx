@@ -3,6 +3,7 @@ import TablerIcon from '../TablerIcon';
 import { ConfirmRequest } from '../../types';
 import CustomSelect from '../common/CustomSelect';
 import { FIPTCHA_VERSION } from '../../utils/appInfo';
+import { isCloud } from '../../platform/runtime';
 
 type SystemData = {
     retentionDays: number | null;
@@ -21,11 +22,18 @@ export function CaptchaAssistancePanel({ onNotify }: { onNotify: (message: strin
     const [captcha, setCaptcha] = useState<NonNullable<SystemData['captcha']> | null>(null);
 
     useEffect(() => {
+        if (isCloud) return;
         fetch('/api/settings/system', { credentials: 'include' })
             .then((response) => response.ok ? response.json() : Promise.reject())
             .then((data) => setCaptcha(data.captcha || null))
             .catch(() => onNotify('Failed to load CAPTCHA assistance status.', 'error'));
     }, [onNotify]);
+
+    if (isCloud) return <section className="app-panel p-7">
+        <h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3>
+        <p className="text-xs theme-text-faint mt-1">Cloud runners do not use the device-local CAPTCHA helper.</p>
+        <p className="mt-5 text-xs theme-text-muted">Local solver: <span className="font-bold theme-text">Not available on Cloud</span></p>
+    </section>;
 
     return <section className="app-panel p-7">
         <h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3>

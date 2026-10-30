@@ -53,7 +53,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
 }) => {
     const navigate = useNavigate();
     const { section: sectionParam } = useParams<{ section?: string }>();
-    const routeSection = SETTINGS_SECTIONS.some((item) => item.id === sectionParam && (isCloud || item.id !== 'account')) ? sectionParam as SettingsSection : 'api-keys';
+    const routeSection = SETTINGS_SECTIONS.some((item) => item.id === sectionParam &&
+        (isCloud ? item.id !== 'advanced' : item.id !== 'account'))
+        ? sectionParam as SettingsSection
+        : 'api-keys';
     const [section, setSection] = useState<SettingsSection>(routeSection);
     useEffect(() => {
         setSection(routeSection);
@@ -522,7 +525,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <nav className="settings-nav" aria-label="Settings sections">
                 <div className="settings-nav-title">Settings</div>
                 <div className="settings-nav-list">
-                    {SETTINGS_SECTIONS.filter(item => isCloud || item.id !== 'account').map((item) => (
+                    {SETTINGS_SECTIONS.filter(item => isCloud ? item.id !== 'advanced' : item.id !== 'account').map((item) => (
                         <button key={item.id} onClick={() => selectSection(item.id)} className={`settings-nav-item ${section === item.id ? 'settings-nav-item-active' : ''}`} aria-current={section === item.id ? 'page' : undefined}>
                             <TablerIcon name={item.icon} className="text-lg" />
                             <span>{item.label}</span>
