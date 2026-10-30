@@ -10,11 +10,13 @@ import ThemePanel from './settings/ThemePanel';
 import SystemPanel, { CaptchaAssistancePanel } from './settings/SystemPanel';
 import { APP_BUILD_CHANNEL, APP_BUILD_COMMIT, APP_VERSION, PLAYWRIGHT_VERSION } from '@/utils/appInfo';
 import TablerIcon from './TablerIcon';
+import { isCloud } from '../platform/runtime';
+import AccountPanel from './settings/AccountPanel';
 import { useTheme } from '../hooks/useTheme';
 import { useNavigate, useParams } from 'react-router-dom';
 import { formatLabel } from '../utils/taskUtils';
 
-type SettingsSection = 'api-keys' | 'connections' | 'user-agent' | 'proxies' | 'advanced' | 'appearance' | 'about';
+type SettingsSection = 'api-keys' | 'connections' | 'user-agent' | 'proxies' | 'advanced' | 'appearance' | 'about' | 'account';
 
 const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
     { id: 'api-keys', label: 'API Keys', icon: 'key' },
@@ -23,6 +25,7 @@ const SETTINGS_SECTIONS: { id: SettingsSection; label: string; icon: string }[] 
     { id: 'proxies', label: 'Proxies', icon: 'security' },
     { id: 'appearance', label: 'Appearance', icon: 'palette' },
     { id: 'about', label: 'About', icon: 'info' },
+    { id: 'account', label: 'Account', icon: 'user-circle' },
     { id: 'advanced', label: 'Advanced', icon: 'settings-cog' },
 ];
 
@@ -33,6 +36,7 @@ const SETTINGS_DESCRIPTIONS: Record<SettingsSection, string> = {
     proxies: 'Route task traffic through managed proxy servers.',
     appearance: 'Set the look and theme of your workspace.',
     about: 'Version and product information.',
+    account: 'Cloud workspace preferences and subscription.',
     advanced: 'Manage data, account controls, and workspace maintenance.'
 };
 
@@ -49,7 +53,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
 }) => {
     const navigate = useNavigate();
     const { section: sectionParam } = useParams<{ section?: string }>();
-    const routeSection = SETTINGS_SECTIONS.some((item) => item.id === sectionParam) ? sectionParam as SettingsSection : 'api-keys';
+    const routeSection = SETTINGS_SECTIONS.some((item) => item.id === sectionParam && (isCloud || item.id !== 'account')) ? sectionParam as SettingsSection : 'api-keys';
     const [section, setSection] = useState<SettingsSection>(routeSection);
     useEffect(() => {
         setSection(routeSection);
@@ -518,7 +522,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <nav className="settings-nav" aria-label="Settings sections">
                 <div className="settings-nav-title">Settings</div>
                 <div className="settings-nav-list">
-                    {SETTINGS_SECTIONS.map((item) => (
+                    {SETTINGS_SECTIONS.filter(item => isCloud || item.id !== 'account').map((item) => (
                         <button key={item.id} onClick={() => selectSection(item.id)} className={`settings-nav-item ${section === item.id ? 'settings-nav-item-active' : ''}`} aria-current={section === item.id ? 'page' : undefined}>
                             <TablerIcon name={item.icon} className="text-lg" />
                             <span>{item.label}</span>
@@ -553,6 +557,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                             onSelect={setTheme}
                         />
                     )}
+                    {isCloud && section === 'account' && <AccountPanel onNotify={onNotify} />}
                     {section === 'advanced' && <SystemPanel onConfirm={onConfirm} onNotify={onNotify} onLogout={onLogout} />}
                     {section === 'about' && (
                         <div className="space-y-5">
