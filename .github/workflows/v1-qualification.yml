@@ -68,6 +68,9 @@ jobs:
       - name: Test Task import HTTP failure handling
         run: npx -y vite-node tests/task-import.test.ts
 
+      - name: Test Cloud frontend API authorization boundary
+        run: npx -y vite-node tests/frontend-platform.test.ts
+
       - name: Build frontend
         run: npm run build
 

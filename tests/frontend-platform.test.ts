@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { isCloud } from '../src/platform/runtime';
-import { taskFetch, localTaskStreamUrl, taskEditorResourcePath, taskEditorResourceItems } from '../src/platform/api';
+import { taskFetch, localTaskStreamUrl, taskEditorResourcePath, taskEditorResourceItems, cloudApiRequestPath } from '../src/platform/api';
 assert.equal(isCloud, false);
 assert.equal(localTaskStreamUrl('task_123', false), '/api/tasks/task_123/stream');
 assert.equal(localTaskStreamUrl('task/a', false), '/api/tasks/task%2Fa/stream');
@@ -19,6 +19,17 @@ try {
     await taskFetch('/api/tasks?update=true', { method: 'POST', body: '{}' });
     assert.equal(count, 1);
 } finally { globalThis.fetch = oldFetch; }
+
+// A Cloud bearer token must never be sent to another origin, a non-API
+// endpoint, or a path that escapes the tenant-scoped /api/v1 boundary.
+const cloudOrigin = 'https://cloud.figranium.dev';
+assert.equal(cloudApiRequestPath('/api/v1/tasks?limit=5', cloudOrigin), '/api/v1/tasks?limit=5');
+assert.equal(cloudApiRequestPath(cloudOrigin + '/api/v1/executions', cloudOrigin), '/api/v1/executions');
+assert.throws(() => cloudApiRequestPath('https://attacker.example/api/v1/tasks', cloudOrigin), /UNSUPPORTED_CLOUD_API/);
+assert.throws(() => cloudApiRequestPath('//attacker.example/api/v1/tasks', cloudOrigin), /UNSUPPORTED_CLOUD_API/);
+assert.throws(() => cloudApiRequestPath('/api/v1/../credentials', cloudOrigin), /UNSUPPORTED_CLOUD_API/);
+assert.throws(() => cloudApiRequestPath('/api/credentials', cloudOrigin), /UNSUPPORTED_CLOUD_API/);
+assert.throws(() => cloudApiRequestPath('/api/v1evil/tasks', cloudOrigin), /UNSUPPORTED_CLOUD_API/);
 
 // Task Settings must use tenant-scoped Cloud endpoints and normalize the
 // Worker's { items } payload without changing self-hosted response contracts.
