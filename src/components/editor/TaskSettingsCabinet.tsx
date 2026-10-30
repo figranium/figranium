@@ -8,7 +8,7 @@ import ApiTab from './ApiTab';
 import CustomSelect from '../common/CustomSelect';
 import { formatLabel } from '../../utils/taskUtils';
 import { isCloud } from '../../platform/runtime';
-import { authorizedCloudFetch, taskEditorResourceItems, taskEditorResourcePath, type TaskEditorResourceKind } from '../../platform/api';
+import { authorizedCloudFetch, taskEditorResourceItems, taskEditorResourcePath, createBaserowCredentialRequest, deleteBaserowCredentialRequest, type TaskEditorResourceKind } from '../../platform/api';
 
 const TRANSLATION_LANGUAGES = [
     { value: 'english', label: 'English' },
@@ -64,6 +64,7 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const [newCred, setNewCred] = React.useState({ name: '', baseUrl: 'https://api.baserow.io', token: '' });
         const [showNewCredForm, setShowNewCredForm] = React.useState(false);
         const [credSaving, setCredSaving] = React.useState(false);
+        const [credentialError, setCredentialError] = React.useState('');
         const [outputTables, setOutputTables] = React.useState<{ id: string; name: string; databaseId: string; databaseName: string }[]>([]);
         const [tableFields, setTableFields] = React.useState<{ name: string; type: string }[]>([]);
         const [tablesLoading, setTablesLoading] = React.useState(false);
@@ -163,31 +164,32 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
         const saveNewCredential = async () => {
             if (!newCred.name || !newCred.token) return;
             setCredSaving(true);
+            setCredentialError('');
             try {
-                const resp = await fetch('/api/credentials', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: newCred.name, provider: 'baserow', config: { baseUrl: newCred.baseUrl, token: newCred.token } })
-                });
-                if (resp.ok) {
-                    const created = await resp.json();
-                    setCredentials(prev => [...prev, created]);
-                    setNewCred({ name: '', baseUrl: 'https://api.baserow.io', token: '' });
-                    setShowNewCredForm(false);
-                    if (!currentTask.output?.credentialId) {
-                        onUpdateTask({ output: { ...currentTask.output as TaskOutput, credentialId: created.id, provider: 'baserow', tableId: currentTask.output?.tableId || '', onError: currentTask.output?.onError || 'ignore' } });
-                    }
+                const created = await createBaserowCredentialRequest(newCred);
+                setCredentials(prev => [...prev, created]);
+                setNewCred({ name: '', baseUrl: 'https://api.baserow.io', token: '' });
+                setShowNewCredForm(false);
+                if (!currentTask.output?.credentialId) {
+                    onUpdateTask({ output: { ...currentTask.output as TaskOutput, credentialId: created.id, provider: 'baserow', tableId: currentTask.output?.tableId || '', onError: currentTask.output?.onError || 'ignore' } });
                 }
+            } catch (error) {
+                setCredentialError(error instanceof Error ? error.message : 'Could not save credential');
             } finally {
                 setCredSaving(false);
             }
         };
 
         const deleteCredential = async (id: string) => {
-            await fetch(`/api/credentials/${id}`, { method: 'DELETE' });
-            setCredentials(prev => prev.filter(c => c.id !== id));
-            if (currentTask.output?.credentialId === id) {
-                onUpdateTask({ output: { ...currentTask.output as TaskOutput, credentialId: '' } });
+            setCredentialError('');
+            try {
+                await deleteBaserowCredentialRequest(id);
+                setCredentials(prev => prev.filter(c => c.id !== id));
+                if (currentTask.output?.credentialId === id) {
+                    onUpdateTask({ output: { ...currentTask.output as TaskOutput, credentialId: '' } });
+                }
+            } catch (error) {
+                setCredentialError(error instanceof Error ? error.message : 'Could not delete credential');
             }
         };
 
@@ -585,6 +587,8 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
                                                 />
                                             );
                                         })()}
+
+                                        {credentialError && <p role="alert" className="text-xs text-red-400">{credentialError}</p>}
 
                                         {/* Credential list with delete */}
                                         {credentials.filter(c => c.provider === currentTask.output?.provider).length > 0 && (
