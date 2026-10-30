@@ -43,22 +43,24 @@ const Sidebar: React.FC<SidebarProps> = ({ onNavigate, onNewTask, currentScreen 
                         key={screen}
                         data-testid={screen === 'dashboard' ? 'sidebar-dashboard' : undefined}
                         onClick={() => onNavigate(screen)}
-                        className={`w-12 h-12 rounded-2xl cursor-pointer flex items-center justify-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${activeScreen === screen ? 'theme-highlight' : 'theme-text-faint theme-hover'}`}
+                        className={`w-12 h-12 rounded-2xl cursor-pointer flex items-center justify-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${activeScreen === screen ? '' : 'theme-hover'}`}
                         title={title}
                         aria-label={title}
+                        aria-current={activeScreen === screen ? 'page' : undefined}
                     >
-                        <TablerIcon name={icon} className="text-2xl theme-text" />
+                        <TablerIcon name={icon} className={`text-2xl ${activeScreen === screen ? 'theme-accent' : 'theme-text'}`} />
                     </button>
                 ))}
             </div>
 
             <button
                 onClick={() => onNavigate('settings')}
-                className={`w-12 h-12 rounded-2xl cursor-pointer flex items-center justify-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${activeScreen === 'settings' ? 'theme-highlight' : 'theme-text-faint theme-hover'}`}
+                className={`w-12 h-12 rounded-2xl cursor-pointer flex items-center justify-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${activeScreen === 'settings' ? '' : 'theme-hover'}`}
                 title="Settings (Alt/Option + 5)"
                 aria-label="Settings (Alt/Option + 5)"
+                aria-current={activeScreen === 'settings' ? 'page' : undefined}
             >
-                <TablerIcon name="settings" className="text-2xl theme-text" />
+                <TablerIcon name="settings" className={`text-2xl ${activeScreen === 'settings' ? 'theme-accent' : 'theme-text'}`} />
             </button>
         </aside>
     );

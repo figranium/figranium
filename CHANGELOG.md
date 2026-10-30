@@ -1,6 +1,12 @@
 # Changelog
 
-## [0.22.0] - 2026-10-27
+## [0.22.0] - 2026-10-30
+
+### Cloud integration
+- Added a shared frontend provider boundary and an isolated Cloud runner, preserving self-hosted authentication and execution behavior.
+- Connected Cloud Tasks, editor sessions, browser controls, execution history, progress, results, and cancellation to authenticated tenant-scoped APIs. Improved loading, error reporting, and execution source labels.
+- Added Cloud account settings with Stable and Edge channel selection, immediate frontend switching, and billing placeholders. Restricted bearer requests to same-origin v1 APIs and retained the channel preference cookie.
+- Made the Cloud frontend use injected Neon authentication and fixed shared stylesheet generation and public Template loading.
 
 ### API keys and authorization
 - Added API key renaming in Settings, with validation and regression coverage.
@@ -11,9 +17,12 @@
 - Fixed action dragging so pointer-up uses the final drop target reliably, including rapid movements.
 - Improved execution source labels and URL-variable display, refined scheduling and settings surfaces, and removed obsolete editor UI components.
 - Added optional stacked capture-and-log presentation controls to Results pane and drawer consumers.
+- Highlighted the active sidebar page using its theme accent color without a background tile.
+- Kept execution history visible during background polling, detected failed or partial Task imports, and preserved the editor and Baserow credentials when requests fail.
 
 ### Runtime, dependencies, and maintenance
 - Updated CloakBrowser to 0.6.4, Express to 5.3.0, React to 19.3.1, Vite to 8.3.5, plus cookie, jsdom, react-window, PostCSS, and related lockfiles.
+- Updated Node types, React Router, Tabler icons, and express-rate-limit; corrected the selector-based while example in the agent specification.
 - Refreshed Docker publishing metadata, project screenshots, and UI styling for clearer typography and lighter controls.
 
 ## [0.21.2] - 2026-10-22
