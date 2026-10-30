@@ -7,6 +7,8 @@ import VariablesTab from './VariablesTab';
 import ApiTab from './ApiTab';
 import CustomSelect from '../common/CustomSelect';
 import { formatLabel } from '../../utils/taskUtils';
+import { isCloud } from '../../platform/runtime';
+import { authorizedCloudFetch, taskEditorResourceItems, taskEditorResourcePath, type TaskEditorResourceKind } from '../../platform/api';
 
 const TRANSLATION_LANGUAGES = [
     { value: 'english', label: 'English' },
@@ -99,8 +101,20 @@ const TaskSettingsCabinet: React.FC<TaskSettingsCabinetProps & {
 
         React.useEffect(() => {
             if (!isOpen || activeTab !== 'cabinets') return;
-            fetch('/api/cookie-states').then(r => r.ok ? r.json() : null).then(data => setCookieStates(data?.states || [])).catch(() => setCookieStates([]));
-            fetch('/api/cabinets').then(r => r.ok ? r.json() : null).then(data => setCabinets(data?.cabinets || [])).catch(() => setCabinets([]));
+            let active = true;
+            const fetchItems = async <T,>(kind: TaskEditorResourceKind): Promise<T[]> => {
+                const path = taskEditorResourcePath(kind);
+                const response = await (isCloud ? authorizedCloudFetch(path) : fetch(path));
+                if (!response.ok) throw new Error('RESOURCE_UNAVAILABLE');
+                return taskEditorResourceItems<T>(kind, await response.json());
+            };
+            void fetchItems<{ id: string; name: string; cookies: number }>('cookie-states')
+                .then(items => { if (active) setCookieStates(items); })
+                .catch(() => { if (active) setCookieStates([]); });
+            void fetchItems<{ id: string; name: string; isDefault?: boolean }>('cabinets')
+                .then(items => { if (active) setCabinets(items); })
+                .catch(() => { if (active) setCabinets([]); });
+            return () => { active = false; };
         }, [isOpen, activeTab]);
 
         React.useEffect(() => {
