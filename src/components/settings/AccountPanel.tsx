@@ -31,7 +31,9 @@ const AccountPanel: React.FC<{ onNotify: (message: string, tone?: 'success' | 'e
             if (!response.ok) throw new Error('Could not save update channel');
             const data = await response.json();
             setChannel(data.channel === 'edge' ? 'edge' : 'stable');
-            onNotify('Update channel preference saved.', 'success');
+            // The Worker selects the corresponding static bundle using the
+            // HttpOnly channel cookie returned by this authenticated request.
+            window.location.reload();
         } catch {
             onNotify('Could not save update channel.', 'error');
         } finally {
@@ -51,7 +53,7 @@ const AccountPanel: React.FC<{ onNotify: (message: string, tone?: 'success' | 'e
                         </label>
                     ))}
                 </fieldset>
-                <p className="mt-3 text-xs theme-text-faint">Your selection is saved to your workspace. Cloud deployment routing will honor this preference when per-channel delivery is enabled.</p>
+                <p className="mt-3 text-xs theme-text-faint">Changing channels reloads Cloud with the selected release. Stable receives published releases; Edge follows the latest development build.</p>
             </section>
             <section className="app-panel p-7">
                 <h3 className="text-sm font-bold theme-text">Subscription</h3>
