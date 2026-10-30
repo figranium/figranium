@@ -54,6 +54,15 @@ export function installCloudApiAdapter(): void {
     return nativeFetch(input, { ...init, headers, credentials: 'omit', redirect: 'error' });
   };
 }
+// A failed delete must not be treated as a successful Task removal by the UI.
+export async function deleteTaskRequest(id: string): Promise<void> {
+  const response = await taskFetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (response.ok) return;
+  const payload = await response.json().catch(() => null);
+  const detail = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+  throw new Error(`Failed to delete task: ${detail}`);
+}
+
 export async function taskFetch(path: string, init: RequestInit = {}): Promise<Response> {
   if (!isCloud) return fetch(path, init);
   const url = new URL(path, window.location.origin);

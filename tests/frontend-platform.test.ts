@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { isCloud } from '../src/platform/runtime';
-import { taskFetch, localTaskStreamUrl, taskEditorResourcePath, taskEditorResourceItems, cloudApiRequestPath } from '../src/platform/api';
+import { taskFetch, deleteTaskRequest, localTaskStreamUrl, taskEditorResourcePath, taskEditorResourceItems, cloudApiRequestPath } from '../src/platform/api';
 assert.equal(isCloud, false);
 assert.equal(localTaskStreamUrl('task_123', false), '/api/tasks/task_123/stream');
 assert.equal(localTaskStreamUrl('task/a', false), '/api/tasks/task%2Fa/stream');
@@ -19,6 +19,27 @@ try {
     await taskFetch('/api/tasks?update=true', { method: 'POST', body: '{}' });
     assert.equal(count, 1);
 } finally { globalThis.fetch = oldFetch; }
+
+// A rejected Task deletion must not be mistaken for success, including when
+// the server sends an HTML/plain-text error instead of JSON.
+const originalDeleteFetch = globalThis.fetch;
+try {
+    let deleteCalls = 0;
+    globalThis.fetch = (async (path: RequestInfo | URL, init?: RequestInit) => {
+        deleteCalls++;
+        assert.equal(path, '/api/tasks/task_123');
+        assert.equal(init?.method, 'DELETE');
+        return new Response(null, { status: 204 });
+    }) as typeof fetch;
+    await deleteTaskRequest('task_123');
+    assert.equal(deleteCalls, 1);
+    globalThis.fetch = (async () => new Response(JSON.stringify({ error: 'TASK_NOT_FOUND' }), {
+        status: 404, headers: { 'content-type': 'application/json' }
+    })) as typeof fetch;
+    await assert.rejects(deleteTaskRequest('task_123'), /TASK_NOT_FOUND/);
+    globalThis.fetch = (async () => new Response('Unavailable', { status: 503 })) as typeof fetch;
+    await assert.rejects(deleteTaskRequest('task_123'), /HTTP 503/);
+} finally { globalThis.fetch = originalDeleteFetch; }
 
 // A Cloud bearer token must never be sent to another origin, a non-API
 // endpoint, or a path that escapes the tenant-scoped /api/v1 boundary.
