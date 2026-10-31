@@ -38,6 +38,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<TaskSort>('recent');
     const [executions, setExecutions] = useState<Execution[]>([]);
+    const [remainingCu, setRemainingCu] = useState<number | null>(null);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -48,6 +49,26 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
                 if (error?.name !== 'AbortError') setExecutions([]);
             });
         return () => controller.abort();
+    }, []);
+
+    useEffect(() => {
+        if (!isCloud) return;
+        const controller = new AbortController();
+        const loadBalance = async () => {
+            try {
+                const response = await authorizedCloudFetch('/api/v1/billing', { signal: controller.signal });
+                if (!response.ok) throw new Error('Unable to load CU balance');
+                const data = await response.json();
+                const value = Number(data.remainingCu);
+                if (!controller.signal.aborted) setRemainingCu(Number.isFinite(value) ? Math.max(0, value) : null);
+            } catch {
+                if (!controller.signal.aborted) setRemainingCu(null);
+            }
+        };
+        void loadBalance();
+        const refresh = () => { void loadBalance(); };
+        window.addEventListener('focus', refresh);
+        return () => { controller.abort(); window.removeEventListener('focus', refresh); };
     }, []);
 
     useEffect(() => {
@@ -93,9 +114,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
             { label: 'Executions', value: String(executions.length) },
             { label: 'Failed executions', value: String(failed) },
             { label: 'Success rate', value: finishedCount ? `${Math.round((succeeded / finishedCount) * 100)}%` : '0%' },
-            { label: 'Average runtime', value: finishedCount ? `${Math.round(totalDuration / finishedCount)}ms` : '0ms' },
+            isCloud
+                ? { label: 'CU remaining', value: remainingCu === null ? '—' : String(remainingCu) }
+                : { label: 'Average runtime', value: finishedCount ? `${Math.round(totalDuration / finishedCount)}ms` : '0ms' },
         ];
-    }, [executions, tasks.length]);
+    }, [executions, tasks.length, remainingCu]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         Array.from(event.target.files || []).forEach(onImportTasks);
