@@ -24,7 +24,7 @@
 }
 
 .app-page-title {
-    font-size: clamp(1.625rem, 2.25vw, 2rem);
+    font-size: clamp(1.25rem, 1.75vw, 1.5rem);
     line-height: 1.1;
     font-weight: 400;
     letter-spacing: normal;
