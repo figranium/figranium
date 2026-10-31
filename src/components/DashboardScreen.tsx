@@ -112,11 +112,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
         return [
             { label: 'Tasks', value: String(tasks.length) },
             { label: 'Executions', value: String(executions.length) },
-            ...(isCloud
-                ? [{ label: 'CU remaining', value: remainingCu === null ? '—' : String(remainingCu) }]
-                : [{ label: 'Failed executions', value: String(failed) },
-                   { label: 'Success rate', value: finishedCount ? `${Math.round((succeeded / finishedCount) * 100)}%` : '0%' },
-                   { label: 'Average runtime', value: finishedCount ? `${Math.round(totalDuration / finishedCount)}ms` : '0ms' }]),
+            { label: 'Failed executions', value: String(failed) },
+            { label: 'Success rate', value: finishedCount ? `${Math.round((succeeded / finishedCount) * 100)}%` : '0%' },
+            isCloud
+                ? { label: 'CU remaining', value: remainingCu === null ? '—' : String(remainingCu) }
+                : { label: 'Average runtime', value: finishedCount ? `${Math.round(totalDuration / finishedCount)}ms` : '0ms' },
         ];
     }, [executions, tasks.length, remainingCu]);
 
