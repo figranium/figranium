@@ -38,7 +38,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<TaskSort>('recent');
     const [executions, setExecutions] = useState<Execution[]>([]);
-    const [remainingCu, setRemainingCu] = useState<number | null>(null);
+    const [cuBalance, setCuBalance] = useState<{ remaining: number; allowance: number } | null>(null);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -59,10 +59,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
                 const response = await authorizedCloudFetch('/api/v1/billing', { signal: controller.signal });
                 if (!response.ok) throw new Error('Unable to load CU balance');
                 const data = await response.json();
-                const value = Number(data.remainingCu);
-                if (!controller.signal.aborted) setRemainingCu(Number.isFinite(value) ? Math.max(0, value) : null);
+                const remaining = Number(data.remainingCu);
+                const allowance = Number(data.allowanceCu);
+                if (!controller.signal.aborted) setCuBalance(
+                    Number.isFinite(remaining) && Number.isFinite(allowance)
+                        ? { remaining: Math.max(0, remaining), allowance: Math.max(0, allowance) }
+                        : null
+                );
             } catch {
-                if (!controller.signal.aborted) setRemainingCu(null);
+                if (!controller.signal.aborted) setCuBalance(null);
             }
         };
         void loadBalance();
@@ -115,10 +120,10 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ tasks, tasksLoaded, t
             { label: 'Failed executions', value: String(failed) },
             { label: 'Success rate', value: finishedCount ? `${Math.round((succeeded / finishedCount) * 100)}%` : '0%' },
             isCloud
-                ? { label: 'CU remaining', value: remainingCu === null ? '—' : String(remainingCu) }
+                ? { label: 'CU remaining', value: cuBalance === null ? '—' : `${cuBalance.remaining.toLocaleString(undefined, { maximumFractionDigits: 1 })} / ${cuBalance.allowance.toLocaleString(undefined, { maximumFractionDigits: 1 })}` }
                 : { label: 'Average runtime', value: finishedCount ? `${Math.round(totalDuration / finishedCount)}ms` : '0ms' },
         ];
-    }, [executions, tasks.length, remainingCu]);
+    }, [executions, tasks.length, cuBalance]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         Array.from(event.target.files || []).forEach(onImportTasks);
