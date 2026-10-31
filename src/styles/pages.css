@@ -27,7 +27,7 @@
     font-size: clamp(1.75rem, 2.5vw, 2.25rem);
     line-height: 1.1;
     font-weight: 400;
-    letter-spacing: -0.035em;
+    letter-spacing: normal;
     color: var(--app-text);
 }
 
@@ -37,7 +37,7 @@
     color: var(--app-text-faint);
     font-size: 11px;
     line-height: 1.5;
-    letter-spacing: 0.16em;
+    letter-spacing: normal;
 
 }
 
