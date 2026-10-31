@@ -103,7 +103,24 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
         showAlert(`Execution failed: ${displayMessage}`, 'error');
     };
 
+    const cloudHeadfulIdRef = useRef<string | null>(null);
     const stopHeadful = async () => {
+        if (isCloud) {
+            const id = cloudHeadfulIdRef.current;
+            if (!id || headfulBusyRef.current) return;
+            headfulBusyRef.current = true;
+            try {
+                const response = await authorizedCloudFetch('/api/v1/headful/sessions/' + encodeURIComponent(id), { method: 'DELETE' });
+                if (!response.ok) throw new Error('Could not stop Cloud browser.');
+                cloudHeadfulIdRef.current = null;
+                setIsHeadfulOpen(false);
+            } catch (error: any) {
+                showAlert(error?.message || 'Could not stop Cloud browser.', 'error');
+            } finally {
+                headfulBusyRef.current = false;
+            }
+            return;
+        }
         requireLocalExecution();
         if (headfulBusyRef.current) return;
         headfulBusyRef.current = true;
@@ -118,6 +135,31 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const openHeadful = async (url: string, targetActionId?: string, taskSnapshot?: Task, variables?: any) => {
+        if (isCloud) {
+            if (headfulBusyRef.current) return;
+            if (cloudHeadfulIdRef.current) { await stopHeadful(); return; }
+            const tab = window.open('', '_blank');
+            headfulBusyRef.current = true;
+            setIsHeadfulStarting(true);
+            try {
+                const response = await authorizedCloudFetch('/api/v1/headful/sessions', { method: 'POST' });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data?.error || 'Could not start Cloud browser.');
+                if (typeof data?.id !== 'string' || typeof data?.viewerUrl !== 'string') throw new Error('Invalid Cloud browser response.');
+                cloudHeadfulIdRef.current = data.id;
+                setIsHeadfulOpen(true);
+                if (tab) tab.location.assign(data.viewerUrl);
+                else window.location.assign(data.viewerUrl);
+            } catch (error: any) {
+                tab?.close();
+                showAlert(error?.message || 'Could not start Cloud browser.', 'error');
+                setIsHeadfulOpen(false);
+            } finally {
+                headfulBusyRef.current = false;
+                setIsHeadfulStarting(false);
+            }
+            return;
+        }
         requireLocalExecution();
         if (headfulBusyRef.current) return;
         if (isHeadfulOpen) {
