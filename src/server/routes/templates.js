@@ -30,6 +30,20 @@ const fetchOfficial = async (url, options = {}) => {
     }
 };
 
+// Retry transient upstream failures on read-only requests, without retrying
+// missing templates or malformed responses.
+const fetchTemplateDetail = async (url) => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            const response = await fetchOfficial(url);
+            if (response.ok || response.status === 404 || (response.status < 500 && response.status !== 429) || attempt === 2) return response;
+        } catch (error) {
+            if (attempt === 2) throw error;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200 * (attempt + 1)));
+    }
+};
+
 const loadCatalog = async () => {
     if (catalogCache && catalogCache.expiresAt > Date.now()) return catalogCache.items;
     if (!catalogRequest) {
@@ -110,7 +124,7 @@ router.get('/templates/:id', requireAuth, dataRateLimiter, async (req, res) => {
         return res.status(400).json({ error: 'INVALID_TEMPLATE_ID' });
     }
     try {
-        const upstream = await fetchOfficial(`${TEMPLATE_CATALOG_URL}/${id}`);
+        const upstream = await fetchTemplateDetail(`${TEMPLATE_CATALOG_URL}/${id}`);
         if (upstream.status === 404) return res.status(404).json({ error: 'TEMPLATE_NOT_FOUND' });
         if (!upstream.ok) return res.status(502).json({ error: 'TEMPLATE_CATALOG_UNAVAILABLE' });
         const preset = await upstream.json();
