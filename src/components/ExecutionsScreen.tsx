@@ -72,7 +72,7 @@ const renderExecutionRow = ({ index, style, items, deleteExecution, navigate }: 
                     <div className="text-[11px] theme-text-muted">{execution.durationMs == null ? '—' : `${execution.durationMs}ms`}</div>
                     <div className="mt-1 text-[10px] theme-text-faint">{new Date(execution.timestamp).toLocaleString()}</div>
                 </div>
-                {!isCloud && <button
+                {<button
                     onClick={(event) => { event.stopPropagation(); deleteExecution(execution.id); }}
                     className="p-2 theme-text-faint hover:text-red-400 transition-colors"
                     aria-label={`Delete execution ${execution.id}`}
@@ -190,7 +190,7 @@ const ExecutionsScreen: React.FC<ExecutionsScreenProps> = ({ onConfirm, onNotify
                         <button onClick={loadExecutions} disabled={loading || refreshing} className="app-button-secondary" aria-busy={loading || refreshing}>
                             <TablerIcon name="sync" className={`text-base ${loading || refreshing ? 'animate-spin' : ''}`} /> Refresh
                         </button>
-                        {!isCloud && <button onClick={clearExecutions} className="app-button-danger"><TablerIcon name="delete" className="text-base" /> Clear all</button>}
+                        {<button onClick={clearExecutions} className="app-button-danger"><TablerIcon name="delete" className="text-base" /> Clear all</button>}
                     </div>
                 </header>
 
