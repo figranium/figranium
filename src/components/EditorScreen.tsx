@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, Dispatch, SetStateAction, useRef } from 'react';
 import TablerIcon from './TablerIcon';
+import { requestFigpick } from '../utils/figpickBridge';
 import { Task, Action, StickyNote, StickyNoteColor, Results, ConfirmRequest, ViewMode } from '../types';
 import { generateExtractionScript } from '../utils/extractionScriptGen';
 import { TASK_FIELD_INSPECT_PREFIX, taskGroupContainerInspectId, taskGroupFieldInspectId } from '../utils/extractionFieldIds';
@@ -664,7 +665,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 isHeadfulStarting={isHeadfulStarting || false}
                 onRun={() => { setIsResultsOpen(true); onRun(); }}
                 onStop={onStop}
-                onOpenHeadful={() => onOpenHeadful?.(currentTask.url || 'https://www.google.com', undefined, currentTask, currentTask.variables)}
+                onOpenHeadful={() => { void (async () => { const accepted = await requestFigpick({ kind: 'open', taskId: String(currentTask.id), targetUrl: currentTask.url || 'https://www.google.com' }); if (!accepted) onOpenHeadful?.(currentTask.url || 'https://www.google.com', undefined, currentTask, currentTask.variables); })(); }}
                 onStopHeadful={onStopHeadful}
             />
 
