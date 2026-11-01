@@ -114,11 +114,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             title={isInspectMode ? 'Stop inspecting elements' : 'Highlight elements on hover'}
                             aria-label={isInspectMode ? 'Stop inspecting elements' : 'Highlight elements on hover'}
                         >
-                            {isInspectLoading ? (
-                                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                            ) : (
-                                <TablerIcon name={isInspectMode ? 'visibility_off' : 'center_focus_strong'} className="text-[14px]" />
-                            )}
+                            <TablerIcon name={isInspectMode ? 'visibility_off' : 'center_focus_strong'} className={`text-[14px] ${isInspectLoading ? 'animate-pulse' : ''}`} />
                             {isInspectMode ? 'Stop Inspect' : 'Inspect UI'}
                         </button>
                         <button

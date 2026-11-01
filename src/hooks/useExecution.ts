@@ -158,7 +158,13 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             headfulBusyRef.current = true;
             setIsHeadfulStarting(true);
             try {
-                const response = await authorizedCloudFetch('/api/v1/headful/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+                const resolvedUrl = url.replace(/\{\$(\w+)\}/g, (_match, name: string) => {
+                    if (name === 'now') return new Date().toISOString();
+                    const definition = variables?.[name];
+                    const value = definition && typeof definition === 'object' && 'value' in definition ? definition.value : definition;
+                    return value == null ? '' : String(value);
+                });
+                const response = await authorizedCloudFetch('/api/v1/headful/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: resolvedUrl }) });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) throw new Error(data?.error === 'HEADFUL_ADMISSION_DENIED' ? 'Cloud browser capacity is busy. Close an existing session or try again shortly.' : (data?.error || 'Could not start Cloud browser.'));
                 if (typeof data?.id !== 'string' || typeof data?.viewerUrl !== 'string') throw new Error('Invalid Cloud browser response.');
