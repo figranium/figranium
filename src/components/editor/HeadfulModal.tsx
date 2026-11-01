@@ -151,6 +151,12 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                                 {isCloud ? 'Your isolated Cloud browser is open in another tab. Enable Inspect UI here, then pick an element in that tab. Close Browser ends the session.' : 'The headful browser has been launched in a separate window on your desktop. Use that window to pick selectors. It will automatically sync back here.'}
                             </p>
                         </div>
+                    ) : isCloud && !headfulUrl ? (
+                        <div className="text-center p-8 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-200">
+                            <div className="w-8 h-8 border-2 theme-border border-t-[var(--app-text)] rounded-full animate-spin" />
+                            <p className="theme-text text-sm font-semibold">Starting Cloud Browser…</p>
+                            <p className="theme-text-muted text-xs">Provisioning isolated sandbox and virtual display</p>
+                        </div>
                     ) : (
                         <iframe
                             key={viewerAttempt}

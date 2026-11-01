@@ -131,6 +131,8 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 if (!response.ok) throw new Error('Could not stop Cloud browser.');
                 cloudHeadfulIdRef.current = null;
                 sessionStorage.removeItem('figranium-cloud-headful');
+                sessionStorage.removeItem('figranium-cloud-headful-expiry');
+                sessionStorage.removeItem('figranium-cloud-headful-viewer');
                 setIsHeadfulOpen(false);
             } catch (error: any) {
                 showAlert(error?.message || 'Could not stop Cloud browser.', 'error');
@@ -158,6 +160,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             if (cloudHeadfulIdRef.current) { await stopHeadful(); return; }
             headfulBusyRef.current = true;
             setIsHeadfulStarting(true);
+            setIsHeadfulOpen(true);
             try {
                 const resolvedUrl = url.replace(/\{\$(\w+)\}/g, (_match, name: string) => {
                     if (name === 'now') return new Date().toISOString();
