@@ -27,8 +27,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       cloakbrowser:
-        specifier: ^0.6.0
-        version: 0.6.5(playwright-core@1.64.1)
+        specifier: ^0.7.0
+        version: 0.7.0(playwright-core@1.64.1)
       cookie:
         specifier: ^2.0.0
         version: 2.0.1
@@ -1107,8 +1107,8 @@ packages:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
 
-  cloakbrowser@0.6.5:
-    resolution: {integrity: sha512-KrzbGEqFMOHsfNXrV68UhtO3PQJ+T25qKZiAP1hgcld8UXgcCUgfkEZEr88bxEtJylEwco2f/GEgbaFK6Jjl2w==}
+  cloakbrowser@0.7.0:
+    resolution: {integrity: sha512-27NRKFedtzJdrSZgDx99nf61i6VJ+GOisDsQOqZL/JhMlzXVzDVbrRNs1RMHUm4h1YA6s23TxIgokhx98ePSng==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -3435,7 +3435,7 @@ snapshots:
 
   chownr@3.0.0: {}
 
-  cloakbrowser@0.6.5(playwright-core@1.64.1):
+  cloakbrowser@0.7.0(playwright-core@1.64.1):
     dependencies:
       tar: 7.5.11
     optionalDependencies:

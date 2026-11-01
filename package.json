@@ -78,7 +78,7 @@
     "@tabler/icons-react": "^3.50.0",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.2.0",
-    "cloakbrowser": "^0.6.0",
+    "cloakbrowser": "^0.7.0",
     "cookie": "^2.0.0",
     "cookie-signature": "^1.2.2",
     "express": "^5.2.1",
