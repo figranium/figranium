@@ -142,7 +142,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                     </div>
                 </div>
                 <div ref={headfulFrameRef} className="w-full aspect-video relative theme-surface-3 flex items-center justify-center">
-                    {useNovnc === null ? (
+                    {useNovnc === null && !isCloud ? (
                         <div className="text-center p-8 flex flex-col items-center justify-center gap-3">
                             <div className="w-8 h-8 border-2 theme-border border-t-[var(--app-text)] rounded-full animate-spin" />
                             <p className="theme-text-muted text-xs tracking-normal ">Checking browser status...</p>
@@ -160,7 +160,6 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             key={viewerAttempt}
                             ref={viewerRef}
                             src={headfulUrl}
-                            onLoad={() => { if (isCloud) setViewerReady(true); }}
                             className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-300"
                             title="Headful Browser"
                         />
