@@ -1,6 +1,8 @@
 name: V1 Qualification
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 

@@ -1,3 +1,5 @@
+import { isCloud } from '../platform/runtime';
+import { authorizedCloudFetch } from '../platform/api';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Task, Action } from '../types';
 import { TASK_FIELD_INSPECT_PREFIX, TASK_GROUP_CONTAINER_INSPECT_PREFIX, TASK_GROUP_FIELD_INSPECT_PREFIX } from '../utils/extractionFieldIds';
@@ -59,8 +61,19 @@ export const useEditorHeadful = (
     }, [isHeadfulOpen]);
 
     useEffect(() => {
+        if (!isCloud || !isHeadfulOpen || !activeInspectActionIdRef.current) return;
+        const id = sessionStorage.getItem('figranium-cloud-headful');
+        if (!id) return;
+        void authorizedCloudFetch(`/api/v1/headful/sessions/${encodeURIComponent(id)}/inspect`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: true, scopeSelector: activeInspectScopeSelectorRef.current })
+        }).then(response => { if (!response.ok) onNotify('Could not enable Cloud element picker.', 'error'); })
+          .catch(() => onNotify('Could not enable Cloud element picker.', 'error'));
+    }, [isHeadfulOpen, onNotify]);
+
+    useEffect(() => {
         let eventSource: EventSource | null = null;
-        if (isHeadfulOpen) {
+        if (isHeadfulOpen && !isCloud) {
             eventSource = new EventSource('/api/headful/selector_stream');
             eventSource.onmessage = (e) => {
                 try {
@@ -95,6 +108,36 @@ export const useEditorHeadful = (
         };
     }, [isHeadfulOpen, updateAction]);
 
+    useEffect(() => {
+        if (!isCloud || !isHeadfulOpen) return;
+        let cancelled = false;
+        let timer: ReturnType<typeof setTimeout>;
+        const poll = async () => {
+            const id = sessionStorage.getItem('figranium-cloud-headful');
+            if (!id) return;
+            try {
+                const response = await authorizedCloudFetch(`/api/v1/headful/sessions/${encodeURIComponent(id)}/selector`);
+                if (response.status === 410 || response.status === 404) { onStopHeadfulRef.current?.(); return; }
+                if (response.ok) {
+                    const data = await response.json();
+                    const inspectId = activeInspectActionIdRef.current;
+                    if (!cancelled && typeof data.selector === 'string' && inspectId) {
+                        const { actionId, field } = parseActionInspectTarget(inspectId);
+                        setSelectorOptionsById(prev => ({ ...prev, [inspectId]: [data.selector] }));
+                        updateAction(actionId, { [field]: data.selector }, true);
+                        setActiveInspectActionId(null);
+                        setActiveInspectScopeSelector(null);
+                        onStopHeadfulRef.current?.();
+                        return;
+                    }
+                }
+            } catch { /* A transient polling failure does not terminate a browser. */ }
+            if (!cancelled) timer = setTimeout(poll, 1000);
+        };
+        void poll();
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [isHeadfulOpen, updateAction]);
+
     const handleToggleInspect = useCallback(async () => {
         const nextState = !inspectDesiredStateRef.current;
         const requestId = inspectRequestIdRef.current + 1;
@@ -108,7 +151,9 @@ export const useEditorHeadful = (
         inspectAbortControllerRef.current = controller;
 
         try {
-            const res = await fetch('/api/headful/inspect', {
+            const cloudId = sessionStorage.getItem('figranium-cloud-headful');
+            if (isCloud && !cloudId) throw new Error('Cloud browser unavailable');
+            const res = await (isCloud ? authorizedCloudFetch : fetch)(isCloud ? `/api/v1/headful/sessions/${encodeURIComponent(cloudId!)}/inspect` : '/api/headful/inspect', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ enabled: nextState, scopeSelector: nextState ? activeInspectScopeSelectorRef.current : null }),

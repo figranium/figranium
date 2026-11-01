@@ -1,0 +1,43 @@
+name: Update Cloud Stable and Edge
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: cloud-upstream-update
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - name: Trigger immediate Cloud build with GitHub identity
+        run: |
+          set -euo pipefail
+          token=$(curl -fsS --retry 3 -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=figranium-cloud-deploy" | jq -er '.value')
+          echo "::add-mask::$token"
+          curl --fail-with-body --max-time 45 -X POST -H "Authorization: Bearer $token" https://figranium-cloud-deploy.asernasr.workers.dev/deploy
+      - name: Verify the new channel is live
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 90); do
+            marker=$(curl -fsS --max-time 10 "https://cloud.figranium.dev/figranium-cloud-release.json?check=${GITHUB_RUN_ID}-${attempt}" || true)
+            if [ "$REF_TYPE" = branch ] && [ "$EVENT_NAME" != release ]; then
+              echo "$marker" | jq -e --arg sha "$EXPECTED_SHA" '.edgeSha == $sha' && exit 0
+            else
+              echo "$marker" | jq -e --arg sha "$EXPECTED_SHA" '.sha == $sha' && exit 0
+            fi
+            sleep 10
+          done
+          echo 'Cloud did not serve the expected release.' >&2
+          exit 1

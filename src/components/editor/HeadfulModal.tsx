@@ -1,3 +1,4 @@
+import { isCloud } from '../../platform/runtime';
 import React, { useEffect, useRef, useState } from 'react';
 import TablerIcon from '../TablerIcon';
 
@@ -31,7 +32,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
 
     useEffect(() => { setViewerError(null); setViewerReady(false); setPasswordCandidate(null); if (isHeadfulOpen) setViewerAttempt(v => v + 1); }, [isHeadfulOpen]);
     useEffect(() => {
-        if (!isHeadfulOpen) return;
+        if (!isHeadfulOpen || isCloud) return;
         let cancelled = false;
         const check = async () => {
             try {
@@ -149,10 +150,9 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                     ) : useNovnc === false ? (
                         <div className="text-center p-8 animate-in fade-in duration-300">
                             <TablerIcon name="open_in_new" className="text-6xl theme-text-faint mb-4 block" />
-                            <h3 className="theme-text text-lg font-bold mb-2">Browser Opened Natively</h3>
+                            <h3 className="theme-text text-lg font-bold mb-2">{isCloud ? 'Cloud Browser Open' : 'Browser Opened Natively'}</h3>
                             <p className="theme-text-muted text-sm max-w-md mx-auto leading-relaxed mb-6">
-                                The headful browser has been launched in a separate window on your desktop.
-                                Use that window to pick selectors. It will automatically sync back here.
+                                {isCloud ? 'Your isolated Cloud browser is open in another tab. Enable Inspect UI here, then pick an element in that tab. Close Browser ends the session.' : 'The headful browser has been launched in a separate window on your desktop. Use that window to pick selectors. It will automatically sync back here.'}
                             </p>
                         </div>
                     ) : (

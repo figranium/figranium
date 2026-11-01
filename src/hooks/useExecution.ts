@@ -104,6 +104,19 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
     };
 
     const cloudHeadfulIdRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!isCloud || !isHeadfulOpen) return;
+        const timer = window.setInterval(() => {
+            const expiry = Number(sessionStorage.getItem('figranium-cloud-headful-expiry'));
+            if (expiry && Date.now() >= expiry) {
+                cloudHeadfulIdRef.current = null;
+                sessionStorage.removeItem('figranium-cloud-headful');
+                setIsHeadfulOpen(false);
+            }
+        }, 1000);
+        return () => window.clearInterval(timer);
+    }, [isHeadfulOpen]);
+
     const stopHeadful = async () => {
         if (isCloud) {
             const id = cloudHeadfulIdRef.current;
@@ -113,6 +126,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 const response = await authorizedCloudFetch('/api/v1/headful/sessions/' + encodeURIComponent(id), { method: 'DELETE' });
                 if (!response.ok) throw new Error('Could not stop Cloud browser.');
                 cloudHeadfulIdRef.current = null;
+                sessionStorage.removeItem('figranium-cloud-headful');
                 setIsHeadfulOpen(false);
             } catch (error: any) {
                 showAlert(error?.message || 'Could not stop Cloud browser.', 'error');
@@ -139,6 +153,8 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             if (headfulBusyRef.current) return;
             if (cloudHeadfulIdRef.current) { await stopHeadful(); return; }
             const tab = window.open('', '_blank');
+            if (!tab) { showAlert('Allow pop-ups to open the Cloud browser.', 'error'); return; }
+            tab.opener = null;
             headfulBusyRef.current = true;
             setIsHeadfulStarting(true);
             try {
@@ -147,6 +163,8 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 if (!response.ok) throw new Error(data?.error || 'Could not start Cloud browser.');
                 if (typeof data?.id !== 'string' || typeof data?.viewerUrl !== 'string') throw new Error('Invalid Cloud browser response.');
                 cloudHeadfulIdRef.current = data.id;
+                sessionStorage.setItem('figranium-cloud-headful', data.id);
+                sessionStorage.setItem('figranium-cloud-headful-expiry', String(Date.parse(data.expiresAt)));
                 setIsHeadfulOpen(true);
                 if (tab) tab.location.assign(data.viewerUrl);
                 else window.location.assign(data.viewerUrl);
