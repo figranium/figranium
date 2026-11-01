@@ -42,6 +42,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                     const outcome = execution.outcome || 'error';
                     setResults({
                         url: execution.url || '',
+                        runId: executionId,
                         finalUrl: output.final_url || output.finalUrl,
                         html: output.html,
                         data: output.data ?? output.html ?? null,
@@ -407,6 +408,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
 
             setResults({
                 url: taskToRun.url,
+                runId,
                 finalUrl: data.final_url,
                 html: data.html,
                 data: data.data ?? data.html ?? null,
@@ -455,6 +457,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                     data.logs = [`Headful display unavailable; ran headless instead.`, ...(data.logs || [])];
                     setResults({
                         url: taskToRun.url,
+                        runId,
                         finalUrl: data.final_url,
                         html: data.html,
                         data: data.data ?? data.html ?? null,

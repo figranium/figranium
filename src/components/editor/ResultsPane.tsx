@@ -35,11 +35,13 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     const [capturesOpen, setCapturesOpen] = useState(false);
     const [capturesLoading, setCapturesLoading] = useState(false);
     const [captures, setCaptures] = useState<CaptureEntry[]>([]);
+    const captureRequestRef = useRef(0);
     const [screenshotState, setScreenshotState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
     const [fallbackScreenshotUrl, setFallbackScreenshotUrl] = useState<string | null>(null);
     const [failedPrimaryScreenshotUrl, setFailedPrimaryScreenshotUrl] = useState<string | null>(null);
     const wasExecutingRef = useRef(isExecuting);
     const activeResults = resultView === 'pinned' && pinnedResults ? pinnedResults : results;
+    const captureRunId = activeResults?.runId || (resultView === 'latest' ? runId : null);
     const tableData = useMemo(() => getTableData(activeResults?.data), [activeResults?.data]);
     const preview = useMemo(() => activeResults && activeResults.data !== undefined && activeResults.data !== null && activeResults.data !== ''
         ? getResultsPreview(activeResults)
@@ -71,6 +73,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     };
 
     const loadCaptures = async () => {
+        const requestId = ++captureRequestRef.current;
         setCapturesLoading(true);
         try {
             if (activeResults?.screenshotUrl?.startsWith('data:image/png;base64,')) {
@@ -78,26 +81,32 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                 setCaptures([{ name: 'screenshot.png', url, size: Math.floor((url.length - 22) * 3 / 4), modified: Date.now(), type: 'screenshot' }]);
                 return;
             }
-            const query = runId ? `?runId=${encodeURIComponent(runId)}` : '';
-            const res = await fetch(`/api/data/captures${query}`);
+            if (!captureRunId) { setCaptures([]); return; }
+            const res = await fetch(`/api/data/captures?runId=${encodeURIComponent(captureRunId)}`);
             const data = res.ok ? await res.json() : { captures: [] };
-            setCaptures(Array.isArray(data.captures) ? data.captures : []);
+            if (captureRequestRef.current === requestId) setCaptures(Array.isArray(data.captures) ? data.captures : []);
         } catch {
-            setCaptures([]);
+            if (captureRequestRef.current === requestId) setCaptures([]);
         } finally {
-            setCapturesLoading(false);
+            if (captureRequestRef.current === requestId) setCapturesLoading(false);
         }
     };
+
+    useEffect(() => {
+        captureRequestRef.current++;
+        setCaptures([]);
+        setCapturesLoading(false);
+    }, [captureRunId, activeResults?.screenshotUrl]);
 
     useEffect(() => {
         let active = true;
         setFallbackScreenshotUrl(null);
         setFailedPrimaryScreenshotUrl(null);
-        if (activeResults?.screenshotUrl || !runId) return () => { active = false; };
+        if (activeResults?.screenshotUrl || !captureRunId) return () => { active = false; };
 
         void (async () => {
             try {
-                const res = await fetch(`/api/data/captures?runId=${encodeURIComponent(runId)}`);
+                const res = await fetch(`/api/data/captures?runId=${encodeURIComponent(captureRunId)}`);
                 const data = res.ok ? await res.json() : { captures: [] };
                 const capture = Array.isArray(data.captures)
                     ? data.captures.find((entry: CaptureEntry) => entry.type === 'screenshot')
@@ -109,7 +118,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
         })();
 
         return () => { active = false; };
-    }, [activeResults?.screenshotUrl, runId]);
+    }, [activeResults?.screenshotUrl, captureRunId]);
 
     useEffect(() => {
         setScreenshotState(screenshotSrc ? 'loading' : 'idle');
@@ -308,8 +317,8 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                     onError={() => {
                                         if (screenshotSrc === primaryScreenshotUrl && primaryScreenshotUrl) {
                                             setFailedPrimaryScreenshotUrl(primaryScreenshotUrl);
-                                            if (runId) {
-                                                void fetch(`/api/data/captures?runId=${encodeURIComponent(runId)}`)
+                                            if (captureRunId) {
+                                                void fetch(`/api/data/captures?runId=${encodeURIComponent(captureRunId)}`)
                                                     .then((res) => res.ok ? res.json() : { captures: [] })
                                                     .then((data) => {
                                                         const capture = Array.isArray(data.captures)
@@ -324,7 +333,7 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
                                         }
                                         setScreenshotState('error');
                                     }}
-                                    className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 ${screenshotState === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+                                    className="absolute inset-0 w-full h-full object-contain"
                                 />
                             </>
                         ) : null}

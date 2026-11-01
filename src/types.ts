@@ -206,6 +206,7 @@ export interface TaskVersion {
 
 export interface Results {
     url: string;
+    runId?: string;
     finalUrl?: string;
     html?: string;
     data?: any;

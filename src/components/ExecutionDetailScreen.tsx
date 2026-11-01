@@ -21,6 +21,7 @@ const toResults = (exec: Execution): Results | null => {
     const result = exec.result || {};
     return {
         url: exec.url || result.url || '',
+        runId: exec.id,
         finalUrl: result.final_url || result.finalUrl,
         html: result.html,
         data: typeof result.data === 'string' && result.data.startsWith('[Truncated from execution history')
