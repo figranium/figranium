@@ -58,7 +58,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
         finally { setPasswordSaving(false); }
     };
     useEffect(() => {
-        if (!isHeadfulOpen || !useNovnc || viewerReady || viewerError) return;
+        if (!isHeadfulOpen || (!useNovnc && !isCloud) || viewerReady || viewerError) return;
         const timeout = window.setTimeout(() => setViewerError('Browser viewer timed out. Retry the connection.'), 25000);
         return () => window.clearTimeout(timeout);
     }, [isHeadfulOpen, useNovnc, viewerReady, viewerError, viewerAttempt]);
@@ -81,7 +81,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
 
     const { origin, hostname } = window.location;
     const theme = document.documentElement.dataset.theme || 'dark';
-    const headfulUrl = `${origin}/novnc.html?host=${hostname}&path=websockify&theme=${encodeURIComponent(theme)}&attempt=${viewerAttempt}`;
+    const headfulUrl = isCloud ? (sessionStorage.getItem('figranium-cloud-headful-viewer') || '') : `${origin}/novnc.html?host=${hostname}&path=websockify&theme=${encodeURIComponent(theme)}&attempt=${viewerAttempt}`;
 
     const requestFullscreen = () => {
         const target = headfulFrameRef.current;
@@ -147,7 +147,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             <div className="w-8 h-8 border-2 theme-border border-t-[var(--app-text)] rounded-full animate-spin" />
                             <p className="theme-text-muted text-xs tracking-normal ">Checking browser status...</p>
                         </div>
-                    ) : useNovnc === false ? (
+                    ) : useNovnc === false && !isCloud ? (
                         <div className="text-center p-8 animate-in fade-in duration-300">
                             <TablerIcon name="open_in_new" className="text-6xl theme-text-faint mb-4 block" />
                             <h3 className="theme-text text-lg font-bold mb-2">{isCloud ? 'Cloud Browser Open' : 'Browser Opened Natively'}</h3>
@@ -160,6 +160,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             key={viewerAttempt}
                             ref={viewerRef}
                             src={headfulUrl}
+                            onLoad={() => { if (isCloud) setViewerReady(true); }}
                             className="absolute inset-0 w-full h-full border-0 animate-in fade-in duration-300"
                             title="Headful Browser"
                         />
@@ -169,7 +170,7 @@ const HeadfulModal: React.FC<HeadfulModalProps> = ({
                             <div><p>{viewerError}</p><button type="button" className="app-button-primary mt-4" onClick={() => { setViewerError(null); setViewerReady(false); setViewerAttempt(v => v + 1); }}>Retry viewer</button></div>
                         </div>
                     )}
-                    {useNovnc && !viewerReady && !viewerError && <div className="absolute inset-0 pointer-events-none flex items-center justify-center theme-surface-3 theme-text-muted text-sm">Connecting to browser…</div>}
+                    {(useNovnc || isCloud) && !viewerReady && !viewerError && <div className="absolute inset-0 pointer-events-none flex items-center justify-center theme-surface-3 theme-text-muted text-sm">Connecting to browser…</div>}
                     {passwordCandidate && <div role="dialog" aria-label="Save website password" className="absolute bottom-4 left-1/2 z-20 w-[min(90%,420px)] -translate-x-1/2 rounded-2xl border theme-border-strong theme-surface p-4 shadow-2xl">
                         <p className="text-sm font-semibold theme-text">Save password for {passwordCandidate.domain}?</p>
                         <p className="mt-1 text-xs theme-text-muted">{passwordCandidate.username || 'No username detected'} · Save or update a Login in the Figranium 1Password vault.</p>
