@@ -372,7 +372,7 @@ const ExtractionScriptBlock: React.FC<ExtractionScriptBlockProps> = ({ task, onU
                                         onChange={v => onUpdate({ extractionScript: v })}
                                         onBlur={onAutoSave}
                                         language="javascript"
-                                        className="min-h-[180px]"
+                                        className="min-h-[min(40vh,400px)]"
                                         placeholder="// Example: return { title: document.title };"
                                     />
                                 </div>
