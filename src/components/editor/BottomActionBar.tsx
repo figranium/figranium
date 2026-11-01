@@ -65,7 +65,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
                     }`}
                 title={isHeadfulStarting ? 'Opening browser' : isHeadfulOpen ? 'Stop headful browser' : 'Open browser to log in'}
             >
-                {isHeadfulStarting ? <span className="editor-action-spinner w-4 h-4 border-2 rounded-full animate-spin" /> : <TablerIcon name={isHeadfulOpen ? 'stop' : 'open_in_browser'} className="text-base" />}
+                {isHeadfulStarting ? <span aria-hidden="true" className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'color-mix(in srgb, currentColor 25%, transparent)', borderTopColor: 'currentColor' }} /> : <TablerIcon name={isHeadfulOpen ? 'stop' : 'open_in_browser'} className="text-base" />}
                 {isHeadfulStarting ? 'Opening Browser...' : isHeadfulOpen ? 'Close Browser' : 'Open Browser'}
             </button>
         </div>
