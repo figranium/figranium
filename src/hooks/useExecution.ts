@@ -160,7 +160,7 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             try {
                 const response = await authorizedCloudFetch('/api/v1/headful/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
                 const data = await response.json().catch(() => ({}));
-                if (!response.ok) throw new Error(data?.error || 'Could not start Cloud browser.');
+                if (!response.ok) throw new Error(data?.error === 'HEADFUL_ADMISSION_DENIED' ? 'Cloud browser capacity is busy. Close an existing session or try again shortly.' : (data?.error || 'Could not start Cloud browser.'));
                 if (typeof data?.id !== 'string' || typeof data?.viewerUrl !== 'string') throw new Error('Invalid Cloud browser response.');
                 cloudHeadfulIdRef.current = data.id;
                 sessionStorage.setItem('figranium-cloud-headful', data.id);
