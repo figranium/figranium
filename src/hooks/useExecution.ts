@@ -152,9 +152,6 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
         if (isCloud) {
             if (headfulBusyRef.current) return;
             if (cloudHeadfulIdRef.current) { await stopHeadful(); return; }
-            const tab = window.open('', '_blank');
-            if (!tab) { showAlert('Allow pop-ups to open the Cloud browser.', 'error'); return; }
-            tab.opener = null;
             headfulBusyRef.current = true;
             setIsHeadfulStarting(true);
             try {
@@ -165,11 +162,9 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 cloudHeadfulIdRef.current = data.id;
                 sessionStorage.setItem('figranium-cloud-headful', data.id);
                 sessionStorage.setItem('figranium-cloud-headful-expiry', String(Date.parse(data.expiresAt)));
+                sessionStorage.setItem('figranium-cloud-headful-viewer', data.viewerUrl);
                 setIsHeadfulOpen(true);
-                if (tab) tab.location.assign(data.viewerUrl);
-                else window.location.assign(data.viewerUrl);
             } catch (error: any) {
-                tab?.close();
                 showAlert(error?.message || 'Could not start Cloud browser.', 'error');
                 setIsHeadfulOpen(false);
             } finally {
