@@ -34,6 +34,9 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 const { execution } = await response.json();
                 if (cancelled || !execution) return;
                 failures = 0;
+                if (execution.progress && typeof execution.progress === 'object') {
+                    window.dispatchEvent(new CustomEvent('figranium-cloud-progress', { detail: { runId: executionId, states: execution.progress } }));
+                }
                 if (execution.phase === 'finished') {
                     const output = execution.result || {};
                     const outcome = execution.outcome || 'error';

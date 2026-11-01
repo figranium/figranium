@@ -73,6 +73,11 @@ const ResultsPane: React.FC<ResultsPaneProps> = ({ results, pinnedResults, isExe
     const loadCaptures = async () => {
         setCapturesLoading(true);
         try {
+            if (activeResults?.screenshotUrl?.startsWith('data:image/png;base64,')) {
+                const url = activeResults.screenshotUrl;
+                setCaptures([{ name: 'screenshot.png', url, size: Math.floor((url.length - 22) * 3 / 4), modified: Date.now(), type: 'screenshot' }]);
+                return;
+            }
             const query = runId ? `?runId=${encodeURIComponent(runId)}` : '';
             const res = await fetch(`/api/data/captures${query}`);
             const data = res.ok ? await res.json() : { captures: [] };

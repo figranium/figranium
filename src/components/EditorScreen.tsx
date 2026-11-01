@@ -1,3 +1,4 @@
+import { isCloud } from '../platform/runtime';
 import { useState, useEffect, useCallback, useMemo, Dispatch, SetStateAction, useRef } from 'react';
 import TablerIcon from './TablerIcon';
 import { requestFigpick } from '../utils/figpickBridge';
@@ -126,6 +127,14 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
     useEffect(() => {
         if (!runId || currentTask.mode !== 'agent') return;
         setActionStatusById({});
+        if (isCloud) {
+            const onProgress = (event: Event) => {
+                const detail = (event as CustomEvent).detail;
+                if (detail?.runId === runId && detail.states && typeof detail.states === 'object') setActionStatusById(detail.states);
+            };
+            window.addEventListener('figranium-cloud-progress', onProgress);
+            return () => window.removeEventListener('figranium-cloud-progress', onProgress);
+        }
         const source = new EventSource(`/api/executions/stream?runId=${encodeURIComponent(runId)}`, { withCredentials: true });
         source.onmessage = (event) => {
             if (!event.data) return;
