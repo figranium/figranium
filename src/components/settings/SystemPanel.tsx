@@ -61,6 +61,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
     const [importing, setImporting] = useState(false);
     const importInputRef = useRef<HTMLInputElement>(null);
     const load = useCallback(async () => {
+        if (isCloud) return;
         try {
             const response = await fetch('/api/settings/system', { credentials: 'include' });
             if (!response.ok) throw new Error('Failed to load system settings');
@@ -72,7 +73,10 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
     useEffect(() => {
         fetch('/api/auth/me', { credentials: 'include' })
             .then((response) => response.ok ? response.json() : null)
-            .then((account) => { if (account?.user?.email) setEmail(account.user.email); })
+            .then((account) => {
+                const userEmail = account?.user?.email || account?.email;
+                if (userEmail) setEmail(userEmail);
+            })
             .catch(() => {});
     }, []);
 

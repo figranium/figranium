@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { authorizedCloudFetch } from '../../platform/api';
+import SystemPanel from './SystemPanel';
+import { ConfirmRequest } from '../../types';
 
 type Channel = 'stable' | 'edge';
 type BillingStatus = {
@@ -13,7 +15,13 @@ const formatDate = (value: string | null) => value
     ? new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
     : '—';
 
-const AccountPanel: React.FC<{ onNotify: (message: string, tone?: 'success' | 'error') => void }> = ({ onNotify }) => {
+interface AccountPanelProps {
+    onConfirm: (request: string | ConfirmRequest) => Promise<boolean>;
+    onNotify: (message: string, tone?: 'success' | 'error') => void;
+    onLogout: () => void;
+}
+
+const AccountPanel: React.FC<AccountPanelProps> = ({ onConfirm, onNotify, onLogout }) => {
     const [channel, setChannel] = useState<Channel>('stable');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -141,6 +149,7 @@ const AccountPanel: React.FC<{ onNotify: (message: string, tone?: 'success' | 'e
                     </div>
                 )}
             </section>
+            <SystemPanel onConfirm={onConfirm} onNotify={onNotify} onLogout={onLogout} />
         </div>
     );
 };

@@ -20,8 +20,8 @@ export function useTasks(
         currentTaskRef.current = currentTask;
     }, [currentTask]);
 
-    const loadTasks = useCallback(async () => {
-        if (isCloud) { setTasksLoaded(false); setTasksError(null); }
+    const loadTasks = useCallback(async (resetLoadedState: boolean = false) => {
+        if (isCloud && resetLoadedState) { setTasksLoaded(false); setTasksError(null); }
         try {
             const response = await taskFetch('/api/tasks', { credentials: 'include' });
             const data = await response.json().catch(() => null);
@@ -99,13 +99,19 @@ export function useTasks(
 
     const deleteTask = useCallback(async (id: string, currentPath: string) => {
         if (!await requestConfirm('Are you sure you want to delete this task?')) return;
+        setTasks((previous) => previous.filter((task) => task.id !== id));
+        if (currentTaskRef.current?.id === id) {
+            currentTaskRef.current = null;
+            setCurrentTask(null);
+        }
         try {
             await deleteTaskRequest(id);
         } catch (error) {
             showAlert(error instanceof Error ? error.message : 'Failed to delete task.', 'error');
+            void loadTasks();
             return;
         }
-        await loadTasks();
+        void loadTasks(false);
         if (currentPath.includes(id)) {
             navigate('/dashboard');
         }
@@ -142,7 +148,8 @@ export function useTasks(
         currentTaskRef.current = saved;
         setCurrentTask(saved);
         markTaskAsSaved(saved);
-        loadTasks();
+        setTasks((previous) => [saved, ...previous.filter((task) => task.id !== saved.id)]);
+        void loadTasks(false);
         if (currentPath.includes('new')) {
             navigate(`/tasks/${saved.id}`, { replace: true });
         }

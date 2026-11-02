@@ -207,7 +207,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
         }
     };
 
-    const importProxies = async (entries: { server: string; username?: string; password?: string; label?: string; isRotatingPool?: boolean; estimatedPoolSize?: number }[]) => {
+    const importProxies = async (entries: { server: string; username?: string; password?: string; label?: string; isRotatingPool?: boolean; estimatedPoolSize?: number }) => {
         if (!entries.length) {
             onNotify('No valid proxies found in file.', 'error');
             return;
@@ -560,7 +560,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                             onSelect={setTheme}
                         />
                     )}
-                    {isCloud && section === 'account' && <AccountPanel onNotify={onNotify} />}
+                    {isCloud && section === 'account' && <AccountPanel onConfirm={onConfirm} onNotify={onNotify} onLogout={onLogout} />}
                     {section === 'advanced' && <SystemPanel onConfirm={onConfirm} onNotify={onNotify} onLogout={onLogout} />}
                     {section === 'about' && (
                         <div className="space-y-5">
