@@ -8,7 +8,7 @@ import UserAgentPanel from './settings/UserAgentPanel';
 import VersionPanel from './settings/VersionPanel';
 import ThemePanel from './settings/ThemePanel';
 import SystemPanel, { CaptchaAssistancePanel } from './settings/SystemPanel';
-import { APP_BUILD_CHANNEL, APP_BUILD_COMMIT, APP_VERSION, PLAYWRIGHT_VERSION } from '@/utils/appInfo';
+import { APP_BUILD_CHANNEL, APP_BUILD_COMMIT, APP_VERSION, PLAYWRIGHT_VERSION } from '../utils/appInfo';
 import TablerIcon from './TablerIcon';
 import { isCloud } from '../platform/runtime';
 import AccountPanel from './settings/AccountPanel';
@@ -67,7 +67,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
         navigate(`/settings/${nextSection}`);
     };
     const [credentials, setCredentials] = useState<Credential[]>([]);
-    const [credentialsLoading, setCredentialsLoading] = useState(false);
+    const [credentialsLoading, setCredentialsLoading] = useState(true);
     const [apiKey, setApiKey] = useState<string | null>(null);
     const [apiKeyLoading] = useState(true);
     const [apiKeySaving, setApiKeySaving] = useState(false);
@@ -75,10 +75,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
     const [defaultProxyId, setDefaultProxyId] = useState<string | null>(null);
     const [includeDefaultInRotation, setIncludeDefaultInRotation] = useState(false);
     const [rotationMode, setRotationMode] = useState<'round-robin' | 'random'>('round-robin');
-    const [proxiesLoading, setProxiesLoading] = useState(false);
+    const [proxiesLoading, setProxiesLoading] = useState(true);
     const [userAgentSelection, setUserAgentSelection] = useState('system');
     const [userAgentOptions, setUserAgentOptions] = useState<string[]>([]);
-    const [userAgentLoading, setUserAgentLoading] = useState(false);
+    const [userAgentLoading, setUserAgentLoading] = useState(true);
 
     const { themePreference, setTheme } = useTheme();
 

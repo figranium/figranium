@@ -10,6 +10,7 @@ type Source = 'fresh' | 'import';
 
 export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (message: string, tone?: 'success' | 'error') => void; onConfirm: (request: string | ConfirmRequest) => Promise<boolean> }) {
     const [states, setStates] = useState<State[]>([]);
+    const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState<'cookies' | 'passwords'>('cookies');
     const [creating, setCreating] = useState(false);
     const [source, setSource] = useState<Source>('fresh');
@@ -20,9 +21,13 @@ export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (mess
     const fileRef = useRef<HTMLInputElement>(null);
 
     const load = async () => {
-        const response = await (isCloud ? authorizedCloudFetch('/api/v1/cookie-states') : fetch('/api/cookie-states'));
-        const data = await response.json();
-        setStates(isCloud ? (data.items || []).map((item: any) => ({ ...item, cookies: item.cookies || 0, origins: item.origins || 0, updatedAt: item.updatedAt })) : (data.states || []));
+        try {
+            const response = await (isCloud ? authorizedCloudFetch('/api/v1/cookie-states') : fetch('/api/cookie-states'));
+            const data = await response.json();
+            setStates(isCloud ? (data.items || []).map((item: any) => ({ ...item, cookies: item.cookies || 0, origins: item.origins || 0, updatedAt: item.updatedAt })) : (data.states || []));
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => { load(); }, []);
@@ -81,14 +86,19 @@ export default function CookiesScreen({ onNotify, onConfirm }: { onNotify: (mess
                     <button onClick={() => setCreating(true)} className="app-button-primary shrink-0"><TablerIcon name="add" /> Create state</button>
                 </section>
                 <section className="app-panel overflow-hidden">
-                    {states.map((state) => <article key={state.id} className="app-list-row flex flex-wrap items-center justify-between gap-4 px-5 py-4">
-                        <div className="min-w-0 flex-1">
-                            {editingId === state.id ? <input autoFocus value={editingName} onChange={(event) => setEditingName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') rename(state.id); if (event.key === 'Escape') setEditingId(null); }} className="max-w-md rounded-lg border theme-border bg-[var(--app-input)] px-3 py-2 text-sm theme-text" /> : <h2 className="text-sm font-bold theme-text">{state.name}</h2>}
-                            <p className="mt-1 text-[11px] theme-text-faint">{state.cookies} cookies · {state.origins} origins · updated {new Date(state.updatedAt).toLocaleString()}</p>
-                        </div>
-                        <div className="flex items-center gap-3">{editingId === state.id ? <><button aria-label="Save name" title="Save" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => rename(state.id)}><TablerIcon name="check" /></button><button aria-label="Cancel rename" title="Cancel" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => setEditingId(null)}><TablerIcon name="close" /></button></> : <button aria-label={`Rename ${state.name}`} title="Rename" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => { setEditingId(state.id); setEditingName(state.name); }}><TablerIcon name="edit" /></button>}{state.id !== 'cookies_default' && <button title="Delete" aria-label={`Delete ${state.name}`} className="text-red-400 hover:text-red-500" onClick={() => void remove(state)}><TablerIcon name="delete" /></button>}</div>
-                    </article>)}
-                    {!states.length && <div className="app-empty-state"><TablerIcon name="cookie_off" className="text-3xl" /><p className="text-xs theme-text-faint">No saved cookie states yet.</p></div>}
+                    {loading ? (
+                        <div className="p-8 text-center text-xs theme-text-faint animate-pulse">Loading cookie states…</div>
+                    ) : states.length ? (
+                        states.map((state) => <article key={state.id} className="app-list-row flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+                            <div className="min-w-0 flex-1">
+                                {editingId === state.id ? <input autoFocus value={editingName} onChange={(event) => setEditingName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') rename(state.id); if (event.key === 'Escape') setEditingId(null); }} className="max-w-md rounded-lg border theme-border bg-[var(--app-input)] px-3 py-2 text-sm theme-text" /> : <h2 className="text-sm font-bold theme-text">{state.name}</h2>}
+                                <p className="mt-1 text-[11px] theme-text-faint">{state.cookies} cookies · {state.origins} origins · updated {new Date(state.updatedAt).toLocaleString()}</p>
+                            </div>
+                            <div className="flex items-center gap-3">{editingId === state.id ? <><button aria-label="Save name" title="Save" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => rename(state.id)}><TablerIcon name="check" /></button><button aria-label="Cancel rename" title="Cancel" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => setEditingId(null)}><TablerIcon name="close" /></button></> : <button aria-label={`Rename ${state.name}`} title="Rename" className="theme-text-faint hover:text-[var(--app-text)]" onClick={() => { setEditingId(state.id); setEditingName(state.name); }}><TablerIcon name="edit" /></button>}{state.id !== 'cookies_default' && <button title="Delete" aria-label={`Delete ${state.name}`} className="text-red-400 hover:text-red-500" onClick={() => void remove(state)}><TablerIcon name="delete" /></button>}</div>
+                        </article>)
+                    ) : (
+                        <div className="app-empty-state"><TablerIcon name="cookie_off" className="text-3xl" /><p className="text-xs theme-text-faint">No saved cookie states yet.</p></div>
+                    )}
                 </section>
             </>}
         </div>

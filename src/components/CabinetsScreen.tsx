@@ -31,6 +31,7 @@ export default function CabinetsScreen({ onConfirm, onNotify }: { onConfirm: (r:
     const [cabinets, setCabinets] = useState<Cabinet[]>([]);
     const [active, setActive] = useState('');
     const [items, setItems] = useState<Item[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selected, setSelected] = useState<string[]>([]);
     const [dialog, setDialog] = useState<Dialog>(null);
     const [contextMenu, setContextMenu] = useState<ContextMenu>(null);
@@ -43,10 +44,18 @@ export default function CabinetsScreen({ onConfirm, onNotify }: { onConfirm: (r:
         if (resolved && cabinetId !== resolved) navigate(`/cabinets/${resolved}`, { replace: true });
     }, [cabinetId, navigate]);
     const loadItems = useCallback(async () => {
-        if (!active) return;
-        const d = await (await fetch(`/api/cabinets/${active}/items`)).json();
-        setItems(d.items || []);
-        setSelected([]);
+        if (!active) {
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        try {
+            const d = await (await fetch(`/api/cabinets/${active}/items`)).json();
+            setItems(d.items || []);
+            setSelected([]);
+        } finally {
+            setLoading(false);
+        }
     }, [active]);
     useEffect(() => { load(); }, [load]);
     useEffect(() => { loadItems(); }, [loadItems]);
@@ -97,7 +106,13 @@ export default function CabinetsScreen({ onConfirm, onNotify }: { onConfirm: (r:
                 </aside>
                 <section className="app-panel overflow-hidden">
                     <div className="app-panel-header flex-wrap gap-3"><div><h2 className="text-sm font-bold theme-text">{current?.name || 'Cabinet'}</h2><p className="mt-1 text-[10px] tracking-[.14em] theme-text-faint">{items.length} items</p></div><div className="flex flex-wrap gap-2">{button('Rename', 'edit', () => current && renameCabinet(current))}{button('Clear', 'delete_sweep', () => current && clearCabinet(current))}{button('Mark uploaded', 'check_circle', () => mutate(() => post(`/api/cabinets/${active}/items/status`, { itemIds: selected, status: 'uploaded' }, 'PATCH'), 'Marked uploaded'), !selected.length)}{button('Mark unuploaded', 'restart_alt', () => mutate(() => post(`/api/cabinets/${active}/items/status`, { itemIds: selected, status: 'unuploaded' }, 'PATCH'), 'Marked unuploaded'), !selected.length)}{button('Create ZIP', 'folder_zip', () => setDialog({ title: 'Create ZIP Archive', label: 'Archive name', value: 'archive.zip', confirm: 'Create ZIP', submit: name => mutate(() => post(`/api/cabinets/${active}/zip`, { itemIds: selected, name }), 'Archive created') }), !selected.length)}{button('Delete items', 'delete', async () => { if (await onConfirm({ title: 'Delete Items', message: 'Permanently delete the selected cabinet items?', confirmLabel: 'Delete' })) mutate(() => post(`/api/cabinets/${active}/items`, { itemIds: selected }, 'DELETE'), 'Items deleted'); }, !selected.length, true)}</div></div>
-                    {items.length === 0 ? <div className="app-empty-state"><TablerIcon name="folder_off" className="text-3xl" /><p className="text-xs theme-text-faint">This cabinet is empty.</p></div> : <div className="divide-y theme-border">{items.map(i => <div key={i.id} className="flex items-center gap-3 p-3 hover:bg-white/[.03]"><input aria-label={`Select ${i.name}`} type="checkbox" checked={selected.includes(i.id)} onChange={() => setSelected(s => s.includes(i.id) ? s.filter(x => x !== i.id) : [...s, i.id])} /><FileTypeIcon name={i.name} kind={i.kind} /><a href={`/api/cabinets/${active}/items/${i.id}/download`} className="min-w-0 flex-1 cursor-pointer truncate text-sm theme-text hover:underline">{i.name}</a><span className={`app-badge ${i.status === 'uploaded' ? 'opacity-50' : ''}`}>{formatLabel(i.status)}</span>{i.name.toLowerCase().endsWith('.zip') && button('Unzip', 'unarchive', () => mutate(() => post(`/api/cabinets/${active}/items/${i.id}/unzip`), 'Archive extracted'))}</div>)}</div>}
+                    {loading ? (
+                        <div className="p-8 text-center text-xs theme-text-faint animate-pulse">Loading cabinet items…</div>
+                    ) : items.length === 0 ? (
+                        <div className="app-empty-state"><TablerIcon name="folder_off" className="text-3xl" /><p className="text-xs theme-text-faint">This cabinet is empty.</p></div>
+                    ) : (
+                        <div className="divide-y theme-border">{items.map(i => <div key={i.id} className="flex items-center gap-3 p-3 hover:bg-white/[.03]"><input aria-label={`Select ${i.name}`} type="checkbox" checked={selected.includes(i.id)} onChange={() => setSelected(s => s.includes(i.id) ? s.filter(x => x !== i.id) : [...s, i.id])} /><FileTypeIcon name={i.name} kind={i.kind} /><a href={`/api/cabinets/${active}/items/${i.id}/download`} className="min-w-0 flex-1 cursor-pointer truncate text-sm theme-text hover:underline">{i.name}</a><span className={`app-badge ${i.status === 'uploaded' ? 'opacity-50' : ''}`}>{formatLabel(i.status)}</span>{i.name.toLowerCase().endsWith('.zip') && button('Unzip', 'unarchive', () => mutate(() => post(`/api/cabinets/${active}/items/${i.id}/unzip`), 'Archive extracted'))}</div>)}</div>
+                    )}
                 </section>
             </div>
         </div>
