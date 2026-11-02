@@ -114,10 +114,18 @@ export const useEditorHeadful = (
         let timer: ReturnType<typeof setTimeout>;
         const poll = async () => {
             const id = sessionStorage.getItem('figranium-cloud-headful');
-            if (!id) return;
+            if (!id) {
+                if (!cancelled) timer = setTimeout(poll, 1000);
+                return;
+            }
             try {
                 const response = await authorizedCloudFetch(`/api/v1/headful/sessions/${encodeURIComponent(id)}/selector`);
-                if (response.status === 410 || response.status === 404) { onStopHeadfulRef.current?.(); return; }
+                if (response.status === 410 || response.status === 404) {
+                    if (sessionStorage.getItem('figranium-cloud-headful') === id) {
+                        onStopHeadfulRef.current?.();
+                    }
+                    return;
+                }
                 if (response.ok) {
                     const data = await response.json();
                     const inspectId = activeInspectActionIdRef.current;

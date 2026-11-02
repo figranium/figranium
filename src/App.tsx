@@ -9,9 +9,11 @@ import LoadingScreen, { type LoadingScreenVariant } from './components/LoadingSc
 import CenterAlert from './components/app/CenterAlert';
 import CenterConfirm from './components/app/CenterConfirm';
 import ReleaseNotesModal from './components/app/ReleaseNotesModal';
+import SubscriptionModal from './components/SubscriptionModal';
 import type { MarketplaceTemplate } from './components/TemplateGallery';
 
 import { isCloud } from './platform/runtime';
+import { authorizedCloudFetch } from './platform/api';
 import { useAuth } from './hooks/useAuth';
 import { useTasks } from './hooks/useTasks';
 import { useExecution } from './hooks/useExecution';
@@ -95,6 +97,46 @@ export default function App() {
         if (authStatus === 'authenticated') {
             loadTasks();
         }
+    }, [authStatus]);
+
+    const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+    const [subscriptionModalReason, setSubscriptionModalReason] = useState<string | null>(null);
+
+    // Event listener for subscription required prompts across the app
+    useEffect(() => {
+        const handler = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            setSubscriptionModalReason(detail?.message || 'An active Cloud subscription is required to perform this action.');
+            setIsSubscriptionModalOpen(true);
+        };
+        window.addEventListener('figranium:subscription-required', handler);
+        return () => window.removeEventListener('figranium:subscription-required', handler);
+    }, []);
+
+    // On authenticated load in Cloud mode, check billing status and prompt on signup/first entry if unsubscribed
+    useEffect(() => {
+        if (authStatus !== 'authenticated' || !isCloud) return;
+        const popupShownKey = 'figranium.subscriptionPopupShown';
+        if (sessionStorage.getItem(popupShownKey)) return;
+
+        let cancelled = false;
+        const checkBilling = async () => {
+            try {
+                const response = await authorizedCloudFetch('/api/v1/billing');
+                if (!response.ok) return;
+                const data = await response.json();
+                if (cancelled) return;
+                if (data && data.status !== 'active') {
+                    sessionStorage.setItem(popupShownKey, 'true');
+                    setSubscriptionModalReason('Welcome to Figranium Cloud! Subscribe to Cloud Mini to run automated tasks and launch isolated cloud browsers.');
+                    setIsSubscriptionModalOpen(true);
+                }
+            } catch {
+                // Non-blocking
+            }
+        };
+        void checkBilling();
+        return () => { cancelled = true; };
     }, [authStatus]);
 
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -440,6 +482,11 @@ export default function App() {
 
     return (
         <div className="h-full">
+            <SubscriptionModal
+                isOpen={isSubscriptionModalOpen}
+                onClose={() => setIsSubscriptionModalOpen(false)}
+                reason={subscriptionModalReason}
+            />
             {centerAlert && (
                 <CenterAlert
                     message={centerAlert.message}

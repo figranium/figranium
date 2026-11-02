@@ -160,7 +160,10 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
             if (cloudHeadfulIdRef.current) { await stopHeadful(); return; }
             headfulBusyRef.current = true;
             setIsHeadfulStarting(true);
-            setIsHeadfulOpen(true);
+            cloudHeadfulIdRef.current = null;
+            sessionStorage.removeItem('figranium-cloud-headful');
+            sessionStorage.removeItem('figranium-cloud-headful-viewer');
+            sessionStorage.removeItem('figranium-cloud-headful-expiry');
             try {
                 const resolvedUrl = url.replace(/\{\$(\w+)\}/g, (_match, name: string) => {
                     if (name === 'now') return new Date().toISOString();
@@ -170,7 +173,13 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 });
                 const response = await authorizedCloudFetch('/api/v1/headful/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: resolvedUrl }) });
                 const data = await response.json().catch(() => ({}));
-                if (!response.ok) throw new Error(data?.error === 'HEADFUL_ADMISSION_DENIED' ? 'Cloud browser capacity is busy. Close an existing session or try again shortly.' : (data?.error || 'Could not start Cloud browser.'));
+                if (!response.ok) {
+                    if (response.status === 403 || data?.error === 'HEADFUL_REQUIRES_ACTIVE_BILLING_PERIOD') {
+                        window.dispatchEvent(new CustomEvent('figranium:subscription-required', { detail: { action: 'open_browser' } }));
+                        return;
+                    }
+                    throw new Error(data?.error === 'HEADFUL_ADMISSION_DENIED' ? 'Cloud browser capacity is busy. Close an existing session or try again shortly.' : (data?.error || 'Could not start Cloud browser.'));
+                }
                 if (typeof data?.id !== 'string' || typeof data?.viewerUrl !== 'string') throw new Error('Invalid Cloud browser response.');
                 cloudHeadfulIdRef.current = data.id;
                 sessionStorage.setItem('figranium-cloud-headful', data.id);
@@ -294,6 +303,16 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                 });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
+                    if (response.status === 409 || response.status === 403 || data?.error === 'EXECUTION_QUOTA_OR_CU_EXHAUSTED') {
+                        window.dispatchEvent(new CustomEvent('figranium:subscription-required', { detail: { action: 'run_task', message: 'A Cloud Mini subscription ($15/mo) is required to run tasks.' } }));
+                        setResults(current => ({
+                            ...(current || { url: task.url, logs: [] }),
+                            timestamp: new Date().toLocaleTimeString(),
+                            outcome: 'error',
+                            error: { message: 'A Cloud Mini subscription is required to run tasks.' }
+                        }));
+                        return;
+                    }
                     const message = data?.error === 'EXECUTION_CONTROL_PLANE_NOT_READY'
                         ? 'Cloud execution is not enabled yet. The Modal runner and usage reservation must be configured before Tasks can run.'
                         : (data?.error || `Cloud execution HTTP ${response.status}`);
