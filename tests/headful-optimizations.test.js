@@ -146,6 +146,9 @@ async function testCanvasAndModalCookieState() {
     assert.match(canvasViewContent, /Click to configure/, 'On Execution card must have Click to configure indicator');
     assert.match(canvasViewContent, /setIsExecutionConfigOpen\(true\)/, 'On Execution card must open execution config on click');
     assert.match(canvasViewContent, /Cookie state/, 'On Execution card must show Cookie state badge when attached');
+    assert.match(canvasViewContent, /var\(--app-surface-2\)/, 'On Execution card must have solid theme surface background');
+    assert.doesNotMatch(canvasViewContent, />Trigger<\/span>/, 'On Execution card must not contain TRIGGER badge');
+    assert.doesNotMatch(canvasViewContent, /bg-yellow-500\/10 border border-yellow-500\/25/, 'Bolt icon must not have surrounding box/border tile');
 
     console.log('✓ CanvasView and ExecutionConfigModal verified');
 }

@@ -308,6 +308,10 @@
 /* The workflow canvas is intentionally flat in alternate themes. Its flow
    lines and dashed affordances use semantic contrast rather than white-alpha
    utilities, which become too faint on pale surfaces. */
+.canvas-workflow .canvas-execution-card {
+    background-color: var(--app-surface-2) !important;
+}
+
 [data-theme='light'] .canvas-workflow .canvas-execution-card,
 [data-theme='solarized-light'] .canvas-workflow .canvas-execution-card,
 [data-theme='solarized-dark'] .canvas-workflow .canvas-execution-card,

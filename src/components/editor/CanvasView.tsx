@@ -544,17 +544,15 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 setIsExecutionConfigOpen(true);
                             }
                         }}
-                        className="canvas-execution-card w-[380px] bg-black border border-white/20 hover:border-white/50 hover:bg-white/[0.04] p-5 rounded-2xl select-none cursor-pointer relative z-10 pointer-events-auto transition-all group/exec shadow-lg hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                        style={{ backgroundColor: 'var(--app-surface-2)' }}
+                        className="canvas-execution-card w-[380px] border border-white/20 hover:border-white/50 p-5 rounded-2xl select-none cursor-pointer relative z-10 pointer-events-auto transition-all group/exec shadow-lg hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     >
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-8 h-8 rounded-xl bg-yellow-500/10 border border-yellow-500/25 flex items-center justify-center shrink-0 group-hover/exec:border-yellow-500/50 group-hover/exec:bg-yellow-500/20 transition-all">
-                                    <TablerIcon name="bolt" className="text-yellow-400 text-base" />
-                                </div>
+                                <TablerIcon name="bolt" className="text-yellow-400 text-lg shrink-0" />
                                 <div className="flex flex-col min-w-0">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-white font-bold tracking-wide text-xs group-hover/exec:text-yellow-300 transition-colors">On Execution</h3>
-                                        <span className="text-[10px] uppercase font-bold tracking-wider text-white/40 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">Trigger</span>
                                     </div>
                                     <span className="text-[11px] text-white/40 group-hover/exec:text-white/70 transition-colors flex items-center gap-1 mt-0.5">
                                         Click to configure
