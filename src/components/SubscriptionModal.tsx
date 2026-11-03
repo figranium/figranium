@@ -139,6 +139,13 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
                 <p className="mt-4 text-[10px] text-center theme-text-faint">
                     Billed monthly via Paddle. Cancel or update your plan anytime in Settings.
                 </p>
+                <div className="mt-2 flex items-center justify-center gap-2 text-[10px] theme-text-faint">
+                    <a href="https://figranium.dev/terms" target="_blank" rel="noopener noreferrer" className="hover:underline">Terms</a>
+                    <span>·</span>
+                    <a href="https://figranium.dev/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline">Privacy</a>
+                    <span>·</span>
+                    <a href="https://figranium.dev/refunds" target="_blank" rel="noopener noreferrer" className="hover:underline">Refunds</a>
+                </div>
             </div>
         </div>
     );

@@ -134,6 +134,13 @@ const AccountPanel: React.FC<AccountPanelProps> = ({ onConfirm, onNotify, onLogo
                             {checkoutLoading ? 'Opening checkout…' : 'Subscribe to Cloud Mini'}
                         </button>
                         <p className="text-xs theme-text-faint">Checkout is securely handled by Paddle. Your plan activates after payment confirmation.</p>
+                        <div className="flex items-center gap-2 text-xs theme-text-faint pt-1">
+                            <a href="https://figranium.dev/terms" target="_blank" rel="noopener noreferrer" className="hover:underline">Terms of Service</a>
+                            <span>·</span>
+                            <a href="https://figranium.dev/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline">Privacy Notice</a>
+                            <span>·</span>
+                            <a href="https://figranium.dev/refunds" target="_blank" rel="noopener noreferrer" className="hover:underline">Refund Policy</a>
+                        </div>
                     </div>
                 ) : (
                     <div className="mt-5 space-y-4">
