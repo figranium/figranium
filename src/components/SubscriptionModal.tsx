@@ -34,7 +34,14 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
             }
             window.location.assign(destination.toString());
         } catch (err: any) {
-            setError(err instanceof Error ? err.message : 'Could not initiate checkout.');
+            const rawError = err instanceof Error ? err.message : String(err || '');
+            let message = rawError || 'Could not initiate checkout.';
+            if (rawError === 'PADDLE_CHECKOUT_UNAVAILABLE' || rawError === 'CHECKOUT_UNAVAILABLE') {
+                message = 'Paddle checkout is currently unavailable. Please verify billing settings or try again shortly.';
+            } else if (rawError === 'INVALID_CHECKOUT_URL') {
+                message = 'Received an invalid checkout redirect URL.';
+            }
+            setError(message);
             setLoading(false);
         }
     };
