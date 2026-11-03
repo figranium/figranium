@@ -171,7 +171,18 @@ export function useExecution(showAlert: (msg: string, tone?: 'success' | 'error'
                     const value = definition && typeof definition === 'object' && 'value' in definition ? definition.value : definition;
                     return value == null ? '' : String(value);
                 });
-                const response = await authorizedCloudFetch('/api/v1/headful/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: resolvedUrl }) });
+                const cookieStateId = taskSnapshot?.cookieStateId !== undefined ? taskSnapshot.cookieStateId : undefined;
+                const response = await authorizedCloudFetch('/api/v1/headful/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: resolvedUrl,
+                        targetActionId,
+                        taskSnapshot,
+                        variables,
+                        cookieStateId
+                    })
+                });
                 const data = await response.json().catch(() => ({}));
                 if (!response.ok) {
                     if (response.status === 403 || data?.error === 'HEADFUL_REQUIRES_ACTIVE_BILLING_PERIOD') {
