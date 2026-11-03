@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.23.0] - 2026-11-03
+
+### Headful viewer latency and interactive optimizations
+- Added TCP_NODELAY and TCP Keep-Alive socket options on Websockify client and target connections, eliminating packet buffering lag.
+- Implemented client-side optimistic typing echo overlay, immediately displaying keystrokes at the cursor position to mask network latency during cloud sessions.
+- Added client-side wheel delta accumulation with spring decay and optimistic scroll blitting for smooth, responsive scrolling over high-latency links.
+- Hardened viewer auto-reconnection logic (up to 6 retries) with profile preservation, preventing connection drops during background status polling.
+
+### Cookie state resilience and session persistence
+- Implemented multi-tier storage state saving fallback (`indexedDB: true` → `indexedDB: false` → `session.context.cookies()`) to prevent state loss during browser context teardown.
+- Added in-memory cached state persistence across lifecycle events including `domcontentloaded` and page closure.
+- Integrated Cookie State selection directly into the On Execution configuration modal.
+
+### Editor, canvas, and visual extraction
+- Redesigned the "On Execution" card with an opaque theme surface background across light, dark, and Solarized themes, eliminating transparent dot-grid bleed-through.
+- Removed decorative background tiles and borders from action icons, and removed the redundant "TRIGGER" badge on the execution block.
+- Synchronized the in-canvas `ExtractionScriptBlock` with `TaskSettingsCabinet`, providing unified vertical flex layout, visual fields, repeating groups, and automatic script generation.
+- Restored runnable authenticated V1 UI qualification suites and test selectors.
+
+### Cloud billing, compliance, and legal policies
+- Introduced Cloud Mini subscription modal with Paddle checkout integration and user-friendly error formatting.
+- Added discreet compliance links for Terms of Service, Privacy Notice, and Refund Policy to checkout and account settings views.
+- Updated Tabler icon map with `IconBrandGithub` and `IconArrowUpRight` aliases, and highlighted free, unlimited open-source self-hosting availability.
+
+### Dependencies and maintenance
+- Updated CloakBrowser to 0.6.5.
+
 ## [0.22.0] - 2026-10-30
 
 ### Cloud integration
