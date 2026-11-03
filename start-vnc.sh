@@ -45,8 +45,8 @@ NOVNC_PORT="${NOVNC_PORT:-54311}"
 NOVNC_LOW_PORT="${NOVNC_LOW_PORT:-54312}"
 # Coalesce bursts of repaint activity so a constrained connection receives the
 # most recent screen state instead of accumulating a stale frame backlog.
-X11VNC_FULL_ARGS=(-display "$DISPLAY" -forever -shared -localhost -passwd "$VNC_PW" -rfbport "$VNC_FULL_PORT" -wait 20 -defer 30)
-X11VNC_LOW_ARGS=(-display "$DISPLAY" -forever -shared -localhost -passwd "$VNC_PW" -rfbport "$VNC_LOW_PORT" -wait 35 -defer 55 -scale 2/3)
+X11VNC_FULL_ARGS=(-display "$DISPLAY" -forever -shared -localhost -passwd "$VNC_PW" -rfbport "$VNC_FULL_PORT" -wait 10 -defer 15)
+X11VNC_LOW_ARGS=(-display "$DISPLAY" -forever -shared -localhost -passwd "$VNC_PW" -rfbport "$VNC_LOW_PORT" -wait 25 -defer 40 -scale 2/3)
 (
   set +e
   while true; do
@@ -101,13 +101,13 @@ elif command -v websockify >/dev/null 2>&1; then
 
   (
     while true; do
-      websockify --web "$NOVNC_DIR" "0.0.0.0:$NOVNC_PORT" "127.0.0.1:$VNC_FULL_PORT" >> /app/data/novnc.log 2>&1
+      websockify --web "$NOVNC_DIR" --heartbeat 30 --idle-timeout 0 "0.0.0.0:$NOVNC_PORT" "127.0.0.1:$VNC_FULL_PORT" >> /app/data/novnc.log 2>&1
       sleep 1
     done
   ) &
   (
     while true; do
-      websockify --web "$NOVNC_DIR" "0.0.0.0:$NOVNC_LOW_PORT" "127.0.0.1:$VNC_LOW_PORT" >> /app/data/novnc-low.log 2>&1
+      websockify --web "$NOVNC_DIR" --heartbeat 30 --idle-timeout 0 "0.0.0.0:$NOVNC_LOW_PORT" "127.0.0.1:$VNC_LOW_PORT" >> /app/data/novnc-low.log 2>&1
       sleep 1
     done
   ) &

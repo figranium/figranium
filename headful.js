@@ -4,6 +4,7 @@ const { selectUserAgent } = require('./user-agent-settings');
 const { validateUrl, setupNavigationProtection } = require('./url-utils');
 const { parseBooleanFlag } = require('./common-utils');
 const { installPageTranslation } = require('./src/agent/translate');
+const { installMouseHelper } = require('./src/agent/dom-utils');
 const passwordCapture = require('./src/server/headful-password-capture');
 
 const SEVERE_PERFORMANCE_STYLE_ID = '__figranium_severe_stream_performance';
@@ -68,6 +69,42 @@ function navigateActiveSession(session, url) {
     return navigation;
 }
 
+async function saveSessionCookieState(session) {
+    if (!session || !session.cookieStateId) return null;
+    let state = null;
+    if (session.context) {
+        try {
+            state = await session.context.storageState({ indexedDB: true });
+        } catch {
+            try {
+                state = await session.context.storageState({ indexedDB: false });
+            } catch {
+                try {
+                    const cookies = await session.context.cookies();
+                    state = { cookies, origins: [] };
+                } catch {
+                    // Context may be closed
+                }
+            }
+        }
+    }
+
+    if (!state && session.lastKnownStorageState) {
+        state = session.lastKnownStorageState;
+    }
+
+    if (state && Array.isArray(state.cookies)) {
+        session.lastKnownStorageState = state;
+        try {
+            await updateCookieState(session.cookieStateId, state);
+            return state;
+        } catch (err) {
+            console.warn('[HEADFUL] Failed to update cookie state:', err && err.message ? err.message : err);
+        }
+    }
+    return null;
+}
+
 async function monitorHeadfulSession(session) {
     try {
         if (session.browser) {
@@ -78,8 +115,8 @@ async function monitorHeadfulSession(session) {
     } finally {
         if (session.interval) clearInterval(session.interval);
         passwordCapture.clear(session.startedAt);
-        if (!session.stopping && session.context && session.cookieStateId) {
-            await updateCookieState(session.cookieStateId, await session.context.storageState({ indexedDB: true })).catch(() => {});
+        if (!session.stopping && session.cookieStateId) {
+            await saveSessionCookieState(session).catch(() => {});
         }
         if (activeSession === session) activeSession = null;
     }
@@ -93,8 +130,10 @@ const teardownActiveSession = async () => {
     try {
         if (session.interval) clearInterval(session.interval);
     } catch { }
-    if (session.context && session.cookieStateId) {
-        await updateCookieState(session.cookieStateId, await session.context.storageState({ indexedDB: true }));
+    try {
+        await saveSessionCookieState(session);
+    } catch (err) {
+        console.warn('[HEADFUL] Error saving cookie state on teardown:', err && err.message ? err.message : err);
     }
     try {
         if (session.browser) {
@@ -230,7 +269,8 @@ async function runHeadful(data, options = {}) {
                 if (activeSession?.startedAt !== startingSession.startedAt) return;
                 passwordCapture.offer(startingSession.startedAt, source.frame.url(), candidate);
             }),
-            context.addInitScript(passwordCaptureInit)
+            context.addInitScript(passwordCaptureInit),
+            context.addInitScript(installMouseHelper)
         ]);
 
         const inspectInitFn = () => {
@@ -576,6 +616,7 @@ async function runHeadful(data, options = {}) {
                 } catch (e) { }
             }
         } else {
+            try { await page.evaluate(installMouseHelper); } catch (e) { }
             try { await page.evaluate(inspectInitFn); } catch (e) { }
             try { await page.evaluate(passwordCaptureInit); } catch (e) { }
             try {
@@ -590,7 +631,16 @@ async function runHeadful(data, options = {}) {
             if (!trackedPage || trackedPages.has(trackedPage)) return;
             trackedPages.add(trackedPage);
 
+            trackedPage.on('domcontentloaded', () => {
+                if (activeSession && activeSession.cookieStateId) {
+                    saveSessionCookieState(activeSession).catch(() => {});
+                }
+            });
+
             trackedPage.on('close', () => {
+                if (activeSession && activeSession.cookieStateId) {
+                    saveSessionCookieState(activeSession).catch(() => {});
+                }
                 if (!activeSession || activeSession.page !== trackedPage) return;
                 const remainingPage = activeSession.context?.pages().find((candidate) => candidate !== trackedPage && !candidate.isClosed());
                 if (remainingPage) {
@@ -619,13 +669,14 @@ async function runHeadful(data, options = {}) {
             interval: null,
             cookieStateId,
             isolatedCookies: true,
-            navigationStatus: navigated ? 'complete' : (url ? 'loading' : 'skipped')
+            navigationStatus: navigated ? 'complete' : (url ? 'loading' : 'skipped'),
+            lastKnownStorageState: attachedCookieState?.state || null
         };
-        const syncInterval = cookieStateId ? setInterval(() => {
-            if (activeSession === session && session.context && session.cookieStateId) {
-                updateCookieState(session.cookieStateId, session.context.storageState({ indexedDB: true })).catch(() => {});
+        const syncInterval = cookieStateId ? setInterval(async () => {
+            if (activeSession === session && session.cookieStateId) {
+                await saveSessionCookieState(session).catch(() => {});
             }
-        }, 30000) : null;
+        }, 10000) : null;
         session.interval = syncInterval;
         activeSession = session;
 

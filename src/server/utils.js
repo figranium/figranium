@@ -123,6 +123,10 @@ const proxyWebsockify = (req, socket, head) => {
             : null;
     if (!targetPort) return false;
     const target = net.connect(targetPort, '127.0.0.1');
+    if (typeof socket.setNoDelay === 'function') socket.setNoDelay(true);
+    if (typeof socket.setKeepAlive === 'function') socket.setKeepAlive(true, 15000);
+    if (typeof target.setNoDelay === 'function') target.setNoDelay(true);
+    if (typeof target.setKeepAlive === 'function') target.setKeepAlive(true, 15000);
     const cleanup = () => {
         try {
             socket.destroy();

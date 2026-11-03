@@ -1,9 +1,13 @@
+import React, { useEffect, useState } from 'react';
 import { Task } from '../../types';
 import TablerIcon from '../TablerIcon';
 import RichInput from '../RichInput';
+import CustomSelect from '../common/CustomSelect';
 import ConfigModalShell from './ConfigModalShell';
 import ConfigVariableList from './ConfigVariableList';
 import useVariableInsertion from './useVariableInsertion';
+import { isCloud } from '../../platform/runtime';
+import { authorizedCloudFetch, taskEditorResourcePath, taskEditorResourceItems } from '../../platform/api';
 
 interface ExecutionConfigModalProps {
     task: Task;
@@ -18,6 +22,24 @@ const modeOptions = [
 
 const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpdate, onClose }) => {
     const { canInsertVariable, captureInsertionSelection, insertVariable } = useVariableInsertion();
+    const [cookieStates, setCookieStates] = useState<{ id: string; name: string; cookies: number }[]>([]);
+
+    useEffect(() => {
+        let active = true;
+        const fetchCookieStates = async () => {
+            try {
+                const path = taskEditorResourcePath('cookie-states');
+                const response = await (isCloud ? authorizedCloudFetch(path) : fetch(path));
+                if (!response.ok) return;
+                const items = taskEditorResourceItems<{ id: string; name: string; cookies: number }>('cookie-states', await response.json());
+                if (active) setCookieStates(items);
+            } catch {
+                if (active) setCookieStates([]);
+            }
+        };
+        fetchCookieStates();
+        return () => { active = false; };
+    }, []);
 
     return (
         <ConfigModalShell icon="bolt" title="On Execution" onClose={onClose}>
@@ -40,6 +62,29 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                                 placeholder="https://..."
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <label className="block text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">Cookie State</label>
+                            <a href="/vault" className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wide text-[var(--app-accent)] hover:opacity-80">
+                                <TablerIcon name="open_in_new" className="text-xs" /> Manage Vault
+                            </a>
+                        </div>
+                        <CustomSelect
+                            value={task.cookieStateId === undefined ? 'cookies_default' : task.cookieStateId || ''}
+                            onChange={(cookieStateId) => onUpdate({ cookieStateId: cookieStateId || null }, true)}
+                            options={[
+                                ...cookieStates.map(state => ({
+                                    value: state.id,
+                                    label: `${state.name} (${state.cookies} cookies)`,
+                                    icon: 'cookie'
+                                })),
+                                { value: '', label: 'No State (Clean / Detached session)', icon: 'block' }
+                            ]}
+                            ariaLabel="Attached cookie state"
+                        />
+                        <p className="text-xs text-[var(--app-text-faint)]">Attached runs use and update this isolated state. Detached runs start with no cookies.</p>
                     </div>
 
                     <div className="space-y-2">

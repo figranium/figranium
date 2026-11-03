@@ -572,9 +572,17 @@ app.use(express.static(DIST_DIR, {
 }));
 
 // Headful Status Endpoint
+let cachedHeadfulStatus = null;
+let lastHeadfulStatusCheck = 0;
+const STATUS_CACHE_TTL_MS = 4000;
+
 app.get('/api/headful/status', requireAuth, async (req, res) => {
     if (!novncEnabled) {
         return res.json({ useNovnc: false });
+    }
+    const now = Date.now();
+    if (cachedHeadfulStatus && (now - lastHeadfulStatusCheck < STATUS_CACHE_TTL_MS)) {
+        return res.json(cachedHeadfulStatus);
     }
     // Check if the novnc port is actually in use
     const [portAvailable, lowPortAvailable] = await Promise.all([
@@ -582,10 +590,12 @@ app.get('/api/headful/status', requireAuth, async (req, res) => {
         isPortAvailable(NOVNC_LOW_PORT)
     ]);
     // If the port is NOT available, something (websockify) is listening on it
-    res.json({
+    cachedHeadfulStatus = {
         useNovnc: !portAvailable,
         adaptiveProfiles: !portAvailable && !lowPortAvailable ? ['full', 'constrained', 'severe'] : ['full', 'constrained']
-    });
+    };
+    lastHeadfulStatusCheck = now;
+    res.json(cachedHeadfulStatus);
 });
 
 require('./src/server/routes/headful-probe')(app, requireAuth);
@@ -733,6 +743,8 @@ findAvailablePort(port, 20)
             startCaptchaResourceMonitoring().catch(err => console.warn('[CAPTCHA_MODEL] Startup skipped:', err.message));
         });
         server.on('upgrade', async (req, socket, head) => {
+            if (typeof socket.setNoDelay === 'function') socket.setNoDelay(true);
+            if (typeof socket.setKeepAlive === 'function') socket.setKeepAlive(true, 15000);
             if (!await isIpAllowed(req.socket?.remoteAddress)) {
                 try { socket.destroy(); } catch { }
                 return;

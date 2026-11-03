@@ -533,32 +533,83 @@ const CanvasView: React.FC<CanvasViewProps> = ({
 
                 <div className="relative z-10 flex flex-col items-center pointer-events-none" style={{ paddingTop: '60px', minWidth: '500px' }}>
                     <div
-                        className="canvas-execution-card w-[360px] bg-black border border-white/15 p-5 rounded-2xl select-text cursor-auto relative z-10 pointer-events-auto"
-                        onDoubleClick={(event) => {
-                            event.stopPropagation();
-                            setIsExecutionConfigOpen(true);
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Configure On Execution triggers and start settings"
+                        title="Click to configure On Execution (URL, mode, wait, cookie state)"
+                        onClick={() => setIsExecutionConfigOpen(true)}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                setIsExecutionConfigOpen(true);
+                            }
                         }}
+                        className="canvas-execution-card w-[380px] bg-black border border-white/20 hover:border-white/50 hover:bg-white/[0.04] p-5 rounded-2xl select-none cursor-pointer relative z-10 pointer-events-auto transition-all group/exec shadow-lg hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     >
-                        <div className="flex items-center justify-between">
-                            <button
-                                type="button"
-                                aria-label="Configure On Execution"
-                                title="Configure On Execution"
-                                onClick={() => setIsExecutionConfigOpen(true)}
-                                className="flex items-center gap-3 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 rounded-lg pr-2 transition-all"
-                            >
-                                <TablerIcon name="bolt" className="text-white/40 text-base" />
-                                <h3 className="text-white/60 font-bold tracking-wide text-xs">On Execution</h3>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => onOpenCabinet('mode')}
-                                className="group rounded-lg bg-transparent p-2 text-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                                title="Open Task Settings"
-                                aria-label="Open Task Settings"
-                            >
-                                <TablerIcon name="settings" className="text-lg transition-transform duration-200 ease-out group-hover:rotate-45" />
-                            </button>
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-yellow-500/10 border border-yellow-500/25 flex items-center justify-center shrink-0 group-hover/exec:border-yellow-500/50 group-hover/exec:bg-yellow-500/20 transition-all">
+                                    <TablerIcon name="bolt" className="text-yellow-400 text-base" />
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-white font-bold tracking-wide text-xs group-hover/exec:text-yellow-300 transition-colors">On Execution</h3>
+                                        <span className="text-[10px] uppercase font-bold tracking-wider text-white/40 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">Trigger</span>
+                                    </div>
+                                    <span className="text-[11px] text-white/40 group-hover/exec:text-white/70 transition-colors flex items-center gap-1 mt-0.5">
+                                        Click to configure
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                                <span className="text-xs font-semibold text-white/50 group-hover/exec:text-white flex items-center gap-1 transition-colors px-2 py-1 rounded-lg group-hover/exec:bg-white/10">
+                                    <TablerIcon name="edit" className="text-xs" /> Edit
+                                </span>
+                                <div className="h-4 w-px bg-white/15 mx-0.5" />
+                                <button
+                                    type="button"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        onOpenCabinet('mode');
+                                    }}
+                                    className="group/settings rounded-lg bg-transparent p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    title="Task Settings (Stealth, Schedules, Output, History)"
+                                    aria-label="Open Task Settings"
+                                >
+                                    <TablerIcon name="settings" className="text-base transition-transform duration-200 ease-out group-hover/settings:rotate-45" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {currentTask.url ? (
+                            <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 text-xs text-white/60 font-mono truncate">
+                                <TablerIcon name="language" className="text-xs text-white/40 shrink-0" />
+                                <span className="truncate">{currentTask.url}</span>
+                            </div>
+                        ) : (
+                            <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 text-xs text-white/30 italic">
+                                <TablerIcon name="language" className="text-xs opacity-40 shrink-0" />
+                                <span>No start URL configured</span>
+                            </div>
+                        )}
+
+                        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-semibold text-white/60 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <TablerIcon name={currentTask.mode === 'scrape' ? 'language' : 'ads_click'} className="text-[11px]" />
+                                {currentTask.mode === 'scrape' ? 'Scrape Mode' : 'Agent Mode'}
+                            </span>
+                            {currentTask.cookieStateId !== undefined && currentTask.cookieStateId !== '' && currentTask.cookieStateId !== null ? (
+                                <span className="text-[10px] font-semibold text-amber-300/80 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <TablerIcon name="cookie" className="text-[11px]" />
+                                    Cookie state
+                                </span>
+                            ) : null}
+                            {currentTask.wait ? (
+                                <span className="text-[10px] font-semibold text-white/50 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <TablerIcon name="hourglass_empty" className="text-[11px]" />
+                                    {currentTask.wait}s wait
+                                </span>
+                            ) : null}
                         </div>
                     </div>
                     {currentTask.mode === 'scrape' && <div className="canvas-connector w-px h-10 bg-white/25" />}

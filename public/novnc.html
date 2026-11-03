@@ -7,6 +7,8 @@
       content="width=device-width, initial-scale=1, maximum-scale=1"
     />
     <title>Headful Browser</title>
+    <link rel="modulepreload" href="/novnc/core/rfb.js" />
+    <link rel="preconnect" href="/" />
     <style>
       :root {
         --viewer-bg: #050505;
@@ -41,6 +43,12 @@
       #screen {
         width: 100%;
         height: 100%;
+        position: relative;
+        touch-action: none;
+      }
+      #screen canvas {
+        will-change: transform;
+        transition: transform 0.04s ease-out;
       }
       #status {
         position: absolute;
@@ -55,14 +63,111 @@
         text-transform: uppercase;
         color: var(--viewer-text);
         pointer-events: none;
+        z-index: 50;
       }
       #status.hidden {
         display: none;
+      }
+      .optimizations-pill {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        background: var(--viewer-status-bg);
+        border: 1px solid var(--viewer-border);
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        color: var(--viewer-text);
+        pointer-events: none;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.75;
+      }
+      /* Local Typing Overlay to hide lag */
+      .typing-overlay {
+        position: absolute;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(15, 23, 42, 0.92);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(96, 165, 250, 0.45);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(59, 130, 246, 0.25);
+        padding: 5px 10px;
+        border-radius: 10px;
+        color: #f8fafc;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        pointer-events: none;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        max-width: min(90vw, 420px);
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .typing-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(4px) scale(0.96);
+      }
+      .typing-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(59, 130, 246, 0.2);
+        color: #93c5fd;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        flex-shrink: 0;
+      }
+      .typing-preview {
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+      }
+      .typing-caret {
+        display: inline-block;
+        width: 2px;
+        height: 14px;
+        background: #60a5fa;
+        margin-left: 2px;
+        vertical-align: middle;
+        animation: typing-blink 0.8s infinite;
+      }
+      @keyframes typing-blink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0; }
       }
     </style>
   </head>
   <body>
     <div id="status">Connecting...</div>
+    <div id="optimizations-pill" class="optimizations-pill hidden">
+      <span>⚡ Fast Connect</span>
+      <span>•</span>
+      <span>⌨ Local Echo</span>
+      <span>•</span>
+      <span>📜 Smooth Scroll</span>
+    </div>
+    <div id="typing-overlay" class="typing-overlay hidden">
+      <div class="typing-badge">
+        <span>⌨</span>
+        <span>Echo</span>
+      </div>
+      <div class="typing-preview">
+        <span id="typing-text"></span>
+        <span class="typing-caret"></span>
+      </div>
+    </div>
     <div id="screen"></div>
     <script type="module">
       let RFB;
@@ -82,12 +187,15 @@
       };
 
       const statusEl = document.getElementById('status');
+      const optimizationsPill = document.getElementById('optimizations-pill');
       const screen = document.getElementById('screen');
+      const typingOverlay = document.getElementById('typing-overlay');
+      const typingText = document.getElementById('typing-text');
 
-      const MAX_RETRIES = 3;
+      const MAX_RETRIES = 6;
       const PASSWORD_TIMEOUT_MS = 10_000;
-      const CONNECT_TIMEOUT_MS = 12_000;
-      const PROBE_INTERVAL_MS = 30_000;
+      const CONNECT_TIMEOUT_MS = 15_000;
+      const PROBE_INTERVAL_MS = 45_000;
       const RECOVERY_WINDOW_MS = 120_000;
       let retryCount = 0;
       let connectedAt = null;
@@ -104,9 +212,9 @@
       let severeFeedAvailable = false;
 
       const profileSettings = {
-        full: { quality: 7, compression: 3 },
-        constrained: { quality: 4, compression: 6 },
-        severe: { quality: 3, compression: 8 }
+        full: { quality: 7, compression: 2 },
+        constrained: { quality: 4, compression: 4 },
+        severe: { quality: 3, compression: 6 }
       };
       const profileRank = { full: 0, constrained: 1, severe: 2 };
 
@@ -123,6 +231,7 @@
         if (retryTimer !== null) clearTimeout(retryTimer);
         statusEl.classList.remove('hidden');
         statusEl.textContent = message;
+        optimizationsPill?.classList?.add?.('hidden');
         window.parent?.postMessage({ type: 'figranium-headful-viewer-failed', message }, window.location.origin);
       };
 
@@ -159,11 +268,11 @@
       }
 
       const profileForMeasurement = ({ mbps, latency, hint }) => {
-        const hintedSevere = ['slow-2g', '2g'].includes(hint?.effectiveType) || (hint?.downlink !== null && hint?.downlink < 1.5) || (hint?.rtt !== null && hint?.rtt > 450);
-        const measuredSevere = (mbps !== null && mbps < 1.5) || (latency !== null && latency > 450);
+        const hintedSevere = ['slow-2g', '2g'].includes(hint?.effectiveType) || (hint?.downlink !== null && hint?.downlink < 1.5) || (hint?.rtt !== null && hint?.rtt > 550);
+        const measuredSevere = (mbps !== null && mbps < 1.5) || (latency !== null && latency > 550);
         if (hintedSevere || measuredSevere) return severeFeedAvailable ? 'severe' : 'constrained';
-        const hintedConstrained = hint?.effectiveType === '3g' || (hint?.downlink !== null && hint?.downlink < 5) || (hint?.rtt !== null && hint?.rtt > 180);
-        const measuredConstrained = (mbps !== null && mbps < 5) || (latency !== null && latency > 180);
+        const hintedConstrained = hint?.effectiveType === '3g' || (hint?.downlink !== null && hint?.downlink < 5) || (hint?.rtt !== null && hint?.rtt > 260);
+        const measuredConstrained = (mbps !== null && mbps < 5) || (latency !== null && latency > 260);
         return hintedConstrained || measuredConstrained ? 'constrained' : 'full';
       };
 
@@ -181,7 +290,7 @@
       };
 
       const applyRfbProfile = (rfb) => {
-        const settings = profileSettings[profile];
+        const settings = profileSettings[profile] || profileSettings.full;
         rfb.qualityLevel = settings.quality;
         rfb.compressionLevel = settings.compression;
         rfb.scaleViewport = true;
@@ -201,10 +310,12 @@
           const previous = activeRfb;
           activeRfb = null;
           try { previous.disconnect(); } catch { /* ignore */ }
-          switchingProfile = false;
           statusEl.textContent = profile === 'severe' ? 'Optimizing for connection...' : 'Restoring full resolution...';
           statusEl.classList.remove('hidden');
-          setTimeout(initVNC, 50);
+          setTimeout(() => {
+            switchingProfile = false;
+            initVNC();
+          }, 80);
           return;
         }
         if (activeRfb) applyRfbProfile(activeRfb);
@@ -251,8 +362,10 @@
           return;
         }
         retryCount += 1;
-        statusEl.textContent = `${message} Retrying (${retryCount}/${MAX_RETRIES})...`;
-        retryTimer = setTimeout(initVNC, Math.min(1000 * retryCount, 3000));
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = `${message} Reconnecting (${retryCount}/${MAX_RETRIES})...`;
+        const backoff = Math.min(600 * Math.pow(1.4, retryCount - 1), 3500);
+        retryTimer = setTimeout(() => initVNC(), backoff);
       };
 
       async function fetchViewerCredentials() {
@@ -272,14 +385,16 @@
         }
       }
 
-      async function initVNC() {
+      async function initVNC(preloadedCredentials) {
         if (terminalFailure) return;
-        let credentials;
-        try {
-          credentials = await fetchViewerCredentials();
-        } catch (err) {
-          retryConnection('Unable to reach browser session.');
-          return;
+        let credentials = preloadedCredentials;
+        if (!credentials) {
+          try {
+            credentials = await fetchViewerCredentials();
+          } catch (err) {
+            retryConnection('Unable to reach browser session.');
+            return;
+          }
         }
 
         let rfb;
@@ -334,16 +449,19 @@
           connectedAt = Date.now();
           retryCount = 0;
           statusEl.classList.add('hidden');
+          optimizationsPill?.classList?.remove?.('hidden');
           startProbing();
         });
         rfb.addEventListener('disconnect', () => {
           if (rfb !== activeRfb) return;
           activeRfb = null;
           if (switchingProfile) return;
-          const droppedQuickly = connectedAt !== null && (Date.now() - connectedAt) < 4000;
+          const wasConnected = connectedAt !== null;
+          const droppedQuickly = wasConnected && (Date.now() - connectedAt) < 4000;
           connectedAt = null;
           statusEl.classList.remove('hidden');
-          retryConnection(droppedQuickly ? 'Browser session crashed.' : 'Browser session disconnected.');
+          optimizationsPill?.classList?.add?.('hidden');
+          retryConnection(droppedQuickly ? 'Connection interrupted.' : 'Reconnecting to browser...');
         });
 
         connectTimer = setTimeout(() => {
@@ -354,14 +472,198 @@
         }, CONNECT_TIMEOUT_MS);
       }
 
+      /* ── Local Typing Rendering to Hide Network Lag ────────────────────── */
+      let lastClickX = typeof window !== 'undefined' ? window.innerWidth / 2 : 960;
+      let lastClickY = typeof window !== 'undefined' ? window.innerHeight / 2 : 540;
+      let typingBuffer = '';
+      let typingFadeTimer = null;
+
+      if (screen && typeof screen.addEventListener === 'function') {
+        screen.addEventListener('pointerdown', (e) => {
+          lastClickX = e.clientX;
+          lastClickY = e.clientY;
+        }, true);
+      }
+
+      const positionTypingOverlay = () => {
+        if (!typingOverlay || typeof window === 'undefined') return;
+        const pad = 14;
+        const overlayWidth = 260;
+        const overlayHeight = 36;
+        let top = lastClickY - overlayHeight - 12;
+        let left = lastClickX - 16;
+        if (top < pad) top = lastClickY + 20;
+        if (top + overlayHeight > window.innerHeight - pad) top = window.innerHeight - overlayHeight - pad;
+        if (left < pad) left = pad;
+        if (left + overlayWidth > window.innerWidth - pad) left = window.innerWidth - overlayWidth - pad;
+        typingOverlay.style.top = `${Math.round(top)}px`;
+        typingOverlay.style.left = `${Math.round(left)}px`;
+      };
+
+      const updateTypingDisplay = () => {
+        if (!typingOverlay || !typingText) return;
+        if (!typingBuffer) {
+          typingOverlay.classList?.add?.('hidden');
+          return;
+        }
+        typingText.textContent = typingBuffer;
+        positionTypingOverlay();
+        typingOverlay.classList?.remove?.('hidden');
+
+        if (typingFadeTimer) clearTimeout(typingFadeTimer);
+        typingFadeTimer = setTimeout(() => {
+          typingOverlay?.classList?.add?.('hidden');
+          typingBuffer = '';
+        }, 850);
+      };
+
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('keydown', (e) => {
+          if (e.isComposing || e.keyCode === 229) return;
+          // Ignore modifier key combos (Ctrl+C, Cmd+V, Alt+Tab, etc.)
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+          if (e.key === 'Backspace') {
+            if (typingBuffer.length > 0) {
+              typingBuffer = typingBuffer.slice(0, -1);
+              updateTypingDisplay();
+            }
+            return;
+          }
+          if (e.key === 'Enter') {
+            if (typingBuffer.length > 0) {
+              typingBuffer += ' ↵';
+              updateTypingDisplay();
+              setTimeout(() => {
+                typingOverlay?.classList?.add?.('hidden');
+                typingBuffer = '';
+              }, 220);
+            }
+            return;
+          }
+          if (e.key === 'Escape') {
+            typingBuffer = '';
+            if (typingText) typingText.textContent = '';
+            typingOverlay?.classList?.add?.('hidden');
+            return;
+          }
+          if (e.key && e.key.length === 1) {
+            if (typingBuffer.length > 80) typingBuffer = typingBuffer.slice(1);
+            typingBuffer += e.key;
+            updateTypingDisplay();
+          }
+        }, true);
+      }
+
+      /* ── Client-side Scrolling Optimization ────────────────────────────── */
+      let accumulatedScrollY = 0;
+      let accumulatedScrollX = 0;
+      let optimisticOffsetY = 0;
+      let scrollFlushTimer = null;
+      let scrollAnimationId = null;
+
+      const screenCanvas = () => screen && typeof screen.querySelector === 'function' ? screen.querySelector('canvas') : null;
+
+      const scheduleFrame = (cb) => {
+        if (typeof requestAnimationFrame === 'function') return requestAnimationFrame(cb);
+        return setTimeout(cb, 16);
+      };
+
+      const cancelFrame = (id) => {
+        if (typeof cancelAnimationFrame === 'function') return cancelAnimationFrame(id);
+        clearTimeout(id);
+      };
+
+      const decayOptimisticScroll = () => {
+        if (Math.abs(optimisticOffsetY) > 0.5) {
+          optimisticOffsetY *= 0.82;
+          const canvas = screenCanvas();
+          if (canvas) {
+            canvas.style.transform = `translate3d(0, ${Math.round(-optimisticOffsetY)}px, 0)`;
+          }
+          scrollAnimationId = scheduleFrame(decayOptimisticScroll);
+        } else {
+          optimisticOffsetY = 0;
+          const canvas = screenCanvas();
+          if (canvas) {
+            canvas.style.transform = '';
+          }
+          scrollAnimationId = null;
+        }
+      };
+
+      const flushScrollEvents = () => {
+        scrollFlushTimer = null;
+        if (!activeRfb || (accumulatedScrollY === 0 && accumulatedScrollX === 0)) return;
+
+        const SCROLL_STEP = 20;
+        const stepsY = Math.trunc(accumulatedScrollY / SCROLL_STEP);
+        accumulatedScrollY -= stepsY * SCROLL_STEP;
+
+        const clampedY = Math.max(-5, Math.min(5, stepsY));
+        const targetX = Math.max(0, Math.min(1920, lastClickX || 960));
+        const targetY = Math.max(0, Math.min(1080, lastClickY || 540));
+
+        if (clampedY !== 0 && typeof activeRfb.sendPointerEvent === 'function') {
+          const buttonMask = clampedY < 0 ? 8 : 16;
+          const count = Math.abs(clampedY);
+          for (let i = 0; i < count; i++) {
+            try {
+              activeRfb.sendPointerEvent(targetX, targetY, buttonMask);
+              activeRfb.sendPointerEvent(targetX, targetY, 0);
+            } catch { /* ignore */ }
+          }
+        }
+      };
+
+      if (screen && typeof screen.addEventListener === 'function') {
+        screen.addEventListener('wheel', (e) => {
+          if (!activeRfb) return;
+          if (typeof e.preventDefault === 'function') e.preventDefault();
+          if (typeof e.stopPropagation === 'function') e.stopPropagation();
+
+          accumulatedScrollY += (e.deltaY || 0);
+          accumulatedScrollX += (e.deltaX || 0);
+
+          // Optimistic visual translation for instant 0ms scroll perception
+          optimisticOffsetY = Math.max(-120, Math.min(120, optimisticOffsetY + (e.deltaY || 0) * 0.35));
+          const canvas = screenCanvas();
+          if (canvas) {
+            canvas.style.transform = `translate3d(0, ${Math.round(-optimisticOffsetY)}px, 0)`;
+          }
+          if (!scrollAnimationId) {
+            scrollAnimationId = scheduleFrame(decayOptimisticScroll);
+          }
+
+          if (!scrollFlushTimer) {
+            scrollFlushTimer = setTimeout(flushScrollEvents, 32);
+          }
+        }, { passive: false, capture: true });
+      }
+
+      /* ── Seamless Local Clipboard Paste ───────────────────────────────── */
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('paste', (e) => {
+          const text = e.clipboardData?.getData('text/plain');
+          if (text && activeRfb && typeof activeRfb.sendKey === 'function') {
+            for (let i = 0; i < Math.min(text.length, 500); i++) {
+              const char = text[i];
+              const code = char.charCodeAt(0);
+              try {
+                activeRfb.sendKey(code, null, true);
+                activeRfb.sendKey(code, null, false);
+              } catch { /* ignore */ }
+            }
+          }
+        });
+      }
+
       window.addEventListener('pagehide', () => {
         terminalFailure = true;
         clearConnectTimer();
         if (retryTimer !== null) clearTimeout(retryTimer);
         if (probeTimer !== null) clearInterval(probeTimer);
         try { activeRfb?.disconnect(); } catch { /* ignore */ }
-        // The parent owns browser lifetime. An unload request from an old iframe
-        // can otherwise arrive late and stop the next browser session.
       });
 
       const bootstrap = async () => {
@@ -372,18 +674,20 @@
           stopWithFailure('Could not load browser viewer. Check that noVNC is installed and reload.');
           return;
         }
-        try {
-          const response = await fetch('/api/headful/status', { cache: 'no-store', credentials: 'same-origin' });
-          const status = response.ok ? await response.json() : null;
-          severeFeedAvailable = Boolean(status?.adaptiveProfiles?.includes('severe'));
-        } catch {
-          severeFeedAvailable = false;
-        }
+
+        // Fetch credentials and status concurrently to eliminate serial latency on Cloud
+        const [preloadedCreds, status] = await Promise.all([
+          fetchViewerCredentials().catch(() => null),
+          fetch('/api/headful/status', { cache: 'no-store', credentials: 'same-origin' })
+            .then(res => res.ok ? res.json() : null)
+            .catch(() => null)
+        ]);
+
+        severeFeedAvailable = Boolean(status?.adaptiveProfiles?.includes('severe'));
         const initialHint = describeConnection();
         if (severeFeedAvailable && ['slow-2g', '2g'].includes(initialHint?.effectiveType)) profile = 'severe';
         notifyProfile();
-        initVNC();
-        evaluateConnection();
+        initVNC(preloadedCreds);
       };
 
       bootstrap();
