@@ -56,14 +56,9 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
                     <TablerIcon name="close" className="text-base" />
                 </button>
 
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                        <TablerIcon name="sparkles" className="text-xl" />
-                    </div>
-                    <div>
-                        <h2 className="text-base font-bold theme-text">Subscription Required</h2>
-                        <p className="text-xs theme-text-muted">Upgrade to Figranium Cloud</p>
-                    </div>
+                <div className="mb-4">
+                    <h2 className="text-base font-bold theme-text">Subscription Required</h2>
+                    <p className="text-xs theme-text-muted mt-0.5">Upgrade to Figranium Cloud</p>
                 </div>
 
                 <p className="text-xs theme-text-muted leading-relaxed mb-5">
@@ -72,7 +67,7 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
 
                 <div className="rounded-2xl border theme-border bg-[var(--app-surface-3)] p-4 mb-5">
                     <div className="flex items-baseline justify-between mb-2">
-                        <span className="text-xs font-bold theme-text uppercase tracking-wider">Cloud Mini</span>
+                        <span className="text-xs font-bold theme-text">Cloud Mini</span>
                         <div className="flex items-baseline gap-1">
                             <span className="text-xl font-bold theme-text">$15</span>
                             <span className="text-xs theme-text-muted">/ month</span>
@@ -85,7 +80,7 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
                         </li>
                         <li className="flex items-center gap-2">
                             <TablerIcon name="check" className="text-sm text-green-400 shrink-0" />
-                            <span><strong>120 browser minutes</strong> per month</span>
+                            <span><strong>120 headful browser minutes</strong> per month (interactive sessions & selector picking)</span>
                         </li>
                         <li className="flex items-center gap-2">
                             <TablerIcon name="check" className="text-sm text-green-400 shrink-0" />
@@ -96,6 +91,21 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
                             <span>Encrypted vault credentials & R2 artifact storage</span>
                         </li>
                     </ul>
+                </div>
+
+                <div className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-3.5 mb-5 flex items-start gap-2.5">
+                    <TablerIcon name="brand_github" className="text-base text-[var(--app-text-muted)] shrink-0 mt-0.5" />
+                    <div className="text-xs text-[var(--app-text-muted)] leading-relaxed">
+                        <span className="font-semibold text-[var(--app-text)]">Self-hosting is 100% free:</span> Figranium is completely free and open source. All the same features—task automation, headful browsing, and selector picking—are included with zero limits when self-hosted.{' '}
+                        <a
+                            href="https://github.com/figranium/figranium"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[var(--app-accent)] font-semibold hover:underline inline-flex items-center gap-0.5"
+                        >
+                            GitHub <TablerIcon name="arrow_up_right" className="text-xs" />
+                        </a>
+                    </div>
                 </div>
 
                 {error && (
