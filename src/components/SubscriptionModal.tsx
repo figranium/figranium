@@ -84,10 +84,6 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
                         </li>
                         <li className="flex items-center gap-2">
                             <TablerIcon name="check" className="text-sm text-green-400 shrink-0" />
-                            <span>Isolated gVisor runner & headed Chromium</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                            <TablerIcon name="check" className="text-sm text-green-400 shrink-0" />
                             <span>Encrypted vault credentials & R2 artifact storage</span>
                         </li>
                     </ul>
