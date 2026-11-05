@@ -9,10 +9,6 @@ services:
       - "54311:54311" # VNC / noVNC
     environment:
       - NODE_ENV=production
-      # Browser engine: Playwright + stealth plugin by default. Uncomment the
-      # lines below to run CloakBrowser's stealth-patched Chromium instead.
-      # - USE_CLOAK_ENGINE=true
-      # - CLOAKBROWSER_LICENSE_KEY=cb_xxxxxxxx
       # Optional YesCaptcha/AntiCaptcha-compatible service. It is tried before
       # the active-browser local solver.
       # - CAPTCHA_SOLVER_URL=https://solver.example.com

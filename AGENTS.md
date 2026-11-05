@@ -22,7 +22,7 @@ npm test             # Runs tests/clipboard.test.ts via vite-node
 
 **Key architectural boundaries:**
 - `server.js` registers routes from `src/server/routes/*.js` and serves the frontend. It also handles headful browser lifecycle and NoVNC/websockify proxying.
-- `headful.js` and the agent engine both use the browser engine from `stealth-chromium.js` (Playwright by default, CloakBrowser when `USE_CLOAK_ENGINE=true`) — `headful.js` manages a persistent visible browser over VNC with a selector picker tool, while `scrape.js` fetches with got-scraping + Cheerio (no browser).
+- `headful.js` and the agent engine both use the browser engine from `stealth-chromium.js` — `headful.js` manages a persistent visible browser over VNC with a selector picker tool, while `scrape.js` fetches with got-scraping + Cheerio (no browser).
 - `src/agent/index.js` is the shared orchestrator called by both. It processes the action list, handles control flow (if/else/while/repeat/foreach via `logic-handler.js`), variable templating, and output providers.
 - `src/server/storage.js` abstracts persistence — defaults to JSON files in `data/`, optionally uses PostgreSQL when `DB_TYPE=postgres`.
 
@@ -38,7 +38,7 @@ npm test             # Runs tests/clipboard.test.ts via vite-node
 |---|---|
 | Backend | Node.js, Express.js (REST API) |
 | Frontend | React 19, Vite, Tailwind CSS, Lucide React |
-| Automation | Playwright + `playwright-extra`/`puppeteer-extra-plugin-stealth` (default); CloakBrowser opt-in via `USE_CLOAK_ENGINE=true` |
+| Automation | Playwright + `playwright-extra`/`puppeteer-extra-plugin-stealth` |
 | Storage | JSON files in `data/` — optionally PostgreSQL via `DB_TYPE=postgres` |
 
 ## Directory Map
@@ -62,7 +62,7 @@ npm test             # Runs tests/clipboard.test.ts via vite-node
 | `src/agent/logic-handler.js` | Control flow (if/else, while, repeat, foreach) |
 | `src/agent/sandbox.js` | Browser-context JavaScript execution |
 | `src/agent/dom-utils.js` | DOM inspection and mouse cursor helper |
-| `src/agent/browser.js` | Browser/context setup (Playwright or CloakBrowser engine) |
+| `src/agent/browser.js` | Browser/context setup (Playwright stealth stack) |
 | `src/agent/human-interaction.js` | Human-like typing, mouse movement, typos |
 | `data/` | Runtime storage for tasks, recordings, logs. **Never commit.** |
 
@@ -132,5 +132,3 @@ After pushing to `main`, check `git tag` for older release tags that do not yet 
 - `ALLOWED_IPS` — Comma-separated IP allowlist
 - `ALLOW_PRIVATE_NETWORKS` — Enable scraping private IPs (SSRF risk)
 - `VITE_DEV_PORT` / `VITE_BACKEND_PORT` — Dev server ports (5173 / 11345)
-- `USE_CLOAK_ENGINE=true` — Switch the browser engine from Playwright (default) to CloakBrowser
-- `CLOAKBROWSER_LICENSE_KEY` — CloakBrowser license key (read natively by cloakbrowser; also `npx cloakbrowser login` → `~/.cloakbrowser/license.key`)

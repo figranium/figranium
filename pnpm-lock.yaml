@@ -26,9 +26,6 @@ importers:
       cheerio:
         specifier: ^1.2.0
         version: 1.2.0
-      cloakbrowser:
-        specifier: ^0.6.0
-        version: 0.6.5(playwright-core@1.64.1)
       cookie:
         specifier: ^2.0.0
         version: 2.0.1
@@ -1106,25 +1103,6 @@ packages:
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
-
-  cloakbrowser@0.6.5:
-    resolution: {integrity: sha512-KrzbGEqFMOHsfNXrV68UhtO3PQJ+T25qKZiAP1hgcld8UXgcCUgfkEZEr88bxEtJylEwco2f/GEgbaFK6Jjl2w==}
-    engines: {node: ^20.19.0 || >=22.12.0}
-    hasBin: true
-    peerDependencies:
-      mmdb-lib: '>=2.0.0'
-      playwright-core: '>=1.53.0'
-      puppeteer-core: '>=21.0.0'
-      socks-proxy-agent: '>=10.0.0'
-    peerDependenciesMeta:
-      mmdb-lib:
-        optional: true
-      playwright-core:
-        optional: true
-      puppeteer-core:
-        optional: true
-      socks-proxy-agent:
-        optional: true
 
   clone-deep@0.2.4:
     resolution: {integrity: sha512-we+NuQo2DHhSl+DP6jlUiAhyAjBQrYnpOk15rN6c6JSPScjiCLh8IbSU+VTcph6YS3o7mASE8a0+gbZ7ChLpgg==}
@@ -3434,12 +3412,6 @@ snapshots:
       whatwg-mimetype: 4.0.0
 
   chownr@3.0.0: {}
-
-  cloakbrowser@0.6.5(playwright-core@1.64.1):
-    dependencies:
-      tar: 7.5.11
-    optionalDependencies:
-      playwright-core: 1.64.1
 
   clone-deep@0.2.4:
     dependencies:

@@ -151,8 +151,6 @@ Figranium automatically generates a cryptographically random session secret on f
 | `DB_POSTGRESDB_USER` | Username for the PostgreSQL database (required if DB_TYPE is postgres). | — |
 | `DB_POSTGRESDB_PASSWORD` | Password for the PostgreSQL database (required if DB_TYPE is postgres). | — |
 | `DB_POSTGRESDB_DATABASE` | Database name for PostgreSQL. | `postgres` |
-| `USE_CLOAK_ENGINE` | Set to `true` to run the browser engine on CloakBrowser instead of the default Playwright stealth stack. | `false` |
-| `CLOAKBROWSER_LICENSE_KEY` | CloakBrowser license key for the latest binary. | — |
 | `MAX_CONCURRENT_EXECUTIONS` | Override the automatic browser-execution limit. | host-aware |
 
 
