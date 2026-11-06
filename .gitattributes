@@ -1,2 +1,7 @@
 # Enforce LF line endings on shell scripts
 *.sh text eol=lf
+
+# Ignore generated/vendor files in GitHub language statistics
+graphify-out/** linguist-vendored
+public/novnc.html linguist-vendored
+
