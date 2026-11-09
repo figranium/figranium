@@ -40,14 +40,14 @@ Figranium is proudly supported by:
 ## Featured Partners
 
 <div align="center">
-  <a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank">
+  <a href="https://proxy-seller.com/?utm_source=figranium" target="_blank">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="partner-assets/thordata_white.svg">
-      <source media="(prefers-color-scheme: light)" srcset="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png">
-      <img src="https://gologin.com/wp-content/uploads/WP-PROXY-THUMBNAIL-4-1.png" width="180" alt="Thordata">
+      <source media="(prefers-color-scheme: dark)" srcset="partner-assets/proxy-seller_white.svg">
+      <source media="(prefers-color-scheme: light)" srcset="partner-assets/proxy-seller.svg">
+      <img src="partner-assets/proxy-seller.svg" width="180" alt="Proxy-Seller">
     </picture>
   </a>
-  <p style="max-width: 680px; margin-left: auto; margin-right: auto;"><a href="https://www.thordata.com/?ls=github&lk=figranium" target="_blank"><strong>Thordata</strong></a> — Premium residential proxy infrastructure for reliable web scraping and browser automation.</p>
+  <p style="max-width: 680px; margin-left: auto; margin-right: auto;"><a href="https://proxy-seller.com/?utm_source=figranium" target="_blank"><strong>Proxy-Seller</strong></a> — Private residential, ISP, mobile, and datacenter IPv4/IPv6 proxies for reliable web scraping and browser automation.</p>
 </div>
 
 <div align="center">
