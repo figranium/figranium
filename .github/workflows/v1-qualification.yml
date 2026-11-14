@@ -16,7 +16,7 @@ permissions:
 jobs:
   qualification:
     name: Release qualification
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 45
 
     services:
@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: useblacksmith/checkout@v1
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
