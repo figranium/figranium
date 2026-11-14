@@ -55,7 +55,7 @@ export default function App() {
     useTheme();
 
     // Auth Hook
-    const { authStatus, authError, authBusy, handleAuthSubmit, logout } = useAuth();
+    const { authStatus, authError, authBusy, handleAuthSubmit, handleTwoFactorSubmit, cancelTwoFactor, logout } = useAuth();
 
     // Task Hook
     const {
@@ -158,6 +158,7 @@ export default function App() {
 
         if (authStatus === 'login') title = 'Sign In | Figranium';
         else if (authStatus === 'setup') title = 'Setup | Figranium';
+        else if (authStatus === 'two_factor') title = 'Verify | Figranium';
         else if (authStatus === 'checking') title = 'Loading | Figranium';
         else if (location.pathname === '/' || location.pathname === '/dashboard') title = 'Dashboard | Figranium';
         else if (location.pathname.startsWith('/tasks')) {
@@ -361,12 +362,21 @@ export default function App() {
     }, [handleNavigate, handleNewTask, handleLogout]);
 
     let content: React.ReactNode;
-    if (authStatus === 'login' || authStatus === 'setup') {
+    if (authStatus === 'login' || authStatus === 'setup' || authStatus === 'two_factor') {
         if (isCloud) {
             const OfficialAuthUI = window.__FIGRANIUM_CLOUD_AUTH_UI__;
             content = OfficialAuthUI ? <OfficialAuthUI /> : <LoadingScreen variant="auth" title="Authentication unavailable" subtitle="Neon Auth UI is not configured" />;
         } else {
-            content = <AuthScreen status={authStatus} onSubmit={handleAuthSubmit} error={authError} busy={authBusy} />;
+            content = (
+                <AuthScreen
+                    status={authStatus}
+                    onSubmit={handleAuthSubmit}
+                    onTwoFactorSubmit={handleTwoFactorSubmit}
+                    onCancelTwoFactor={cancelTwoFactor}
+                    error={authError}
+                    busy={authBusy}
+                />
+            );
         }
     } else if (authStatus === 'checking') {
         content = <LoadingScreen variant="auth" title="Authenticating" subtitle="Verifying session state" />;
