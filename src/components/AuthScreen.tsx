@@ -1,15 +1,18 @@
 import { useRef, useState } from 'react';
 import CanvasDotGrid from './editor/CanvasDotGrid';
+import OtpCodeInput from './OtpCodeInput';
 import TablerIcon from './TablerIcon';
 
 interface AuthScreenProps {
-    status: 'login' | 'setup';
+    status: 'login' | 'setup' | 'two_factor';
     onSubmit: (email: string, pass: string, name?: string, passConfirm?: string) => Promise<void>;
+    onTwoFactorSubmit?: (code: string) => Promise<void>;
+    onCancelTwoFactor?: () => void;
     error: string;
     busy?: boolean;
 }
 
-const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy = false }) => {
+const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, onTwoFactorSubmit, onCancelTwoFactor, error, busy = false }) => {
     const viewportRef = useRef<HTMLDivElement>(null!);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -17,10 +20,26 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
     const [passConfirm, setPassConfirm] = useState('');
     const [showPass, setShowPass] = useState(false);
     const [showPassConfirm, setShowPassConfirm] = useState(false);
+    const [otpCode, setOtpCode] = useState('');
+    const [useRecoveryCode, setUseRecoveryCode] = useState(false);
     const [localError, setLocalError] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (status === 'two_factor') {
+            const trimmed = otpCode.trim();
+            if (!useRecoveryCode && trimmed.length !== 6) {
+                setLocalError('Enter the 6-digit authentication code.');
+                return;
+            }
+            if (useRecoveryCode && !trimmed) {
+                setLocalError('Enter a recovery code.');
+                return;
+            }
+            setLocalError('');
+            void onTwoFactorSubmit?.(trimmed);
+            return;
+        }
         if (status === 'setup' && pass !== passConfirm) {
             setLocalError('Passwords do not match.');
             return;
@@ -31,7 +50,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
 
     const buttonLabel = status === 'setup'
         ? (busy ? 'Creating account...' : 'Create Account')
-        : (busy ? 'Authenticating...' : 'Authenticate');
+        : status === 'two_factor'
+            ? (busy ? 'Verifying...' : 'Verify')
+            : (busy ? 'Authenticating...' : 'Authenticate');
 
     const inputClass = "w-full theme-input border theme-border rounded-2xl px-5 py-4 text-sm theme-text focus:outline-none focus:border-[var(--app-border-strong)] focus-visible:ring-2 focus-visible:ring-white/50 transition-all placeholder:text-gray-600";
 
@@ -44,6 +65,57 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
+                    {status === 'two_factor' ? (
+                        <div className="space-y-3">
+                            <label htmlFor="auth-otp" className="block text-xs font-bold theme-text-muted tracking-wide">
+                                {useRecoveryCode ? 'Recovery code' : 'Authentication code'}
+                            </label>
+                            {useRecoveryCode ? (
+                                <input
+                                    id="auth-otp"
+                                    type="text"
+                                    value={otpCode}
+                                    onChange={(e) => setOtpCode(e.target.value)}
+                                    placeholder="XXXX-XXXX"
+                                    className={inputClass}
+                                    required
+                                    autoFocus
+                                    autoComplete="one-time-code"
+                                    spellCheck={false}
+                                />
+                            ) : (
+                                <OtpCodeInput
+                                    id="auth-otp"
+                                    value={otpCode}
+                                    onChange={setOtpCode}
+                                    disabled={busy}
+                                    autoFocus
+                                    onRecoveryPaste={(text) => {
+                                        setUseRecoveryCode(true);
+                                        setOtpCode(text);
+                                        setLocalError('');
+                                    }}
+                                />
+                            )}
+                            <p className="text-xs theme-text-faint">
+                                {useRecoveryCode
+                                    ? 'Enter one of your single-use recovery codes.'
+                                    : 'Enter the 6-digit code from your authenticator app.'}
+                            </p>
+                            <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => {
+                                    setUseRecoveryCode((prev) => !prev);
+                                    setOtpCode('');
+                                    setLocalError('');
+                                }}
+                                className="text-xs font-bold theme-text-muted hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 disabled:opacity-60 disabled:no-underline"
+                            >
+                                {useRecoveryCode ? 'Use authenticator code instead' : 'Use a recovery code instead'}
+                            </button>
+                        </div>
+                    ) : (
                     <div className="space-y-4">
                         {status === 'setup' && (
                             <div className="space-y-2">
@@ -123,6 +195,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                             </div>
                         )}
                     </div>
+                    )}
 
                     <button
                         type="submit"
@@ -135,6 +208,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, error, busy =
                         )}
                         {buttonLabel}
                     </button>
+
+                    {status === 'two_factor' && onCancelTwoFactor && (
+                        <button type="button" onClick={onCancelTwoFactor} disabled={busy} className="w-full text-xs font-bold theme-text-muted tracking-wide hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 disabled:opacity-60 disabled:no-underline">
+                            Back to sign in
+                        </button>
+                    )}
 
                     {(localError || error) && (
                         <div role="alert" className="text-xs font-bold text-red-500 text-center tracking-wide">

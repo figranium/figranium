@@ -2,8 +2,128 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { loadUsers, saveUsers, saveSession } = require('../storage');
 const { authRateLimiter } = require('../middleware');
+const totp = require('../totp');
 
 const router = express.Router();
+
+const TWO_FACTOR_LOGIN_TTL_MS = 5 * 60 * 1000;
+const TWO_FACTOR_SETUP_TTL_MS = 10 * 60 * 1000;
+const TWO_FACTOR_MAX_FAILURES = 5;
+const TWO_FACTOR_LOCKOUT_MS = 15 * 60 * 1000;
+const MAX_CODE_INPUT_LENGTH = 64;
+
+const findUserById = (users, id) => users.find((candidate) => String(candidate.id) === String(id));
+const isTwoFactorLockedOut = (totpState) => Boolean(totpState?.lockedUntil && totpState.lockedUntil > Date.now());
+
+function establishSession(req, res, user) {
+    req.session.regenerate(async (err) => {
+        if (err) {
+            console.error('[AUTH] Login session regenerate failed:', err);
+            return res.status(500).json({ error: 'SESSION_REGENERATE_FAILED' });
+        }
+        req.session.user = { id: user.id, name: user.name, email: user.email };
+        try {
+            await saveSession(req);
+            res.json({ success: true, user: req.session.user });
+        } catch (saveErr) {
+            console.error('[AUTH] Login session save failed:', saveErr);
+            return res.status(500).json({ error: 'SESSION_SAVE_FAILED' });
+        }
+    });
+}
+
+// The password was correct but a second factor is still required. Keep only a short-lived
+// marker in a fresh session; the user is not signed in until the code is verified.
+function beginTwoFactorChallenge(req, res, user) {
+    req.session.regenerate(async (err) => {
+        if (err) {
+            console.error('[AUTH] Two-factor session regenerate failed:', err);
+            return res.status(500).json({ error: 'SESSION_REGENERATE_FAILED' });
+        }
+        req.session.pendingTwoFactor = { userId: user.id, expiresAt: Date.now() + TWO_FACTOR_LOGIN_TTL_MS };
+        try {
+            await saveSession(req);
+            res.json({ twoFactorRequired: true });
+        } catch (saveErr) {
+            console.error('[AUTH] Two-factor session save failed:', saveErr);
+            return res.status(500).json({ error: 'SESSION_SAVE_FAILED' });
+        }
+    });
+}
+
+// Accepts a 6-digit authenticator code or a single-use recovery code. Mutates the user record;
+// attemptSecondFactor persists it.
+async function checkSecondFactor(user, rawCode) {
+    const state = user.totp;
+    const compact = rawCode.replace(/\s/g, '');
+    if (/^\d{6}$/.test(compact)) {
+        // Await the secret first, then verify and record the step with no further await, so two
+        // concurrent requests cannot both spend the same code.
+        const secret = await totp.revealTotpSecret(state);
+        const step = totp.verifyTotpCode(secret, compact, { lastUsedStep: state.lastUsedStep });
+        if (step === null) return false;
+        state.lastUsedStep = step;
+        return true;
+    }
+    const index = (state.recoveryCodeHashes || []).indexOf(totp.hashRecoveryCode(compact));
+    if (index === -1) return false;
+    state.recoveryCodeHashes.splice(index, 1);
+    return true;
+}
+
+// Records one second-factor attempt, applies the per-account lockout and persists the user.
+// Returns 'accepted', 'rejected' or 'locked'.
+async function attemptSecondFactor(users, user, rawCode) {
+    if (isTwoFactorLockedOut(user.totp)) return 'locked';
+    const accepted = await checkSecondFactor(user, rawCode);
+    if (accepted) {
+        user.totp.failedAttempts = 0;
+        delete user.totp.lockedUntil;
+    } else {
+        user.totp.failedAttempts = (user.totp.failedAttempts || 0) + 1;
+        if (user.totp.failedAttempts >= TWO_FACTOR_MAX_FAILURES) {
+            user.totp.lockedUntil = Date.now() + TWO_FACTOR_LOCKOUT_MS;
+            user.totp.failedAttempts = 0;
+        }
+    }
+    await saveUsers(users);
+    return accepted ? 'accepted' : 'rejected';
+}
+
+// Guard for changes that need the account password and a current second factor (disabling 2FA,
+// regenerating recovery codes). Sends the error response itself and returns null on failure.
+async function verifyAccountTwoFactorChange(req, res) {
+    const userId = req.session?.user?.id;
+    if (!userId) {
+        res.status(401).json({ error: 'UNAUTHORIZED' });
+        return null;
+    }
+    const { currentPassword, code } = req.body || {};
+    if (typeof currentPassword !== 'string' || typeof code !== 'string' || code.length > MAX_CODE_INPUT_LENGTH) {
+        res.status(400).json({ error: 'INVALID_INPUT_TYPE' });
+        return null;
+    }
+    const users = await loadUsers();
+    const user = findUserById(users, userId);
+    if (!user?.totp?.enabled) {
+        res.status(400).json({ error: 'TWO_FACTOR_NOT_ENABLED' });
+        return null;
+    }
+    if (!await bcrypt.compare(currentPassword, user.password)) {
+        res.status(401).json({ error: 'INVALID_CURRENT_PASSWORD' });
+        return null;
+    }
+    const outcome = await attemptSecondFactor(users, user, code);
+    if (outcome === 'locked') {
+        res.status(429).json({ error: 'TWO_FACTOR_LOCKED' });
+        return null;
+    }
+    if (outcome === 'rejected') {
+        res.status(401).json({ error: 'INVALID_TWO_FACTOR_CODE' });
+        return null;
+    }
+    return { users, user };
+}
 
 router.get('/check-setup', authRateLimiter, async (req, res) => {
     try {
@@ -101,22 +221,150 @@ router.post('/login', authRateLimiter, async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password || '', hashToCompare);
 
     if (user && isPasswordValid) {
-        req.session.regenerate(async (err) => {
-            if (err) {
-                console.error('[AUTH] Login session regenerate failed:', err);
-                return res.status(500).json({ error: 'SESSION_REGENERATE_FAILED' });
-            }
-            req.session.user = { id: user.id, name: user.name, email: user.email };
-            try {
-                await saveSession(req);
-                res.json({ success: true });
-            } catch (saveErr) {
-                console.error('[AUTH] Login session save failed:', saveErr);
-                return res.status(500).json({ error: 'SESSION_SAVE_FAILED' });
-            }
-        });
+        if (user.totp?.enabled) {
+            return beginTwoFactorChallenge(req, res, user);
+        }
+        establishSession(req, res, user);
     } else {
         res.status(401).json({ error: 'INVALID' });
+    }
+});
+
+// Second step of sign-in for accounts with two-factor authentication enabled.
+router.post('/login/2fa', authRateLimiter, async (req, res) => {
+    const pending = req.session?.pendingTwoFactor;
+    if (!pending || Date.now() > pending.expiresAt) {
+        if (req.session) delete req.session.pendingTwoFactor;
+        return res.status(401).json({ error: 'TWO_FACTOR_EXPIRED' });
+    }
+    const code = req.body?.code;
+    if (typeof code !== 'string' || code.length > MAX_CODE_INPUT_LENGTH) {
+        return res.status(400).json({ error: 'INVALID_INPUT_TYPE' });
+    }
+    try {
+        const users = await loadUsers();
+        const user = findUserById(users, pending.userId);
+        if (!user?.totp?.enabled) {
+            delete req.session.pendingTwoFactor;
+            return res.status(401).json({ error: 'TWO_FACTOR_EXPIRED' });
+        }
+        const outcome = await attemptSecondFactor(users, user, code);
+        if (outcome === 'locked') return res.status(429).json({ error: 'TWO_FACTOR_LOCKED' });
+        if (outcome === 'rejected') return res.status(401).json({ error: 'INVALID_TWO_FACTOR_CODE' });
+        return establishSession(req, res, user);
+    } catch (error) {
+        console.error('[AUTH] Two-factor verification failed:', error.message);
+        return res.status(500).json({ error: 'TWO_FACTOR_UNAVAILABLE' });
+    }
+});
+
+// Reports whether the signed-in account has two-factor authentication enabled.
+router.get('/2fa', async (req, res) => {
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
+    try {
+        const users = await loadUsers();
+        const user = findUserById(users, userId);
+        const enabled = Boolean(user?.totp?.enabled);
+        res.json({
+            enabled,
+            recoveryCodesRemaining: enabled ? (user.totp.recoveryCodeHashes || []).length : 0
+        });
+    } catch (error) {
+        console.error('[AUTH] 2FA status error:', error.message);
+        res.status(500).json({ error: 'INTERNAL_ERROR' });
+    }
+});
+
+// Step 1 of enrollment: confirm the password and issue a pending secret. Nothing is saved to the
+// account until the user proves they can produce a code (see /2fa/enable).
+router.post('/2fa/setup', authRateLimiter, async (req, res) => {
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
+    const { currentPassword } = req.body || {};
+    if (typeof currentPassword !== 'string') return res.status(400).json({ error: 'INVALID_INPUT_TYPE' });
+    try {
+        const users = await loadUsers();
+        const user = findUserById(users, userId);
+        if (!user || !await bcrypt.compare(currentPassword, user.password)) {
+            return res.status(401).json({ error: 'INVALID_CURRENT_PASSWORD' });
+        }
+        if (user.totp?.enabled) return res.status(409).json({ error: 'TWO_FACTOR_ALREADY_ENABLED' });
+        const secret = totp.generateSecret();
+        req.session.pendingTotpSetup = { secret, expiresAt: Date.now() + TWO_FACTOR_SETUP_TTL_MS };
+        await saveSession(req);
+        res.json({ secret, otpauthUri: totp.buildOtpauthUri({ secret, accountName: user.email }) });
+    } catch (error) {
+        console.error('[AUTH] 2FA setup error:', error.message);
+        res.status(500).json({ error: 'INTERNAL_ERROR' });
+    }
+});
+
+// Step 2 of enrollment: verify a code from the authenticator app, enable 2FA and return
+// recovery codes. They are shown once and only their hashes are stored.
+router.post('/2fa/enable', authRateLimiter, async (req, res) => {
+    const userId = req.session?.user?.id;
+    if (!userId) return res.status(401).json({ error: 'UNAUTHORIZED' });
+    const pending = req.session.pendingTotpSetup;
+    if (!pending || Date.now() > pending.expiresAt) {
+        return res.status(400).json({ error: 'TWO_FACTOR_SETUP_EXPIRED' });
+    }
+    const code = typeof req.body?.code === 'string' ? req.body.code.replace(/\s/g, '') : '';
+    const step = totp.verifyTotpCode(pending.secret, code);
+    if (step === null) return res.status(401).json({ error: 'INVALID_TWO_FACTOR_CODE' });
+    try {
+        const users = await loadUsers();
+        const user = findUserById(users, userId);
+        if (!user) return res.status(401).json({ error: 'UNAUTHORIZED' });
+        const recoveryCodes = totp.generateRecoveryCodes();
+        const sealedSecret = await totp.sealTotpSecret(pending.secret);
+        // Re-check after the await: a concurrent request may have enabled 2FA while the seed was sealed.
+        if (user.totp?.enabled) return res.status(409).json({ error: 'TWO_FACTOR_ALREADY_ENABLED' });
+        user.totp = {
+            enabled: true,
+            ...sealedSecret,
+            recoveryCodeHashes: recoveryCodes.map((recoveryCode) => totp.hashRecoveryCode(recoveryCode)),
+            lastUsedStep: step,
+            failedAttempts: 0
+        };
+        await saveUsers(users);
+        delete req.session.pendingTotpSetup;
+        await saveSession(req);
+        console.log(`[AUTH] Two-factor authentication enabled for user ${user.id}`);
+        res.json({ success: true, recoveryCodes });
+    } catch (error) {
+        console.error('[AUTH] 2FA enable error:', error.message);
+        res.status(500).json({ error: 'INTERNAL_ERROR' });
+    }
+});
+
+// Turns 2FA off. Requires the password and a current code or recovery code.
+router.post('/2fa/disable', authRateLimiter, async (req, res) => {
+    try {
+        const guard = await verifyAccountTwoFactorChange(req, res);
+        if (!guard) return;
+        delete guard.user.totp;
+        await saveUsers(guard.users);
+        console.log(`[AUTH] Two-factor authentication disabled for user ${guard.user.id}`);
+        res.json({ success: true, enabled: false });
+    } catch (error) {
+        console.error('[AUTH] 2FA disable error:', error.message);
+        res.status(500).json({ error: 'INTERNAL_ERROR' });
+    }
+});
+
+// Replaces all recovery codes; any previously issued codes stop working immediately.
+router.post('/2fa/recovery-codes', authRateLimiter, async (req, res) => {
+    try {
+        const guard = await verifyAccountTwoFactorChange(req, res);
+        if (!guard) return;
+        const recoveryCodes = totp.generateRecoveryCodes();
+        guard.user.totp.recoveryCodeHashes = recoveryCodes.map((recoveryCode) => totp.hashRecoveryCode(recoveryCode));
+        await saveUsers(guard.users);
+        res.json({ success: true, recoveryCodes });
+    } catch (error) {
+        console.error('[AUTH] 2FA recovery code error:', error.message);
+        res.status(500).json({ error: 'INTERNAL_ERROR' });
     }
 });
 
