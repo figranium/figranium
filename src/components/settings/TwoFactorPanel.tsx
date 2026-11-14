@@ -107,14 +107,18 @@ export default function TwoFactorPanel({ onNotify }: { onNotify: (message: strin
         onNotify('Two-factor authentication is off.', 'success');
     });
 
-    const copyRecoveryCodes = async () => {
+    const downloadRecoveryCodes = () => {
         if (!recoveryCodes) return;
-        try {
-            await navigator.clipboard.writeText(recoveryCodes.join('\n'));
-            onNotify('Recovery codes copied.', 'success');
-        } catch {
-            onNotify('Could not copy. Select and copy the codes manually.', 'error');
-        }
+        const blob = new Blob([`${recoveryCodes.join('\n')}\n`], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = 'figranium-recovery-codes.txt';
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+        onNotify('Recovery codes downloaded.', 'success');
     };
 
     const credentialFields = (
@@ -160,7 +164,7 @@ export default function TwoFactorPanel({ onNotify }: { onNotify: (message: strin
                     ))}
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <button type="button" className="app-button-secondary" onClick={() => void copyRecoveryCodes()}>Copy codes</button>
+                    <button type="button" className="app-button-secondary" onClick={downloadRecoveryCodes}>Download codes (.txt)</button>
                     <button type="button" className="app-button-primary" onClick={() => setRecoveryCodes(null)}>I have saved these codes</button>
                 </div>
             </div>
