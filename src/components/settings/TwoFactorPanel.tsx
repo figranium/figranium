@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ReactElement } from 'react';
 import { isCloud } from '../../platform/runtime';
+import OtpCodeInput from '../OtpCodeInput';
 
 type TwoFactorStatus = { enabled: boolean; recoveryCodesRemaining: number };
 type Enrollment = { secret: string; otpauthUri: string };
@@ -40,6 +41,7 @@ export default function TwoFactorPanel({ onNotify }: { onNotify: (message: strin
     const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
     const [password, setPassword] = useState('');
     const [code, setCode] = useState('');
+    const [useRecoveryCode, setUseRecoveryCode] = useState(false);
     const [busy, setBusy] = useState(false);
     const [localError, setLocalError] = useState('');
 
@@ -131,15 +133,41 @@ export default function TwoFactorPanel({ onNotify }: { onNotify: (message: strin
                 autoComplete="current-password"
                 className={inputClass}
             />
-            <input
-                type="text"
-                value={code}
-                onChange={(event) => setCode(event.target.value)}
-                placeholder="Authenticator code or recovery code"
-                autoComplete="one-time-code"
-                spellCheck={false}
-                className={inputClass}
-            />
+            {useRecoveryCode ? (
+                <input
+                    type="text"
+                    value={code}
+                    onChange={(event) => setCode(event.target.value)}
+                    placeholder="Recovery code (XXXX-XXXX)"
+                    autoComplete="one-time-code"
+                    spellCheck={false}
+                    className={inputClass}
+                />
+            ) : (
+                <div className="max-w-xs">
+                    <OtpCodeInput
+                        value={code}
+                        onChange={setCode}
+                        disabled={busy}
+                        onRecoveryPaste={(text) => {
+                            setUseRecoveryCode(true);
+                            setCode(text);
+                        }}
+                    />
+                </div>
+            )}
+            <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                    setUseRecoveryCode((prev) => !prev);
+                    setCode('');
+                    setLocalError('');
+                }}
+                className="justify-self-start text-xs theme-text-muted hover:underline disabled:opacity-50"
+            >
+                {useRecoveryCode ? 'Use authenticator code instead' : 'Use a recovery code instead'}
+            </button>
         </div>
     );
 
@@ -179,18 +207,17 @@ export default function TwoFactorPanel({ onNotify }: { onNotify: (message: strin
                 </p>
                 <p className="text-sm theme-text">2. Enter the 6-digit code the app shows:</p>
                 <form className="grid gap-3 max-w-xl" onSubmit={(event) => { event.preventDefault(); void confirmSetup(); }}>
-                    <input
-                        type="text"
-                        inputMode="numeric"
-                        value={code}
-                        onChange={(event) => setCode(event.target.value)}
-                        placeholder="123456"
-                        autoComplete="one-time-code"
-                        className={inputClass}
-                    />
+                    <div className="max-w-xs">
+                        <OtpCodeInput
+                            value={code}
+                            onChange={setCode}
+                            disabled={busy}
+                            autoFocus
+                        />
+                    </div>
                     <div className="flex flex-wrap gap-3">
-                        <button type="submit" disabled={busy || !code.trim()} className="app-button-primary disabled:opacity-50">Turn on</button>
-                        <button type="button" className="app-button-secondary" onClick={() => { setEnrollment(null); setCode(''); setLocalError(''); }}>Cancel</button>
+                        <button type="submit" disabled={busy || code.trim().length !== 6} className="app-button-primary disabled:opacity-50">Turn on</button>
+                        <button type="button" disabled={busy} className="app-button-secondary disabled:opacity-50" onClick={() => { setEnrollment(null); setCode(''); setLocalError(''); }}>Cancel</button>
                     </div>
                 </form>
             </div>

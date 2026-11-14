@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import CanvasDotGrid from './editor/CanvasDotGrid';
+import OtpCodeInput from './OtpCodeInput';
 import TablerIcon from './TablerIcon';
 
 interface AuthScreenProps {
@@ -20,13 +21,23 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, onTwoFactorSu
     const [showPass, setShowPass] = useState(false);
     const [showPassConfirm, setShowPassConfirm] = useState(false);
     const [otpCode, setOtpCode] = useState('');
+    const [useRecoveryCode, setUseRecoveryCode] = useState(false);
     const [localError, setLocalError] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (status === 'two_factor') {
+            const trimmed = otpCode.trim();
+            if (!useRecoveryCode && trimmed.length !== 6) {
+                setLocalError('Enter the 6-digit authentication code.');
+                return;
+            }
+            if (useRecoveryCode && !trimmed) {
+                setLocalError('Enter a recovery code.');
+                return;
+            }
             setLocalError('');
-            void onTwoFactorSubmit?.(otpCode.trim());
+            void onTwoFactorSubmit?.(trimmed);
             return;
         }
         if (status === 'setup' && pass !== passConfirm) {
@@ -55,21 +66,54 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, onTwoFactorSu
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {status === 'two_factor' ? (
-                        <div className="space-y-2">
-                            <label htmlFor="auth-otp" className="text-xs font-bold theme-text-muted tracking-wide">Authentication code</label>
-                            <input
-                                id="auth-otp"
-                                type="text"
-                                value={otpCode}
-                                onChange={(e) => setOtpCode(e.target.value)}
-                                placeholder="123456 or recovery code"
-                                className={inputClass}
-                                required
-                                autoFocus
-                                autoComplete="one-time-code"
-                                spellCheck={false}
-                            />
-                            <p className="text-xs theme-text-faint">Enter the 6-digit code from your authenticator app, or one of your recovery codes.</p>
+                        <div className="space-y-3">
+                            <label htmlFor="auth-otp" className="block text-xs font-bold theme-text-muted tracking-wide">
+                                {useRecoveryCode ? 'Recovery code' : 'Authentication code'}
+                            </label>
+                            {useRecoveryCode ? (
+                                <input
+                                    id="auth-otp"
+                                    type="text"
+                                    value={otpCode}
+                                    onChange={(e) => setOtpCode(e.target.value)}
+                                    placeholder="XXXX-XXXX"
+                                    className={inputClass}
+                                    required
+                                    autoFocus
+                                    autoComplete="one-time-code"
+                                    spellCheck={false}
+                                />
+                            ) : (
+                                <OtpCodeInput
+                                    id="auth-otp"
+                                    value={otpCode}
+                                    onChange={setOtpCode}
+                                    disabled={busy}
+                                    autoFocus
+                                    onRecoveryPaste={(text) => {
+                                        setUseRecoveryCode(true);
+                                        setOtpCode(text);
+                                        setLocalError('');
+                                    }}
+                                />
+                            )}
+                            <p className="text-xs theme-text-faint">
+                                {useRecoveryCode
+                                    ? 'Enter one of your single-use recovery codes.'
+                                    : 'Enter the 6-digit code from your authenticator app.'}
+                            </p>
+                            <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => {
+                                    setUseRecoveryCode((prev) => !prev);
+                                    setOtpCode('');
+                                    setLocalError('');
+                                }}
+                                className="text-xs font-bold theme-text-muted hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 disabled:opacity-60 disabled:no-underline"
+                            >
+                                {useRecoveryCode ? 'Use authenticator code instead' : 'Use a recovery code instead'}
+                            </button>
                         </div>
                     ) : (
                     <div className="space-y-4">
