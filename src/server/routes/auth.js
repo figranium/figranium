@@ -417,7 +417,7 @@ router.get('/cloud-handoff', authRateLimiter, async (req, res) => {
         }
         const identity = await exchange.json();
         const email = typeof identity?.email === 'string' ? identity.email.trim().toLowerCase() : '';
-        if (!email || email.length > 255 || !/^[^\\s@]+@[^\\s@.]+(?:\\.[^\\s@.]+)+$/.test(email)) {
+        if (!email || email.length > 255 || !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(email)) {
             return res.status(401).json({ error: 'INVALID_CLOUD_IDENTITY' });
         }
 

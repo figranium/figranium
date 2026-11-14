@@ -1,12 +1,13 @@
 const { loadCaptchaSettings } = require('../../server/storage');
-const { solveLocalCaptcha, readToken, parseFlag } = require('fiptcha');
+const { solveLocalCaptcha, readToken, parseFlag, findTargetInPage, DEFAULT_IMAGE_SELECTORS } = require('fiptcha');
 const { validateUrl } = require('../../../url-utils');
 
 const TASK_TYPES = Object.freeze({
     recaptcha_v2: { proxyless: 'RecaptchaV2TaskProxyless', proxy: 'RecaptchaV2Task' },
     recaptcha_v3: { proxyless: 'RecaptchaV3TaskProxyless', proxy: null },
     hcaptcha: { proxyless: 'HCaptchaTaskProxyless', proxy: 'HCaptchaTask' },
-    turnstile: { proxyless: 'TurnstileTaskProxyless', proxy: null }
+    turnstile: { proxyless: 'TurnstileTaskProxyless', proxy: null },
+    distorted_text: { proxyless: null, proxy: null }
 });
 const capabilityCache = new Map();
 
@@ -159,15 +160,27 @@ async function waitForCaptcha(page, { captchaType, selector, timeout = 120_000 }
     const startedAt = Date.now();
     const deadline = startedAt + Math.max(1, timeout);
     do {
-        const detected = await detectCaptcha(page, selector, { requireReady: true });
-        if (detected && (!captchaType || detected.captchaType === captchaType)) {
-            return {
-                ready: true,
-                challenge: captchaType || detected.captchaType,
-                duration: Date.now() - startedAt,
-                ...(detected.siteKey ? { siteKey: detected.siteKey } : {}),
-                detected
-            };
+        if (captchaType === 'distorted_text') {
+            const target = await findTargetInPage(page, selector ? [selector] : DEFAULT_IMAGE_SELECTORS).catch(() => null);
+            if (target && await target.isVisible?.({ timeout: 150 }).catch(() => false)) {
+                return {
+                    ready: true,
+                    challenge: 'distorted_text',
+                    duration: Date.now() - startedAt,
+                    detected: { captchaType: 'distorted_text', ready: true }
+                };
+            }
+        } else {
+            const detected = await detectCaptcha(page, selector, { requireReady: true });
+            if (detected && (!captchaType || detected.captchaType === captchaType)) {
+                return {
+                    ready: true,
+                    challenge: captchaType || detected.captchaType,
+                    duration: Date.now() - startedAt,
+                    ...(detected.siteKey ? { siteKey: detected.siteKey } : {}),
+                    detected
+                };
+            }
         }
         if (Date.now() >= deadline) break;
         const delay = Math.min(150, Math.max(1, deadline - Date.now()));
@@ -378,7 +391,21 @@ async function applyManagedChallengeUserAgent(page, userAgent, logs) {
     logs.push('[CAPTCHA] Applied the managed-challenge solver user agent before callback submission');
 }
 
-async function solveCaptcha(page, { captchaType, selector, timeout = 60_000, detectionTimeout, logs = [], identity = {} } = {}) {
+async function solveCaptcha(page, {
+    captchaType,
+    selector,
+    timeout = 60_000,
+    detectionTimeout,
+    logs = [],
+    identity = {},
+    imageSelector,
+    inputSelector,
+    submitSelector,
+    successSelector,
+    errorSelector,
+    stripWhitespace = true,
+    alphanumericOnly = false
+} = {}) {
     const startedAt = Date.now();
     const ready = await waitForCaptcha(page, {
         captchaType,
@@ -394,6 +421,47 @@ async function solveCaptcha(page, { captchaType, selector, timeout = 60_000, det
     const attempts = [];
     const config = await resolveSolverConfig();
     const skipLocal = parseFlag(process.env.SKIP_LOCAL_CAPTCHA_MODEL);
+
+    if (resolvedType === 'distorted_text') {
+        if (skipLocal) {
+            const error = new Error('solve_captcha: local solver is disabled by SKIP_LOCAL_CAPTCHA_MODEL');
+            error.attempts = [{ provider: 'local', status: 'disabled', duration: 0, error: 'disabled by SKIP_LOCAL_CAPTCHA_MODEL' }];
+            throw error;
+        }
+        const attemptStarted = Date.now();
+        try {
+            const localResult = await solveLocalCaptcha(page, {
+                captchaType: 'distorted_text',
+                timeout: Math.max(1, timeout - (Date.now() - startedAt)),
+                logs,
+                imageSelector: imageSelector || selector,
+                inputSelector,
+                submitSelector,
+                successSelector,
+                errorSelector,
+                stripWhitespace,
+                alphanumericOnly
+            });
+            attempts.push({ provider: 'local', status: 'success', duration: Date.now() - attemptStarted });
+            return {
+                success: true,
+                challenge: 'distorted_text',
+                duration: Date.now() - startedAt,
+                provider: localResult.provider,
+                token: localResult.token,
+                ...(localResult.model ? { model: localResult.model } : {}),
+                ...(localResult.device ? { device: localResult.device } : {}),
+                attempts
+            };
+        } catch (error) {
+            const safeMessage = redactSecrets(error.message);
+            attempts.push({ provider: 'local', status: 'failed', duration: Date.now() - attemptStarted, error: safeMessage });
+            const failure = new Error(`solve_captcha: no solver route succeeded (local: ${safeMessage})`);
+            failure.attempts = attempts;
+            throw failure;
+        }
+    }
+
     const remainingAfterDetection = Math.max(1, timeout - (Date.now() - startedAt));
     const localReserve = skipLocal ? 0 : Math.min(remainingAfterDetection - 1, numberEnv('CAPTCHA_LOCAL_FALLBACK_MIN_MS', 15_000, { min: 1000 }));
     const configuredRemoteTimeout = numberEnv('CAPTCHA_REMOTE_TIMEOUT_MS', Math.max(1, remainingAfterDetection - localReserve));

@@ -14,7 +14,7 @@ async function main() {
     const previousSkip = process.env.SKIP_LOCAL_CAPTCHA_MODEL;
     const previousTier = process.env.CAPTCHA_MODEL_TIER;
     process.env.SKIP_LOCAL_CAPTCHA_MODEL = 'false';
-    process.env.CAPTCHA_MODEL_TIER = 'auto';
+    process.env.CAPTCHA_MODEL_TIER = 'owlvit';
     const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'figranium-model-manager-'));
     await fs.promises.mkdir(path.join(root, '.staging-interrupted'));
     let snapshot = resources(4096, 2048);
@@ -39,6 +39,7 @@ async function main() {
     assert.strictEqual(manager.status().activeTier, 'owlvit');
     assert.strictEqual(await exists(path.join(root, '.staging-interrupted')), false);
 
+    process.env.CAPTCHA_MODEL_TIER = 'auto';
     snapshot = resources(16384, 8192);
     failFlorenceProbe = true;
     await assert.rejects(() => manager.reconcile(), /probe failed/);
@@ -51,6 +52,7 @@ async function main() {
     assert.strictEqual(await exists(path.join(root, 'owlvit')), false);
     assert(disposed.includes('owlvit'));
 
+    process.env.CAPTCHA_MODEL_TIER = 'owlvit';
     snapshot = resources(4096, 2048);
     await manager.reconcile();
     assert.strictEqual(manager.status().activeTier, 'owlvit');
@@ -76,7 +78,9 @@ async function main() {
         verifier: async (tier, target) => (await fs.promises.readFile(path.join(target, 'verified.marker'), 'utf8').catch(() => '')) === tier,
         runtimeLoader: async () => ({ probe: async () => undefined, detect: async () => [], dispose: async () => undefined })
     });
+    process.env.CAPTCHA_MODEL_TIER = 'owlvit';
     await enospcManager.start();
+    process.env.CAPTCHA_MODEL_TIER = 'auto';
     snapshot = resources(16384, 8192);
     await enospcManager.reconcile();
     assert.strictEqual(florenceAttempts, 2, 'ENOSPC replacement must retry only after releasing the old tier');

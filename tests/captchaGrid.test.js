@@ -25,7 +25,7 @@ function fixture(captchaType, size) {
         };
         if (selector === adapter.instruction) return {
             isVisible: async () => true,
-            innerText: async () => captchaType === 'hcaptcha' ? 'Please click all images containing buses' : 'Select all squares with buses'
+            innerText: async () => captchaType === 'hcaptcha' ? 'Please click all images containing buses' : 'Select all squares with buses. Click verify once there are none left'
         };
         if (selector === adapter.error) return { isVisible: async () => false, innerText: async () => '' };
         if (selector === adapter.submit || selector === adapter.noMatch) return { click: async () => { state.submitted = true; } };
@@ -35,6 +35,7 @@ function fixture(captchaType, size) {
         url: () => captchaType === 'hcaptcha' ? 'https://newassets.hcaptcha.com/captcha/v1/challenge' : 'https://www.google.com/recaptcha/api2/bframe',
         locator: (selector) => {
             if (selector === adapter.cells) return cells;
+            if (selector === '.rc-imageselect-dynamic-selected') return { count: async () => 0, nth: () => null };
             const target = first(selector);
             return { first: () => target, count: async () => 1, nth: () => target };
         }
@@ -48,7 +49,7 @@ function fixture(captchaType, size) {
 async function runFixture(captchaType, size) {
     const { page, state } = fixture(captchaType, size);
     const originalDetect = captchaModelManager.detect;
-    captchaModelManager.detect = async (image) => image.toString().startsWith('grid-')
+    captchaModelManager.detect = async (image) => (image.toString().startsWith('grid-') || image.toString() === 'tile-0-1')
         ? [{ box: [5, 5, 95, 95], label: 'bus', score: 0.9 }]
         : [];
     try {
@@ -59,7 +60,7 @@ async function runFixture(captchaType, size) {
             logs: []
         });
         assert.strictEqual(token, `${captchaType}-token`);
-        assert.deepStrictEqual(state.clicks, [0, 0], 'changed replacement tile should be clicked once per fingerprint');
+        assert.deepStrictEqual(state.clicks, size === 9 ? [0, 0] : [0], 'changed replacement tile should be clicked once per fingerprint');
     } finally {
         captchaModelManager.detect = originalDetect;
     }

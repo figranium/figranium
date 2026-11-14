@@ -35,6 +35,7 @@ const TEST_INPUT_FIELDS = [
     'selector', 'value', 'key', 'conditionVar', 'conditionVarType', 'conditionOp',
     'conditionValue', 'typeMode', 'method', 'headers', 'body', 'timeout', 'captchaType',
     'cabinetId', 'markAsUploaded', 'clickType', 'targetSelector',
+    'imageSelector', 'inputSelector', 'submitSelector', 'successSelector', 'errorSelector',
 ];
 
 const buildResolvedActionInputs = (action, resolveTemplate) => {

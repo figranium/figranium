@@ -3,7 +3,7 @@ const { Readable } = require('stream');
 
 process.env.CAPTCHA_COMPANION_TOKEN = 'companion-test-token';
 process.env.SKIP_LOCAL_CAPTCHA_MODEL = 'true';
-const { authorized, server } = require('../scripts/captcha-companion');
+const { authorized, server } = require('fiptcha/scripts/captcha-companion');
 
 function dispatch({ method = 'GET', url = '/v1/health', authorization, body = '' } = {}) {
     const request = Readable.from(body ? [Buffer.from(body)] : []);

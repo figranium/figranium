@@ -424,14 +424,16 @@ Detect and solve a CAPTCHA challenge on the current page. A configured YesCaptch
   "timeout": 120000
 }
 ```
-- `captchaType`: Optional — one of `recaptcha_v2`, `recaptcha_v3`, `hcaptcha`, `turnstile`. If omitted, the challenge type is auto-detected from the page.
-- `selector`: Optional CSS selector scoping the search to a specific container (e.g. the widget's iframe wrapper). If omitted, the whole page is scanned.
+- `captchaType`: Optional — one of `recaptcha_v2`, `recaptcha_v3`, `hcaptcha`, `turnstile`, `distorted_text`. If omitted, the challenge type is auto-detected from the page.
+- `selector`: Optional CSS selector scoping the search to a specific container (e.g. the widget's iframe wrapper, or the CAPTCHA image for `distorted_text`). If omitted, the whole page is scanned.
+- `imageSelector`, `inputSelector`, `submitSelector`, `successSelector`, `errorSelector`: Optional selectors used by `distorted_text` solving to target the CAPTCHA image, response input, submission button, and success/error verification elements.
+- `stripWhitespace` (boolean, default `true`), `alphanumericOnly` (boolean, default `false`): Text normalization options for `distorted_text` OCR recognition.
 - `varName`: Optional runtime variable name to store solve metadata (`{ success, challenge, duration, provider, model?, device?, attempts }`). Existing fields remain stable; `attempts` describes remote/local routing outcomes without credentials or tokens.
 - `timeout`: Terminal deadline in milliseconds (default: 120000 for the action). Provider errors are returned immediately rather than being reported as timeouts.
-- Local image solving requires at least 2 GiB effective cgroup memory. Lower-memory hosts remain compatible with remote endpoints.
+- Local image and text solving uses Florence-2 by default on all hosts meeting the 2 GB decimal memory floor (1907 MiB total / 512 MiB available). Lower-memory hosts remain compatible with remote endpoints.
 - `SKIP_LOCAL_CAPTCHA_MODEL=true` disables all local probing and downloads, including on sufficiently provisioned hosts.
 - Remote proxy and origin-scoped browser-context forwarding are separate explicit opt-ins. Context is accepted only by custom endpoints advertising the versioned capability; secrets are redacted from terminal errors and logs.
-- reCAPTCHA and hCaptcha image challenges share an active-browser grid engine supporting 3×3/4×4 layouts and changed replacement tiles. Turnstile and checkbox-only test-key flows remain model-free.
+- reCAPTCHA and hCaptcha image challenges share an active-browser grid engine supporting 3×3/4×4 layouts, immediate tile clicking, and replacement tile handling. Turnstile and checkbox-only test-key flows remain model-free.
 - Top-level task field `autoSolveCaptcha` (default `false`): when `true`, the agent automatically runs detection and solves a captcha after every `navigate`, `click`, or `type` action, without needing an explicit `solve_captcha` block. Off by default so tasks that don't need it pay no extra latency; the explicit block above still works either way.
 
 ## 17) Wait for CAPTCHA

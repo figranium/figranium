@@ -25,6 +25,7 @@
 - Updated Tabler icon map with `IconBrandGithub` and `IconArrowUpRight` aliases, and highlighted free, unlimited open-source self-hosting availability.
 
 ### Dependencies and maintenance
+- Updated Fiptcha to v0.2.0, adding distorted-text CAPTCHA solving with Florence-2 OCR, lowering Florence-2 memory requirements to a 2 GB decimal floor (1907 MiB total / 512 MiB available) so all qualifying hosts use Florence-2 by default, and optimizing grid-solver performance with immediate tile clicking, dynamic 3x3 replacement detection, and automated rejection retry.
 - Updated CloakBrowser to 0.6.5.
 
 ## [0.22.0] - 2026-10-30

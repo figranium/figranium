@@ -83,7 +83,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
-    "fiptcha": "^0.1.6",
+    "fiptcha": "^0.2.0",
     "got-scraping": "^4.2.1",
     "idcac-playwright": "^0.2.0",
     "jsdom": "^30.0.0",

@@ -16,7 +16,7 @@ function main() {
     assert.strictEqual(cgroup.totalMb, 4096);
     assert.strictEqual(cgroup.availableMb, 596);
     assert.strictEqual(cgroup.swapQualified, false);
-    assert.strictEqual(selectModelTier(cgroup, {}), 'owlvit');
+    assert.strictEqual(selectModelTier(cgroup, {}), 'florence2');
     const v1Files = new Map([
         ['/sys/fs/cgroup/memory/memory.limit_in_bytes', String(2 * 1024 * mib)],
         ['/sys/fs/cgroup/memory/memory.usage_in_bytes', String(1024 * mib)]
@@ -37,7 +37,7 @@ function main() {
         runVmStat: () => macVmStat
     });
     assert(mac.availableMb > 1024, 'macOS reclaimable pages should qualify a 2 GiB-capable host');
-    assert.strictEqual(selectModelTier(mac, {}), 'owlvit');
+    assert.strictEqual(selectModelTier(mac, {}), 'florence2');
     const pressuredMac = getMemorySnapshot({
         platform: 'darwin',
         hostTotalBytes: 8 * 1024 * mib,

@@ -17,14 +17,14 @@ function testSkipPrecedence() {
 }
 
 function testTierSelection() {
-    assert.strictEqual(selectModelTier({ totalMb: 2047, availableMb: 1800 }, {}), null);
-    assert.strictEqual(selectModelTier({ totalMb: gib(2), availableMb: 900 }, {}), 'owlvit');
-    assert.strictEqual(selectModelTier({ totalMb: gib(4), availableMb: gib(2) }, {}), 'owlvit');
+    assert.strictEqual(selectModelTier({ totalMb: 1800, availableMb: 1500 }, {}), null);
+    assert.strictEqual(selectModelTier({ totalMb: 2047, availableMb: 1800 }, {}), 'florence2');
+    assert.strictEqual(selectModelTier({ totalMb: gib(2), availableMb: 900 }, {}), 'florence2');
+    assert.strictEqual(selectModelTier({ totalMb: gib(4), availableMb: gib(2) }, {}), 'florence2');
     assert.strictEqual(selectModelTier({ totalMb: gib(8), availableMb: gib(4) }, {}), 'florence2');
     assert.strictEqual(selectModelTier({ totalMb: gib(8), availableMb: 511 }, {}), null);
-    assert.strictEqual(selectModelTier({ totalMb: gib(8), availableMb: 1024 }, {}), 'owlvit');
+    assert.strictEqual(selectModelTier({ totalMb: gib(8), availableMb: 1024 }, {}), 'florence2');
     assert.strictEqual(selectModelTier({ totalMb: gib(16), availableMb: gib(8) }, { CAPTCHA_MODEL_TIER: 'owlvit' }), 'owlvit');
-    assert.throws(() => selectModelTier({ totalMb: gib(4), availableMb: gib(2) }, { CAPTCHA_MODEL_TIER: 'florence2' }), /at least 8 GiB/);
 }
 
 function testDeviceSelection() {

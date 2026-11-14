@@ -86,9 +86,59 @@ async function testSolveCaptchaNoChallengeFound() {
     console.log('✓ solve_captcha correctly rejects when no challenge is detected.');
 }
 
+async function testSolveCaptchaDistortedText() {
+    console.log('Testing solve_captcha with distorted_text...');
+    const page = {
+        url: () => 'https://example.com/protected',
+        locator: () => ({ count: async () => 0, nth: () => null })
+    };
+    const context = {
+        page,
+        logs: [],
+        runtimeVars: {},
+        resolveTemplate: (val) => val,
+        options: {}
+    };
+
+    const fakeImage = {
+        isVisible: async () => true,
+        screenshot: async () => Buffer.from('fake-png')
+    };
+    const pageWithImage = {
+        url: () => 'https://example.com/protected',
+        locator: (sel) => sel.includes('img') ? { count: async () => 1, nth: () => fakeImage } : { count: async () => 0, nth: () => null }
+    };
+    const contextWithImage = {
+        page: pageWithImage,
+        logs: [],
+        runtimeVars: {},
+        resolveTemplate: (val) => val,
+        options: {}
+    };
+
+    // SKIP_LOCAL_CAPTCHA_MODEL=true should reject distorted_text as it is local-only
+    await assert.rejects(
+        () => executeAction({ id: 'act_dt', type: 'solve_captcha', captchaType: 'distorted_text', timeout: 50 }, contextWithImage),
+        /local solver is disabled by SKIP_LOCAL_CAPTCHA_MODEL/
+    );
+
+    // With SKIP_LOCAL_CAPTCHA_MODEL=false, test readiness failure when no image element is found
+    process.env.SKIP_LOCAL_CAPTCHA_MODEL = 'false';
+    try {
+        await assert.rejects(
+            () => executeAction({ id: 'act_dt', type: 'solve_captcha', captchaType: 'distorted_text', timeout: 50 }, context),
+            /no CAPTCHA challenge.*ready/
+        );
+    } finally {
+        process.env.SKIP_LOCAL_CAPTCHA_MODEL = 'true';
+    }
+    console.log('✓ solve_captcha distorted_text rejection and readiness handling succeeded.');
+}
+
 async function main() {
     await testSolveCaptchaSuccess();
     await testSolveCaptchaNoChallengeFound();
+    await testSolveCaptchaDistortedText();
     console.log('All solve_captcha tests passed!');
 }
 

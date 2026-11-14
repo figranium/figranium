@@ -704,7 +704,20 @@ const executeAction = async (act, context) => {
             const captchaType = resolveMaybe(act.captchaType || '') || undefined;
             const selectorValue = resolveMaybe(act.selector || '') || undefined;
             logs.push(`Solving captcha${captchaType ? `: ${captchaType}` : ' (auto-detect)'}`);
-            const captchaResult = await solveCaptcha(page, { captchaType, selector: selectorValue, timeout: act.timeout || 120000, logs, identity: context.solverIdentity });
+            const captchaResult = await solveCaptcha(page, {
+                captchaType,
+                selector: selectorValue,
+                timeout: act.timeout || 120000,
+                logs,
+                identity: context.solverIdentity,
+                imageSelector: resolveMaybe(act.imageSelector || '') || selectorValue,
+                inputSelector: resolveMaybe(act.inputSelector || '') || undefined,
+                submitSelector: resolveMaybe(act.submitSelector || '') || undefined,
+                successSelector: resolveMaybe(act.successSelector || '') || undefined,
+                errorSelector: resolveMaybe(act.errorSelector || '') || undefined,
+                stripWhitespace: act.stripWhitespace !== false,
+                alphanumericOnly: Boolean(act.alphanumericOnly)
+            });
             logs.push(`Captcha solved: ${captchaResult.challenge} (${captchaResult.duration}ms)`);
             if (act.varName) {
                 const targetName = normalizeVarRef(act.varName);
