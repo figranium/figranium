@@ -12,6 +12,12 @@ const formatAuthError = (errorCode: unknown, fallback: string) => {
             return 'Invalid credentials';
         case 'SESSION_SAVE_FAILED':
             return 'Unable to persist your session';
+        case 'INVALID_TWO_FACTOR_CODE':
+            return 'Invalid authentication code';
+        case 'TWO_FACTOR_LOCKED':
+            return 'Too many incorrect codes. Try again in 15 minutes.';
+        case 'TWO_FACTOR_EXPIRED':
+            return 'Sign-in expired. Enter your password again.';
         default: {
             const normalized = errorCode.toLowerCase().replace(/_/g, ' ');
             return normalized.charAt(0).toUpperCase() + normalized.slice(1);
@@ -22,7 +28,7 @@ const formatAuthError = (errorCode: unknown, fallback: string) => {
 export function useAuth() {
     const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
-    const [authStatus, setAuthStatus] = useState<'checking' | 'login' | 'setup' | 'authenticated'>('checking');
+    const [authStatus, setAuthStatus] = useState<'checking' | 'login' | 'setup' | 'two_factor' | 'authenticated'>('checking');
     const [authError, setAuthError] = useState('');
     const [authBusy, setAuthBusy] = useState(false);
 
@@ -102,6 +108,11 @@ export function useAuth() {
                 body: JSON.stringify(payload)
             });
             const data = await res.json().catch(() => ({}));
+            if (res.ok && (data as any)?.twoFactorRequired) {
+                setAuthError('');
+                setAuthStatus('two_factor');
+                return;
+            }
             if (res.ok) {
                 setAuthError('');
                 setAuthStatus('checking');
@@ -123,6 +134,46 @@ export function useAuth() {
         }
     }, [authStatus, authBusy, navigate, checkAuth]);
 
+    const handleTwoFactorSubmit = useCallback(async (code: string) => {
+        if (authBusy) return;
+        setAuthBusy(true);
+        try {
+            const res = await fetch('/api/auth/login/2fa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ code })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                const errorCode = (data as any)?.error;
+                setAuthError(formatAuthError(errorCode, 'Invalid authentication code'));
+                if (errorCode === 'TWO_FACTOR_EXPIRED') setAuthStatus('login');
+                return;
+            }
+            const signedIn = (data as { user?: User }).user;
+            if (!signedIn) {
+                setAuthError('Authentication failed');
+                setAuthStatus('login');
+                return;
+            }
+            // The server has already saved the session; do not let a follow-up request undo it.
+            setUser(signedIn);
+            setAuthError('');
+            setAuthStatus('authenticated');
+            navigate('/');
+        } catch (e) {
+            setAuthError('Network error');
+        } finally {
+            setAuthBusy(false);
+        }
+    }, [authBusy, navigate, setUser]);
+
+    const cancelTwoFactor = useCallback(() => {
+        setAuthError('');
+        setAuthStatus('login');
+    }, []);
+
     const logout = useCallback(async (requestConfirm: (msg: string) => Promise<boolean>) => {
         const confirmed = await requestConfirm('Are you sure you want to log out?');
         if (!confirmed) return;
@@ -142,6 +193,8 @@ export function useAuth() {
         authBusy,
         checkAuth,
         handleAuthSubmit,
+        handleTwoFactorSubmit,
+        cancelTwoFactor,
         logout
     };
 }

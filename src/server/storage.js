@@ -123,9 +123,20 @@ async function loadUsers() {
     return await usersLoadPromise;
 }
 
+// Writes to users.json are serialized. Overlapping writeFile calls on the same path can interleave
+// and corrupt the file, and an older write that finishes last would restore stale account data
+// (for example, a recovery code that was already spent).
+let usersWriteQueue = Promise.resolve();
+
 async function saveUsers(users) {
     usersCache = users;
     usersLastCheck = Date.now();
+    const write = usersWriteQueue.then(() => persistUsers(users));
+    usersWriteQueue = write.catch(() => {});
+    return write;
+}
+
+async function persistUsers(users) {
     const useDB = await ensureDB();
     if (useDB) {
         const pool = getPool();

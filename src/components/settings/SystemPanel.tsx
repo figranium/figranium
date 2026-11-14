@@ -4,6 +4,7 @@ import { ConfirmRequest } from '../../types';
 import CustomSelect from '../common/CustomSelect';
 import { FIPTCHA_VERSION } from '../../utils/appInfo';
 import { isCloud } from '../../platform/runtime';
+import TwoFactorPanel from './TwoFactorPanel';
 
 type SystemData = {
     retentionDays: number | null;
@@ -179,6 +180,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
             <div className="mt-5 grid gap-3 max-w-xl"><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="New email address (optional)" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="New password (optional)" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={passwordConfirm} onChange={(event) => setPasswordConfirm(event.target.value)} placeholder="Confirm new password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} placeholder="Current password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /></div>
             <button type="button" disabled={saving} onClick={saveAccount} className="app-button-primary mt-3 disabled:opacity-50">Save account</button>
         </section>
+        <TwoFactorPanel onNotify={onNotify} />
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Data retention</h3><p className="text-xs theme-text-faint mt-1">Captures and execution history older than this period are deleted automatically.</p>
             <div className="mt-5 flex flex-wrap gap-3 items-center"><CustomSelect value={choice} options={RETENTION_OPTIONS} onChange={setChoice} ariaLabel="Data retention period" disabled={saving} className="min-w-36" /><button type="button" disabled={saving} onClick={saveRetention} className="app-button-primary disabled:opacity-50">Save retention</button></div>

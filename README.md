@@ -348,6 +348,9 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - Never commit your `SESSION_SECRET` or API keys into shared repositories.
 - Use `ALLOWED_IPS`/`data/allowed_ips.json` to gate the UI when deploying to a network-exposed host.
 - Rotate API keys periodically via Settings, and use Executions to review automation runs.
+- Turn on two-factor sign-in under Settings > Advanced to require an authenticator app code after your password. Store the recovery codes shown at setup somewhere safe; each works once.
+- If you lose your authenticator and every recovery code, an operator running from a source checkout can run `node scripts/reset-2fa.js <email>` to turn two-factor off for that account. Stop the server first, then start it again. This script is not included in the npm package.
+- Set `MASTER_KEY` so authenticator seeds are encrypted at rest in `data/users.json`. Without it they are stored in plaintext alongside other account data.
 - Keep dependencies and the deployment environment up to date.
 
 # Community
