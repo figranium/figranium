@@ -3,6 +3,7 @@ const { parseCoords, parseValue, parseCsv, sanitizeRunId } = require('../../../c
 const { moveMouseHumanlike, idleMouse, overshootScroll, humanType } = require('./human-interaction');
 const { loadApiKey } = require('../../server/storage'); // Need to access server storage for internal API key loading
 const { solveCaptcha, waitForCaptcha } = require('./captcha-client');
+const { isNaturalLanguageSelector, stripFolatePrefix, resolveWithFolate } = require('./folate-client');
 const fs = require('fs');
 const path = require('path');
 const cabinets = require('../../server/cabinets');
@@ -136,19 +137,35 @@ const executeAction = async (act, context) => {
 
     const humanOptions = { allowTypos, naturalTyping, fatigue };
     const resolveMaybe = (val) => typeof val === 'string' ? resolveTemplate(val) : val;
+    const resolveSelector = async (rawSelector) => {
+        const resolved = resolveMaybe(rawSelector);
+        if (typeof resolved !== 'string' || !resolved.trim()) return resolved;
+        if (!isNaturalLanguageSelector(resolved)) return resolved;
+        const query = stripFolatePrefix(resolved);
+        const html = await page.content();
+        const match = await resolveWithFolate({ query, html, topK: 3 });
+        if (!match || !match.selector) {
+            throw new Error(`Folate could not resolve selector for description: "${query}"`);
+        }
+        const scoreStr = typeof match.score === 'number' ? ` (score: ${match.score.toFixed(3)})` : '';
+        logs.push(`Folate resolved "${query}" -> ${match.selector}${scoreStr}`);
+        return match.selector;
+    };
     const { type, timeout } = act;
     const actionTimeout = timeout || 10000;
     let result = null;
 
     switch (type) {
         case 'upload': {
-            const selectorValue = resolveMaybe(act.selector);
+            const selectorValue = await resolveSelector(act.selector);
             if (!selectorValue) throw new Error('Upload selector is required.');
             const entry = await cabinets.latestUnuploaded(act.cabinetId);
             const isFolder = entry.item.kind === 'folder';
             logs.push(`Uploading ${entry.item.name} from cabinet ${entry.cabinet.name}.`);
             const descriptor = await page.evaluate((selector) => {
-                const el = document.querySelector(selector);
+                const el = selector.startsWith('/') || selector.startsWith('(')
+                    ? document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+                    : document.querySelector(selector);
                 if (!el) return null;
                 const input = el.matches('input[type="file"]') ? el : (el.querySelector?.('input[type="file"]') || (el.matches('label') && el.htmlFor ? document.getElementById(el.htmlFor) : null));
                 return input && input instanceof HTMLInputElement ? { hasInput: true, directory: !!input.webkitdirectory } : { hasInput: false };
@@ -218,7 +235,7 @@ const executeAction = async (act, context) => {
             break;
         }
         case 'click': {
-            const selectorValue = resolveMaybe(act.selector);
+            const selectorValue = await resolveSelector(act.selector);
             const coords = parseCoords(String(selectorValue || ''));
             const clickType = act.clickType || 'single';
             const clickOptions = {
@@ -321,7 +338,7 @@ const executeAction = async (act, context) => {
         }
         case 'check':
         case 'uncheck': {
-            const selectorValue = resolveMaybe(act.selector);
+            const selectorValue = await resolveSelector(act.selector);
             if (!selectorValue) throw new Error(`${type === 'check' ? 'Check' : 'Uncheck'} selector is required.`);
             logs.push(`${type === 'check' ? 'Checking' : 'Unchecking'}: ${selectorValue}`);
             await page.waitForSelector(selectorValue, { timeout: actionTimeout });
@@ -331,8 +348,8 @@ const executeAction = async (act, context) => {
             break;
         }
         case 'drag_and_drop': {
-            const sourceSelector = resolveMaybe(act.selector);
-            const targetSelector = resolveMaybe(act.targetSelector);
+            const sourceSelector = await resolveSelector(act.selector);
+            const targetSelector = await resolveSelector(act.targetSelector);
             if (!sourceSelector) throw new Error('Drag source selector is required.');
             if (!targetSelector) throw new Error('Drag target selector is required.');
             logs.push(`Dragging ${sourceSelector} to ${targetSelector}`);
@@ -347,7 +364,7 @@ const executeAction = async (act, context) => {
             break;
         case 'type':
         case 'fill': {
-            const selectorValue = act.selector ? resolveMaybe(act.selector) : null;
+            const selectorValue = act.selector ? await resolveSelector(act.selector) : null;
             const valueText = resolveMaybe(act.value) || '';
             const typeMode = act.typeMode === 'append' ? 'append' : 'replace';
 
@@ -427,7 +444,7 @@ const executeAction = async (act, context) => {
             break;
         }
         case 'hover': {
-            const selectorValue = resolveMaybe(act.selector);
+            const selectorValue = await resolveSelector(act.selector);
             const coords = parseCoords(String(selectorValue || ''));
             logs.push(`Hovering: ${selectorValue}`);
             if (coords) {
@@ -521,7 +538,7 @@ const executeAction = async (act, context) => {
             break;
         }
         case 'wait_selector': {
-            const selector = resolveMaybe(act.selector);
+            const selector = await resolveSelector(act.selector);
             const ms = act.value ? parseFloat(resolveMaybe(act.value)) * 1000 : 10000;
             logs.push(`Waiting for selector: ${selector} (${ms}ms)`);
             if (selector) {
@@ -532,23 +549,29 @@ const executeAction = async (act, context) => {
             }
             break;
         }
-        case 'select':
-            logs.push(`Selecting ${resolveMaybe(act.value)} from ${resolveMaybe(act.selector)}`);
-            await page.waitForSelector(resolveMaybe(act.selector), { timeout: actionTimeout });
-            await page.selectOption(resolveMaybe(act.selector), resolveMaybe(act.value));
-            result = resolveMaybe(act.value);
+        case 'select': {
+            const selectorValue = await resolveSelector(act.selector);
+            const optionValue = resolveMaybe(act.value);
+            logs.push(`Selecting ${optionValue} from ${selectorValue}`);
+            await page.waitForSelector(selectorValue, { timeout: actionTimeout });
+            await page.selectOption(selectorValue, optionValue);
+            result = optionValue;
             break;
+        }
         case 'scroll': {
             const amount = act.value ? parseInt(resolveMaybe(act.value), 10) : (400 + Math.random() * 400);
             const speedMs = act.key ? parseInt(resolveMaybe(act.key), 10) : 500;
             const durationMs = Number.isFinite(speedMs) && speedMs > 0 ? speedMs : 500;
+            const scrollSelector = act.selector ? await resolveSelector(act.selector) : null;
             logs.push(`Scrolling page: ${amount}px over ${durationMs}ms...`);
             if (overscroll) {
                 await overshootScroll(page, amount);
                 await page.waitForTimeout(baseDelay(200));
-            } else if (act.selector) {
+            } else if (scrollSelector) {
                 await page.evaluate(({ selector, y, duration }) => {
-                    const el = document.querySelector(selector);
+                    const el = selector.startsWith('/') || selector.startsWith('(')
+                        ? document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+                        : document.querySelector(selector);
                     if (!el) return;
                     const start = el.scrollTop;
                     const target = start + y;
@@ -562,7 +585,7 @@ const executeAction = async (act, context) => {
                         if (t < 1) requestAnimationFrame(step);
                     };
                     requestAnimationFrame(step);
-                }, { selector: resolveMaybe(act.selector), y: amount, duration: durationMs });
+                }, { selector: scrollSelector, y: amount, duration: durationMs });
                 await page.waitForTimeout(baseDelay(durationMs));
             } else {
                 await page.evaluate(({ y, duration }) => {
@@ -702,7 +725,7 @@ const executeAction = async (act, context) => {
         }
         case 'solve_captcha': {
             const captchaType = resolveMaybe(act.captchaType || '') || undefined;
-            const selectorValue = resolveMaybe(act.selector || '') || undefined;
+            const selectorValue = (await resolveSelector(act.selector || '')) || undefined;
             logs.push(`Solving captcha${captchaType ? `: ${captchaType}` : ' (auto-detect)'}`);
             const captchaResult = await solveCaptcha(page, {
                 captchaType,
@@ -728,7 +751,7 @@ const executeAction = async (act, context) => {
         }
         case 'wait_captcha': {
             const captchaType = resolveMaybe(act.captchaType || '') || undefined;
-            const selectorValue = resolveMaybe(act.selector || '') || undefined;
+            const selectorValue = (await resolveSelector(act.selector || '')) || undefined;
             const timeout = Number(act.timeout) > 0 ? Number(act.timeout) : 120000;
             logs.push(`Waiting for ready captcha${captchaType ? `: ${captchaType}` : ' (auto-detect)'} (${timeout}ms)`);
             const readyResult = await waitForCaptcha(page, { captchaType, selector: selectorValue, timeout });
@@ -753,11 +776,13 @@ const executeAction = async (act, context) => {
             break;
         }
         case 'get_content': {
-            const selectorValue = resolveMaybe(act.selector || '');
+            const selectorValue = await resolveSelector(act.selector || '');
             logs.push(`Getting content${selectorValue ? `: ${selectorValue}` : ' (full page)'}`);
             const content = await page.evaluate((selector) => {
                 if (!selector) return document.body.innerText;
-                const el = document.querySelector(selector);
+                const el = selector.startsWith('/') || selector.startsWith('(')
+                    ? document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue
+                    : document.querySelector(selector);
                 return el ? el.innerText : null;
             }, selectorValue);
             if (act.varName) {

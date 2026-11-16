@@ -207,7 +207,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     onChange={(v) => onUpdate(action.id, { selector: v })}
                                     onBlur={() => onAutoSave()}
                                     variables={variables}
-                                    placeholder={action.type === 'scroll' ? '.scroll-container or leave empty' : action.type === 'upload' ? 'input[type=file] or .drop-zone' : action.type === 'drag_and_drop' ? '.draggable-item' : '.btn-primary'}
+                                    placeholder={action.type === 'scroll' ? '.scroll-container or leave empty' : action.type === 'upload' ? 'input[type=file] or .drop-zone' : action.type === 'drag_and_drop' ? '.draggable-item' : '.btn-primary or describe element (e.g. "Sign in button")'}
                                 />
                                 {selectorOptions && selectorOptions.length > 1 && (
                                     <div className="flex flex-wrap gap-1 mt-1">

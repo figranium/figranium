@@ -1,4 +1,5 @@
 const { parseValue } = require('../../../common-utils');
+const { isNaturalLanguageSelector, stripFolatePrefix, resolveWithFolate } = require('./folate-client');
 const vm = require('vm');
 
 const normalizeVarRef = (raw) => {
@@ -44,9 +45,20 @@ const evalStructuredCondition = async (act, page, runtimeVars, resolveTemplate) 
     const op = act.conditionOp || (varType === 'boolean' ? 'is_true' : 'equals');
 
     if (varType === 'selector') {
-        const selector = resolveTemplate(String(act.selector || ''));
+        let selector = resolveTemplate(String(act.selector || ''));
         if (!selector.trim()) return false;
-        const found = await page.evaluate((sel) => !!document.querySelector(sel), selector);
+        if (isNaturalLanguageSelector(selector)) {
+            const html = await page.content();
+            const match = await resolveWithFolate({ query: stripFolatePrefix(selector), html, topK: 3 });
+            if (!match || !match.selector) return op === 'not_exists';
+            selector = match.selector;
+        }
+        const found = await page.evaluate((sel) => {
+            if (sel.startsWith('/') || sel.startsWith('(')) {
+                return !!document.evaluate(sel, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+            }
+            return !!document.querySelector(sel);
+        }, selector);
         return op === 'not_exists' ? !found : found;
     }
 

@@ -22,6 +22,7 @@ router.get('/', (_req, res) => {
             cabinets: true,
             selectorStreaming: true,
             headfulSessions: true,
+            folate: true,
             externalCDP: false
         },
         browser: {

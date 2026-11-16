@@ -87,9 +87,9 @@ upload, finalize_uploads
 ```
 
 Common fields:
-- `selector` (string): CSS selector used by click/hover/scroll/foreach.
+- `selector` (string): CSS selector, XPath, Playwright selector, coordinates (`x,y`), or natural-language element description (automatically resolved via Folate, or prefixed with `folate:` / `ai:`) used by click/hover/scroll/type/select/wait_selector/check/uncheck/upload/drag_and_drop/get_content/logic conditions.
 - `clickType` (`single` | `double` | `right`): optional Click interaction mode; omitted defaults to `single`.
-- `targetSelector` (string): destination CSS selector required by `drag_and_drop`.
+- `targetSelector` (string): destination CSS selector, XPath, or natural-language description required by `drag_and_drop`.
 - `value` (string): payload for type/wait/scroll/javascript/start.
 - `key` (string): key for `press` (e.g., `Enter`).
 - `disabled` (boolean): skip action.
