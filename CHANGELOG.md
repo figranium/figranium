@@ -22,9 +22,6 @@
 - Removed decorative background tiles and borders from action icons, and removed the redundant "TRIGGER" badge on the execution block.
 - Synchronized the in-canvas extraction script editor with the Task settings panel, providing unified layout, visual fields, repeating groups, and automatic script generation.
 
-### Cloud
-- Introduced the Cloud Mini subscription modal with Paddle checkout integration and improved checkout error messages.
-
 ### Dependencies
 - Updated Fiptcha to v0.2.0, adding distorted-text CAPTCHA solving with Florence-2 OCR, lowering Florence-2 memory requirements to a 2 GB decimal floor (1907 MiB total / 512 MiB available) so all qualifying hosts use Florence-2 by default, and optimizing grid-solver performance with immediate tile clicking, dynamic 3x3 replacement detection, and automated rejection retry.
 - Removed optional CloakBrowser engine support, using the Playwright stealth stack exclusively.
