@@ -314,7 +314,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [x] **Task proxy rotation toggle** — enable rotation per Task execution.
 - [x] **Spatial editor transition** — spatial block-based Task editor.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/366" target="_blank">Action key combos</a>** — add modifier shortcuts for browser interactions.
-- [ ] **<a href="https://github.com/figranium/figranium/issues/367" target="_blank">Click-and-drag block</a>** — add drag gesture automation.
+- [x] **<a href="https://github.com/figranium/figranium/issues/367" target="_blank">Click-and-drag block</a>** — add drag gesture automation.
 - [x] **Recording controls** — disable automated recording per Task.
 - [x] **File downloads** — download files from target pages and surface them through Cabinets.
 - [x] **Cabinet-backed file workspace** — route downloads into shared Cabinets and consume them from Upload blocks.
