@@ -70,8 +70,13 @@ async function main() {
   await taskRow.click();
 
   await page.waitForURL(/\/tasks\//, { timeout: 15000 });
-  await page.waitForTimeout(1400);
-  await page.getByText(taskName, { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+  await page.waitForFunction(
+    () => document.title !== 'Dashboard | Figranium' && !document.title.startsWith('Loading'),
+    { timeout: 20000 }
+  );
+  await page.locator('[aria-label="Open Task Settings"]').waitFor({ state: 'visible', timeout: 20000 });
+  await page.getByText(taskName, { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForTimeout(800);
 
   await page.screenshot({ path: OUTPUT, fullPage: false });
   console.log('Saved', OUTPUT, 'title=', await page.title(), 'url=', page.url());
