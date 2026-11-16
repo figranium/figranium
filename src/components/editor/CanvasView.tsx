@@ -536,7 +536,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                         role="button"
                         tabIndex={0}
                         aria-label="Configure On Execution triggers and start settings"
-                        title="Click to configure On Execution (URL, mode, wait, cookie state)"
+                        title="Configure On Execution (URL, mode, wait)"
                         onClick={() => setIsExecutionConfigOpen(true)}
                         onKeyDown={(event) => {
                             if (event.key === 'Enter' || event.key === ' ') {
@@ -554,9 +554,6 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-white font-bold tracking-wide text-xs group-hover/exec:text-yellow-300 transition-colors">On Execution</h3>
                                     </div>
-                                    <span className="text-[11px] text-white/40 group-hover/exec:text-white/70 transition-colors flex items-center gap-1 mt-0.5">
-                                        Click to configure
-                                    </span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
@@ -570,7 +567,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                         event.stopPropagation();
                                         onOpenCabinet('mode');
                                     }}
-                                    className="group/settings rounded-lg bg-transparent p-1.5 text-white/40 hover:text-white hover:bg-white/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                                    className="group/settings rounded-lg bg-transparent p-1.5 text-white/40 hover:text-white transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                                     title="Task Settings (Stealth, Schedules, Output, History)"
                                     aria-label="Open Task Settings"
                                 >
@@ -596,12 +593,6 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <TablerIcon name={currentTask.mode === 'scrape' ? 'language' : 'ads_click'} className="text-[11px]" />
                                 {currentTask.mode === 'scrape' ? 'Scrape Mode' : 'Agent Mode'}
                             </span>
-                            {currentTask.cookieStateId !== undefined && currentTask.cookieStateId !== '' && currentTask.cookieStateId !== null ? (
-                                <span className="text-[10px] font-semibold text-amber-300/80 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                    <TablerIcon name="cookie" className="text-[11px]" />
-                                    Cookie state
-                                </span>
-                            ) : null}
                             {currentTask.wait ? (
                                 <span className="text-[10px] font-semibold text-white/50 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full flex items-center gap-1">
                                     <TablerIcon name="hourglass_empty" className="text-[11px]" />

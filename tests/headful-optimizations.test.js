@@ -143,12 +143,13 @@ async function testCanvasAndModalCookieState() {
     const canvasViewContent = fs.readFileSync(require.resolve('../src/components/editor/CanvasView.tsx'), 'utf8');
     assert.match(canvasViewContent, /role="button"/, 'On Execution card must have role="button"');
     assert.match(canvasViewContent, /cursor-pointer/, 'On Execution card must be cursor-pointer');
-    assert.match(canvasViewContent, /Click to configure/, 'On Execution card must have Click to configure indicator');
+    assert.doesNotMatch(canvasViewContent, /Click to configure/, 'On Execution card must not have Click to configure indicator');
     assert.match(canvasViewContent, /setIsExecutionConfigOpen\(true\)/, 'On Execution card must open execution config on click');
-    assert.match(canvasViewContent, /Cookie state/, 'On Execution card must show Cookie state badge when attached');
+    assert.doesNotMatch(canvasViewContent, /Cookie state/, 'On Execution card must not show Cookie state badge');
     assert.match(canvasViewContent, /var\(--app-surface-2\)/, 'On Execution card must have solid theme surface background');
     assert.doesNotMatch(canvasViewContent, />Trigger<\/span>/, 'On Execution card must not contain TRIGGER badge');
     assert.doesNotMatch(canvasViewContent, /bg-yellow-500\/10 border border-yellow-500\/25/, 'Bolt icon must not have surrounding box/border tile');
+    assert.doesNotMatch(canvasViewContent, /group\/settings[^>]*hover:bg-white\/10/, 'Settings cog button must not have hover grey box');
 
     console.log('✓ CanvasView and ExecutionConfigModal verified');
 }
