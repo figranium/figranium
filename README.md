@@ -327,7 +327,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [ ] **<a href="https://github.com/figranium/figranium/issues/372" target="_blank">Geo-targeted exits</a>** — choose proxy regions for Tasks.
 - [x] **Complete anti-detection coverage** — anti-detection controls across browser executions.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/373" target="_blank">Session recording redaction</a>** — redact sensitive fields from recordings and logs.
-- [ ] **<a href="https://github.com/figranium/figranium/issues/374" target="_blank">Two-factor authentication</a>** — optional TOTP/second-factor support.
+- [x] **<a href="https://github.com/figranium/figranium/issues/374" target="_blank">Two-factor authentication</a>** — optional TOTP/second-factor support.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/375" target="_blank">Automatic self-healing selectors</a>** — recover broken locators after page changes.
 - [x] **<a href="https://github.com/figranium/figranium/issues/365" target="_blank">Multilingual task pages with translate.js</a>** — optionally translate browser-rendered pages before actions and extraction.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/376" target="_blank">AI-assisted fixing</a>** — suggest fixes after failed runs for user approval.

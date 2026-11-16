@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.23.0] - 2026-11-03
+## [0.23.0] - 2026-11-16
+
+### Authentication and security
+- Added optional TOTP two-factor authentication (`Settings > Advanced > Two-factor authentication`) for self-hosted accounts, including 6-digit segmented code input, single-use SHA-256 hashed recovery codes downloadable as a `.txt` file, per-account lockout after repeated failed attempts, optional `MASTER_KEY` encryption for TOTP secrets, and an operator `scripts/reset-2fa.js` recovery script.
+- Serialized user-data persistence writes to prevent overlapping updates from overwriting newer changes.
 
 ### Headful viewer latency and interactive optimizations
 - Added TCP_NODELAY and TCP Keep-Alive socket options on Websockify client and target connections, eliminating packet buffering lag.
@@ -11,10 +15,10 @@
 ### Cookie state resilience and session persistence
 - Implemented multi-tier storage state saving fallback (`indexedDB: true` → `indexedDB: false` → `session.context.cookies()`) to prevent state loss during browser context teardown.
 - Added in-memory cached state persistence across lifecycle events including `domcontentloaded` and page closure.
-- Integrated Cookie State selection directly into the On Execution configuration modal.
+- Integrated Cookie State selection directly into the On Execution configuration modal and passed `cookieStateId` and additional parameters during headful session creation.
 
 ### Editor, canvas, and visual extraction
-- Redesigned the "On Execution" card with an opaque theme surface background across light, dark, and Solarized themes, eliminating transparent dot-grid bleed-through.
+- Redesigned the "On Execution" card with an opaque theme surface background across light, dark, and Solarized themes, eliminating transparent dot-grid bleed-through, and refined card/settings cog hover styling.
 - Removed decorative background tiles and borders from action icons, and removed the redundant "TRIGGER" badge on the execution block.
 - Synchronized the in-canvas `ExtractionScriptBlock` with `TaskSettingsCabinet`, providing unified vertical flex layout, visual fields, repeating groups, and automatic script generation.
 - Restored runnable authenticated V1 UI qualification suites and test selectors.
@@ -26,7 +30,9 @@
 
 ### Dependencies and maintenance
 - Updated Fiptcha to v0.2.0, adding distorted-text CAPTCHA solving with Florence-2 OCR, lowering Florence-2 memory requirements to a 2 GB decimal floor (1907 MiB total / 512 MiB available) so all qualifying hosts use Florence-2 by default, and optimizing grid-solver performance with immediate tile clicking, dynamic 3x3 replacement detection, and automated rejection retry.
-- Updated CloakBrowser to 0.6.5.
+- Removed optional CloakBrowser engine support, using the Playwright stealth stack exclusively.
+- Updated featured partner branding from Thordata to Proxy-Seller with theme-aware SVG assets and cleaned up unused theme preview images.
+- Migrated GitHub Actions workflows from Blacksmith to standard runners and actions, and excluded generated `graphify-out/` and vendor noVNC HTML from GitHub language statistics.
 
 ## [0.22.0] - 2026-10-30
 
