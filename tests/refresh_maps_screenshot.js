@@ -75,7 +75,11 @@ async function main() {
     { timeout: 20000 }
   );
   await page.locator('[aria-label="Open Task Settings"]').waitFor({ state: 'visible', timeout: 20000 });
-  await page.getByDisplayValue(taskName, { exact: true }).first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForFunction(
+    (name) => Array.from(document.querySelectorAll('input')).some((el) => el.value === name),
+    taskName,
+    { timeout: 15000 }
+  );
   await page.waitForTimeout(800);
 
   await page.screenshot({ path: OUTPUT, fullPage: false });
