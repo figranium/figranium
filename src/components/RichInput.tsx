@@ -14,7 +14,7 @@ interface RichInputProps {
     allowVariableInsertion?: boolean;
 }
 
-const RichInput: React.FC<RichInputProps> = ({ value, onChange, onBlur, placeholder, variables, className, syntax = 'plain', allowVariableInsertion = true }) => {
+const RichInput: React.FC<RichInputProps> = ({ value, onChange, onBlur, placeholder, variables, className = '', syntax = 'plain', allowVariableInsertion = true }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [dropPreview, setDropPreview] = useState<{ token: string; left: number; top: number } | null>(null);
 
@@ -66,7 +66,7 @@ const RichInput: React.FC<RichInputProps> = ({ value, onChange, onBlur, placehol
             aria-multiline="true"
             aria-label={placeholder || 'Text input'}
             data-variable-insertion-target={allowVariableInsertion ? 'true' : undefined}
-            className={`rich-input-content w-full bg-transparent focus:outline-none theme-text min-h-[1.5rem] ${className} ${dropPreview ? 'variable-drop-target' : ''}`}
+            className={`rich-input-content w-full bg-transparent focus:outline-none theme-text min-h-[1.25rem] leading-5 ${className} ${dropPreview ? 'variable-drop-target' : ''}`}
             data-placeholder={placeholder}
             onInput={(e) => onChange(e.currentTarget.textContent || '')}
             onDragOver={(event) => {

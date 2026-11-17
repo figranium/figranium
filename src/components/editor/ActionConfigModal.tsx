@@ -200,7 +200,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 {/* Selector field */}
                 {(action.type === 'click' || action.type === 'check' || action.type === 'uncheck' || action.type === 'drag_and_drop' || action.type === 'select' || action.type === 'type' || action.type === 'hover' || action.type === 'wait_selector' || action.type === 'scroll' || action.type === 'upload') && (
                     field(action.type === 'scroll' ? 'Selector (Optional)' : 'Selector',
-                        <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-xs focus-within:border-white/20 transition-all flex items-center gap-2">
+                        <div className="min-h-[40px] bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2 text-xs leading-5 focus-within:border-white/20 transition-all flex items-center gap-2">
                             <div className="flex-1 min-w-0 flex flex-col gap-1">
                                 <RichInput
                                     value={action.selector || ''}
@@ -239,7 +239,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                 )}
 
                 {action.type === 'drag_and_drop' && field('Target Selector',
-                    <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-xs focus-within:border-white/20 transition-all flex items-center gap-2">
+                    <div className="min-h-[40px] bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2 text-xs leading-5 focus-within:border-white/20 transition-all flex items-center gap-2">
                         <div className="flex-1 min-w-0">
                             <RichInput
                                 value={action.targetSelector || ''}
@@ -421,14 +421,14 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                             <div className="space-y-1">
                                 <span className="text-xs font-bold text-gray-500 tracking-wide pl-1">{condVarType === 'selector' ? 'Selector' : 'Variable'}</span>
                                 {condVarType === 'selector' ? (
-                                    <div className="bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 focus-within:border-white/30 transition-all flex items-center gap-2">
+                                    <div className="min-h-[40px] bg-white/[0.05] border border-white/10 rounded-[11px] px-3 py-2 focus-within:border-white/30 transition-all flex items-center gap-2">
                                         <input
                                             type="text"
                                             value={action.selector || ''}
                                             onChange={(e) => onUpdate(action.id, { selector: e.target.value })}
                                             onBlur={() => onAutoSave()}
                                             placeholder=".verified-badge"
-                                            className="flex-1 min-w-0 bg-transparent text-xs font-mono text-white focus:outline-none"
+                                            className="flex-1 min-w-0 bg-transparent text-xs leading-5 font-mono text-white focus:outline-none"
                                         />
                                         {onStartInspect && (
                                             <button
@@ -443,14 +443,16 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 focus-within:border-white/30">
-                                        <CustomCombobox
-                                            value={action.conditionVar || ''}
-                                            onChange={(value) => onUpdate(action.id, { conditionVar: value })}
-                                            options={varKeys}
-                                            placeholder="variable name"
-                                            ariaLabel="Condition variable"
-                                        />
+                                    <div className="min-h-[40px] flex items-center w-full bg-white/[0.05] border border-white/10 rounded-[11px] px-3 py-2 focus-within:border-white/30">
+                                        <div className="w-full min-w-0">
+                                            <CustomCombobox
+                                                value={action.conditionVar || ''}
+                                                onChange={(value) => onUpdate(action.id, { conditionVar: value })}
+                                                options={varKeys}
+                                                placeholder="variable name"
+                                                ariaLabel="Condition variable"
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -495,7 +497,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                                     onBlur={() => onAutoSave()}
                                     placeholder={condVarType === 'number' ? '0' : 'value'}
                                     data-variable-insertion-target={condVarType === 'number' ? undefined : 'true'}
-                                    className="w-full bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-white/30"
+                                    className="min-h-[40px] w-full bg-white/[0.05] border border-white/10 rounded-[11px] px-3 py-2 text-xs leading-5 text-white focus:outline-none focus:border-white/30"
                                 />
                             </div>
                         )}

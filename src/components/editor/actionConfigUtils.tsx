@@ -103,7 +103,7 @@ export const field = (labelText: string, children: React.ReactNode) => (
 );
 
 export const inputWrap = (children: React.ReactNode) => (
-    <div className="bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2.5 text-xs focus-within:border-white/20 transition-all">
-        {children}
+    <div className="min-h-[40px] flex items-center bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2 text-xs leading-5 focus-within:border-white/20 transition-all">
+        <div className="w-full min-w-0">{children}</div>
     </div>
 );

@@ -53,14 +53,16 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                 >
                     <div className="space-y-2">
                         <label className="block text-xs font-bold tracking-[0.16em] text-[var(--app-text-muted)]">URL</label>
-                        <div className="rounded-xl border theme-border bg-[var(--app-input)] px-4 py-3 text-sm transition-colors focus-within:border-[var(--app-border-strong)]">
-                            <RichInput
-                                value={task.url}
-                                onChange={(url) => onUpdate({ url })}
-                                onBlur={() => onUpdate({}, true)}
-                                variables={task.variables}
-                                placeholder="https://..."
-                            />
+                        <div className="min-h-[40px] flex items-center rounded-[11px] border theme-border bg-[var(--app-input)] px-3 py-2 text-xs leading-5 transition-colors focus-within:border-[var(--app-border-strong)]">
+                            <div className="w-full min-w-0">
+                                <RichInput
+                                    value={task.url}
+                                    onChange={(url) => onUpdate({ url })}
+                                    onBlur={() => onUpdate({}, true)}
+                                    variables={task.variables}
+                                    placeholder="https://..."
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -95,7 +97,7 @@ const ExecutionConfigModal: React.FC<ExecutionConfigModalProps> = ({ task, onUpd
                             value={task.wait}
                             onChange={(event) => onUpdate({ wait: Number(event.target.value) || 0 })}
                             onBlur={() => onUpdate({}, true)}
-                            className="w-full rounded-xl border theme-border bg-[var(--app-input)] px-4 py-3 text-sm text-[var(--app-text)] transition-colors focus:border-[var(--app-border-strong)] focus:outline-none"
+                            className="min-h-[40px] w-full rounded-[11px] border theme-border bg-[var(--app-input)] px-3 py-2 text-xs leading-5 text-[var(--app-text)] transition-colors focus:border-[var(--app-border-strong)] focus:outline-none"
                         />
                     </div>
 
