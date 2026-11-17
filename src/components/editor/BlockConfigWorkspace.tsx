@@ -25,7 +25,9 @@ const inputLabels: Partial<Record<keyof Action, string>> = {
     selector: 'Selector', targetSelector: 'Target selector', value: 'Value', key: 'Key', conditionVar: 'Variable',
     conditionVarType: 'Variable type', conditionOp: 'Relation', conditionValue: 'Comparison value',
     typeMode: 'Typing mode', clickType: 'Click type', method: 'Method', headers: 'Headers', body: 'Body',
-    timeout: 'Timeout', captchaType: 'Captcha type',
+    timeout: 'Timeout', captchaType: 'Captcha type', imageSelector: 'Image selector', inputSelector: 'Input selector',
+    submitSelector: 'Submit selector', successSelector: 'Success selector', errorSelector: 'Error selector',
+    stripWhitespace: 'Strip whitespace', alphanumericOnly: 'Alphanumeric only',
 };
 const inputKeys = Object.keys(inputLabels) as (keyof Action)[];
 

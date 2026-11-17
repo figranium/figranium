@@ -108,7 +108,14 @@ export interface Action {
     headers?: string;
     body?: string;
     timeout?: number;
-    captchaType?: 'recaptcha_v2' | 'recaptcha_v3' | 'hcaptcha' | 'turnstile';
+    captchaType?: 'recaptcha_v2' | 'recaptcha_v3' | 'hcaptcha' | 'turnstile' | 'distorted_text';
+    imageSelector?: string;
+    inputSelector?: string;
+    submitSelector?: string;
+    successSelector?: string;
+    errorSelector?: string;
+    stripWhitespace?: boolean;
+    alphanumericOnly?: boolean;
     cabinetId?: string;
     markAsUploaded?: boolean;
 }

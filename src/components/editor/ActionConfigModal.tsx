@@ -727,23 +727,73 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                             onChange={(value) => onUpdate(action.id, { captchaType: (value || undefined) as Action['captchaType'] }, true)}
                             options={[
                                 { value: '', label: 'Auto-detect', icon: 'search' },
-                                { value: 'recaptcha_v2', label: 'reCAPTCHA v2', iconUrl: 'https://www.google.com/s2/favicons?domain=google.com&sz=64', iconImageClassName: 'grayscale opacity-70' },
-                                { value: 'recaptcha_v3', label: 'reCAPTCHA v3', iconUrl: 'https://www.google.com/s2/favicons?domain=google.com&sz=64', iconImageClassName: 'grayscale opacity-70' },
-                                { value: 'hcaptcha', label: 'hCaptcha', iconUrl: 'https://www.google.com/s2/favicons?domain=hcaptcha.com&sz=64', iconImageClassName: 'grayscale opacity-70' },
-                                { value: 'turnstile', label: 'Cloudflare Turnstile', iconUrl: 'https://www.google.com/s2/favicons?domain=cloudflare.com&sz=64', iconImageClassName: 'grayscale opacity-70' },
+                                { value: 'recaptcha_v2', label: 'reCAPTCHA v2', icon: 'brand-google' },
+                                { value: 'recaptcha_v3', label: 'reCAPTCHA v3', icon: 'brand-google' },
+                                { value: 'hcaptcha', label: 'hCaptcha', icon: 'hand-stop' },
+                                { value: 'turnstile', label: 'Cloudflare Turnstile', icon: 'brand-cloudflare' },
+                                { value: 'distorted_text', label: 'Distorted Text', icon: 'skew-x' },
                             ]}
                             ariaLabel="Captcha type"
                         />
                     </div>
-                    {field('Container Selector (Optional)', inputWrap(
+                    {field(action.captchaType === 'distorted_text' ? 'Image Selector (Optional)' : 'Container Selector (Optional)', inputWrap(
                         <RichInput
                             value={action.selector || ''}
                             onChange={(v) => onUpdate(action.id, { selector: v })}
                             onBlur={() => onAutoSave()}
                             variables={variables}
-                            placeholder="#recaptcha-container or leave empty for full page"
+                            placeholder={action.captchaType === 'distorted_text' ? 'img.captcha-image or leave empty to auto-detect' : '#recaptcha-container or leave empty for full page'}
                         />
                     ))}
+                    {action.type === 'solve_captcha' && action.captchaType === 'distorted_text' && <>
+                        {field('Image Selector Override (Optional)', inputWrap(
+                            <RichInput
+                                value={action.imageSelector || ''}
+                                onChange={(v) => onUpdate(action.id, { imageSelector: v })}
+                                onBlur={() => onAutoSave()}
+                                variables={variables}
+                                placeholder="img.captcha-image (overrides container selector)"
+                            />
+                        ))}
+                        {field('Input Selector (Optional)', inputWrap(
+                            <RichInput
+                                value={action.inputSelector || ''}
+                                onChange={(v) => onUpdate(action.id, { inputSelector: v })}
+                                onBlur={() => onAutoSave()}
+                                variables={variables}
+                                placeholder='input[name="captcha"] or leave empty to auto-detect'
+                            />
+                        ))}
+                        {field('Submit Selector (Optional)', inputWrap(
+                            <RichInput
+                                value={action.submitSelector || ''}
+                                onChange={(v) => onUpdate(action.id, { submitSelector: v })}
+                                onBlur={() => onAutoSave()}
+                                variables={variables}
+                                placeholder='button[type="submit"] (optional)'
+                            />
+                        ))}
+                        {field('Success Selector (Optional)', inputWrap(
+                            <RichInput
+                                value={action.successSelector || ''}
+                                onChange={(v) => onUpdate(action.id, { successSelector: v })}
+                                onBlur={() => onAutoSave()}
+                                variables={variables}
+                                placeholder=".captcha-success (optional)"
+                            />
+                        ))}
+                        {field('Error Selector (Optional)', inputWrap(
+                            <RichInput
+                                value={action.errorSelector || ''}
+                                onChange={(v) => onUpdate(action.id, { errorSelector: v })}
+                                onBlur={() => onAutoSave()}
+                                variables={variables}
+                                placeholder=".captcha-error (optional)"
+                            />
+                        ))}
+                        {field('Strip Whitespace', <label className="flex items-center gap-2 text-xs text-white/80"><input type="checkbox" checked={action.stripWhitespace !== false} onChange={(e) => onUpdate(action.id, { stripWhitespace: e.target.checked }, true)} className="h-4 w-4" /> Remove spaces from recognized text</label>)}
+                        {field('Alphanumeric Only', <label className="flex items-center gap-2 text-xs text-white/80"><input type="checkbox" checked={!!action.alphanumericOnly} onChange={(e) => onUpdate(action.id, { alphanumericOnly: e.target.checked }, true)} className="h-4 w-4" /> Keep only letters and digits</label>)}
+                    </>}
                     {field('Timeout (Seconds)', inputWrap(
                         <input
                             type="number"
