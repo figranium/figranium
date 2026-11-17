@@ -549,12 +549,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                     >
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3 min-w-0">
-                                <TablerIcon name="bolt" className="text-white group-hover/exec:text-yellow-300 transition-colors text-lg shrink-0" />
-                                <div className="flex flex-col min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-white font-bold tracking-wide text-xs group-hover/exec:text-yellow-300 transition-colors">On Execution</h3>
-                                    </div>
-                                </div>
+                                <TablerIcon name="clock-play" className="text-white group-hover/exec:text-yellow-300 transition-colors text-lg shrink-0" />
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                                 <span className="text-xs font-semibold text-white/50 group-hover/exec:text-white flex items-center gap-1 transition-colors">
