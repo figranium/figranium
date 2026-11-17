@@ -251,16 +251,40 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                 if (actions.selectedActionIds.size > 0 || selectedNoteIds.size > 0) {
                     e.preventDefault();
                     const affectedActionIds = expandActionIdsToBlocks(currentTask.actions, actions.selectedActionIds);
-                    const nextActions = currentTask.actions.filter((action) => !affectedActionIds.has(action.id));
-                    const next = {
-                        ...currentTask,
-                        actions: nextActions,
-                        stickyNotes: (currentTask.stickyNotes || []).filter(n => !selectedNoteIds.has(n.id)),
+                    const noteIdsToDelete = new Set(selectedNoteIds);
+
+                    const executeDelete = () => {
+                        setCurrentTask((prev) => {
+                            if (!prev) return prev;
+                            const next = {
+                                ...prev,
+                                actions: prev.actions.filter((action) => !affectedActionIds.has(action.id)),
+                                stickyNotes: (prev.stickyNotes || []).filter((n) => !noteIdsToDelete.has(n.id)),
+                            };
+                            handleAutoSave(next);
+                            return next;
+                        });
+                        actions.setSelectedActionIds(new Set());
+                        setSelectedNoteIds(new Set());
                     };
-                    setCurrentTask(next);
-                    handleAutoSave(next);
-                    actions.setSelectedActionIds(new Set());
-                    setSelectedNoteIds(new Set());
+
+                    if (affectedActionIds.size > 0) {
+                        const count = affectedActionIds.size;
+                        const message = noteIdsToDelete.size > 0
+                            ? `Delete ${count} action block${count === 1 ? '' : 's'} and ${noteIdsToDelete.size} sticky note${noteIdsToDelete.size === 1 ? '' : 's'}?`
+                            : count === 1
+                                ? 'Are you sure you want to delete this action block?'
+                                : `Are you sure you want to delete ${count} action blocks?`;
+                        void onConfirm({
+                            title: count === 1 ? 'Delete action block' : 'Delete action blocks',
+                            message,
+                            confirmLabel: 'Delete',
+                        }).then((confirmed) => {
+                            if (confirmed) executeDelete();
+                        });
+                    } else {
+                        executeDelete();
+                    }
                 }
             } else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
                 if (actions.selectedActionIds.size > 0 || selectedNoteIds.size > 0) {
@@ -321,7 +345,7 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
         };
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [actions, currentTask, handleAutoSave, actionPaletteOpen, openActionPalette, setCurrentTask, selectedNoteIds, actionClipboard, noteClipboard]);
+    }, [actions, currentTask, handleAutoSave, actionPaletteOpen, openActionPalette, setCurrentTask, selectedNoteIds, actionClipboard, noteClipboard, onConfirm]);
 
     const openContextMenu = useCallback((e: React.MouseEvent, id: string) => {
         e.preventDefault();
@@ -531,12 +555,27 @@ const EditorScreen: React.FC<EditorScreenProps> = ({
                             <TablerIcon name={target.disabled ? 'visibility' : 'visibility_off'} className="text-sm text-white/40" />
                             {target.disabled ? 'Enable' : 'Disable'} {isTargetSelected ? 'All' : ''}
                         </button>
-                        <button onClick={() => {
-                            const nextActions = currentTask.actions.filter(a => !affectedIds.includes(a.id));
-                            const next = { ...currentTask, actions: nextActions };
-                            setCurrentTask(next);
-                            handleAutoSave(next);
+                        <button onClick={async () => {
+                            const idsToDelete = new Set(affectedIds);
+                            const count = idsToDelete.size;
                             setContextMenu(null);
+                            const confirmed = await onConfirm({
+                                title: count === 1 ? 'Delete action block' : 'Delete action blocks',
+                                message: count === 1
+                                    ? 'Are you sure you want to delete this action block?'
+                                    : `Are you sure you want to delete ${count} action blocks?`,
+                                confirmLabel: 'Delete',
+                            });
+                            if (!confirmed) return;
+                            setCurrentTask((prev) => {
+                                if (!prev) return prev;
+                                const next = {
+                                    ...prev,
+                                    actions: prev.actions.filter(a => !idsToDelete.has(a.id)),
+                                };
+                                handleAutoSave(next);
+                                return next;
+                            });
                             actions.setSelectedActionIds(new Set());
                         }} className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-red-400 flex items-center gap-2.5">
                             <TablerIcon name="delete" className="text-sm text-red-400/70" />
