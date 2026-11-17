@@ -88,12 +88,12 @@ export default function CustomSelect<T extends SelectValue>({
             if (menuRef.current?.contains(event.target as Node)) return;
             close();
         };
-        document.addEventListener('mousedown', handlePointerDown);
+        document.addEventListener('mousedown', handlePointerDown, true);
         window.addEventListener('resize', handleResize);
         window.addEventListener('scroll', handleScroll, true);
         requestAnimationFrame(() => menuRef.current?.focus());
         return () => {
-            document.removeEventListener('mousedown', handlePointerDown);
+            document.removeEventListener('mousedown', handlePointerDown, true);
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('scroll', handleScroll, true);
         };
@@ -249,11 +249,11 @@ export function CustomCombobox({ value, options, onChange, ariaLabel, placeholde
             if (menuRef.current?.contains(event.target as Node)) return;
             close();
         };
-        document.addEventListener('mousedown', handlePointerDown);
+        document.addEventListener('mousedown', handlePointerDown, true);
         window.addEventListener('resize', handleResize);
         window.addEventListener('scroll', handleScroll, true);
         return () => {
-            document.removeEventListener('mousedown', handlePointerDown);
+            document.removeEventListener('mousedown', handlePointerDown, true);
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('scroll', handleScroll, true);
         };

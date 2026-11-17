@@ -20,11 +20,11 @@ export default function CreateTaskSplitButton({ onStartFromScratch, onCreateFrom
         const closeOnEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') setOpen(false);
         };
-        document.addEventListener('mousedown', closeOnOutsidePress);
+        document.addEventListener('mousedown', closeOnOutsidePress, true);
         document.addEventListener('keydown', closeOnEscape);
         requestAnimationFrame(() => firstOptionRef.current?.focus());
         return () => {
-            document.removeEventListener('mousedown', closeOnOutsidePress);
+            document.removeEventListener('mousedown', closeOnOutsidePress, true);
             document.removeEventListener('keydown', closeOnEscape);
         };
     }, [open]);
