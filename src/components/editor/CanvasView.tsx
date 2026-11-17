@@ -557,10 +557,9 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
-                                <span className="text-xs font-semibold text-white/50 group-hover/exec:text-white flex items-center gap-1 transition-colors px-2 py-1 rounded-lg group-hover/exec:bg-white/10">
+                                <span className="text-xs font-semibold text-white/50 group-hover/exec:text-white flex items-center gap-1 transition-colors">
                                     <TablerIcon name="edit" className="text-xs" /> Edit
                                 </span>
-                                <div className="h-4 w-px bg-white/15 mx-0.5" />
                                 <button
                                     type="button"
                                     onClick={(event) => {
