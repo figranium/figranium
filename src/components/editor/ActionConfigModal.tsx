@@ -728,7 +728,6 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                             options={[
                                 { value: '', label: 'Auto-detect', icon: 'search' },
                                 { value: 'recaptcha_v2', label: 'reCAPTCHA v2', icon: 'brand-google' },
-                                { value: 'recaptcha_v3', label: 'reCAPTCHA v3', icon: 'brand-google' },
                                 { value: 'hcaptcha', label: 'hCaptcha', icon: 'hand-stop' },
                                 { value: 'turnstile', label: 'Cloudflare Turnstile', icon: 'brand-cloudflare' },
                                 { value: 'distorted_text', label: 'Distorted Text', icon: 'skew-x' },
