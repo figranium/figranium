@@ -15,6 +15,32 @@ import {
     isLoopAction,
 } from '../../utils/actionBlocks';
 
+export function formatCompactExecutionUrl(rawUrl: string, maxChars = 28): string {
+    const trimmed = rawUrl.trim();
+    if (!trimmed) return '';
+    const withoutScheme = trimmed.replace(/^https?:\/\//i, '');
+    if (withoutScheme.length <= maxChars) return withoutScheme;
+
+    const withoutHash = withoutScheme.split('#')[0];
+    if (withoutHash.length <= maxChars) return withoutHash;
+
+    const withoutQuery = withoutHash.split('?')[0];
+    if (withoutQuery.length <= maxChars) return withoutQuery;
+
+    const slashIndex = withoutQuery.indexOf('/');
+    if (slashIndex === -1) return withoutQuery;
+
+    const host = withoutQuery.slice(0, slashIndex);
+    const segments = withoutQuery.slice(slashIndex + 1).split('/').filter(Boolean);
+    while (segments.length > 0) {
+        segments.pop();
+        const candidate = segments.length > 0 ? `${host}/${segments.join('/')}` : host;
+        if (candidate.length <= maxChars) return candidate;
+    }
+
+    return host;
+}
+
 interface CanvasViewProps {
     currentTask: Task;
     setCurrentTask: (task: Task) => void;
@@ -548,8 +574,17 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                         className="canvas-execution-card w-[380px] border border-white/20 hover:border-white/50 p-5 rounded-2xl select-none cursor-pointer relative z-10 pointer-events-auto transition-all group/exec shadow-lg hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     >
                         <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 <TablerIcon name="clock-play" className="text-white group-hover/exec:text-yellow-300 transition-colors text-lg shrink-0" />
+                                {currentTask.url ? (
+                                    <span className="text-xs text-white/60 font-mono truncate" title={currentTask.url}>
+                                        {formatCompactExecutionUrl(currentTask.url)}
+                                    </span>
+                                ) : (
+                                    <span className="text-xs text-white/30 italic truncate">
+                                        No start URL configured
+                                    </span>
+                                )}
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                                 <span className="text-xs font-semibold text-white/50 group-hover/exec:text-white flex items-center gap-1 transition-colors">
@@ -569,18 +604,6 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 </button>
                             </div>
                         </div>
-
-                        {currentTask.url ? (
-                            <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 text-xs text-white/60 font-mono truncate">
-                                <TablerIcon name="language" className="text-xs text-white/40 shrink-0" />
-                                <span className="truncate">{currentTask.url}</span>
-                            </div>
-                        ) : (
-                            <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 text-xs text-white/30 italic">
-                                <TablerIcon name="language" className="text-xs opacity-40 shrink-0" />
-                                <span>No start URL configured</span>
-                            </div>
-                        )}
 
                         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                             <span className="text-[10px] font-semibold text-white/60 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full flex items-center gap-1">
