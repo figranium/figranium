@@ -726,7 +726,7 @@ const ActionConfigModal: React.FC<ActionConfigModalProps> = ({
                             value={action.captchaType || ''}
                             onChange={(value) => onUpdate(action.id, { captchaType: (value || undefined) as Action['captchaType'] }, true)}
                             options={[
-                                { value: '', label: 'Auto-detect', icon: 'search' },
+                                { value: '', label: 'Auto-detect', icon: 'grid-scan' },
                                 { value: 'recaptcha_v2', label: 'reCAPTCHA v2', icon: 'brand-google' },
                                 { value: 'hcaptcha', label: 'hCaptcha', icon: 'hand-stop' },
                                 { value: 'turnstile', label: 'Cloudflare Turnstile', icon: 'brand-cloudflare' },
