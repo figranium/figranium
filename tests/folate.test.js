@@ -2,13 +2,16 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const http = require('node:http');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const {
     isNaturalLanguageSelector,
     stripFolatePrefix,
     resolveWithFolate,
-    getFolateStatus
+    getFolateStatus,
+    shutdownFolateWorker
 } = require('../src/agent/figranite/folate-client');
 
 test('isNaturalLanguageSelector distinguishes CSS/XPath/coords from descriptions', () => {
@@ -49,38 +52,47 @@ test('stripFolatePrefix strips folate: and ai: prefixes cleanly', () => {
     assert.equal(stripFolatePrefix('click Search Flights'), 'click Search Flights');
 });
 
-test('resolveWithFolate calls remote FOLATE_URL endpoint and returns top match', async () => {
-    let receivedBody = null;
-    let receivedAuth = null;
-    const server = http.createServer((req, res) => {
-        receivedAuth = req.headers.authorization;
-        let raw = '';
-        req.on('data', (chunk) => { raw += chunk; });
-        req.on('end', () => {
-            receivedBody = JSON.parse(raw);
-            res.writeHead(200, { 'content-type': 'application/json' });
-            res.end(JSON.stringify({
-                selector: '#search-flights',
-                score: 0.96,
-                element: '[TAG] button [ID] search-flights [TEXT] Search Flights',
-                matches: [
-                    { selector: '#search-flights', score: 0.96, element: '[TAG] button [ID] search-flights' }
-                ]
-            }));
-        });
-    });
+test('resolveWithFolate always uses the local worker and ignores FOLATE_URL', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'folate-test-'));
+    const stubWorker = path.join(tmpDir, 'mock-python.js');
+    const logFile = path.join(tmpDir, 'requests.json');
+    fs.writeFileSync(stubWorker, `#!/usr/bin/env node
+const fs = require('node:fs');
+const readline = require('node:readline');
+const rl = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
+rl.on('line', (line) => {
+    if (!line.trim()) return;
+    const req = JSON.parse(line);
+    if (req.action === 'status') {
+        process.stdout.write(JSON.stringify({ id: req.id, ok: true, available: true, providers: ['CPUExecutionProvider'] }) + '\\n');
+        return;
+    }
+    fs.writeFileSync(${JSON.stringify(logFile)}, JSON.stringify(req));
+    process.stdout.write(JSON.stringify({
+        id: req.id,
+        ok: true,
+        selector: '#search-flights',
+        score: 0.96,
+        logit: 3.1,
+        element: '[TAG] button [ID] search-flights [TEXT] Search Flights',
+        matches: [
+            { selector: '#search-flights', score: 0.96, logit: 3.1, element: '[TAG] button [ID] search-flights' }
+        ]
+    }) + '\\n');
+});
+`, { mode: 0o755 });
 
-    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-    const port = server.address().port;
+    const prevPython = process.env.FOLATE_PYTHON;
     const prevUrl = process.env.FOLATE_URL;
-    const prevToken = process.env.FOLATE_TOKEN;
-    process.env.FOLATE_URL = `http://127.0.0.1:${port}/folate/resolve`;
-    process.env.FOLATE_TOKEN = 'test-secret';
+    process.env.FOLATE_PYTHON = stubWorker;
+    process.env.FOLATE_URL = 'https://remote.invalid/folate/resolve';
+    shutdownFolateWorker();
 
     try {
         const status = await getFolateStatus();
         assert.equal(status.available, true);
-        assert.equal(status.mode, 'remote');
+        assert.equal(status.mode, 'local');
+        assert.deepEqual(status.providers, ['CPUExecutionProvider']);
 
         const result = await resolveWithFolate({
             query: 'folate: click Search Flights button',
@@ -88,18 +100,20 @@ test('resolveWithFolate calls remote FOLATE_URL endpoint and returns top match',
             topK: 2
         });
 
-        assert.equal(receivedAuth, 'Bearer test-secret');
-        assert.equal(receivedBody.query, 'click Search Flights button');
-        assert.equal(receivedBody.topK, 2);
+        const received = JSON.parse(fs.readFileSync(logFile, 'utf8'));
+        assert.equal(received.action, 'resolve');
+        assert.equal(received.query, 'click Search Flights button');
+        assert.equal(received.top_k, 2);
         assert.equal(result.selector, '#search-flights');
         assert.equal(result.score, 0.96);
         assert.equal(result.matches.length, 1);
     } finally {
+        shutdownFolateWorker();
+        if (prevPython === undefined) delete process.env.FOLATE_PYTHON;
+        else process.env.FOLATE_PYTHON = prevPython;
         if (prevUrl === undefined) delete process.env.FOLATE_URL;
         else process.env.FOLATE_URL = prevUrl;
-        if (prevToken === undefined) delete process.env.FOLATE_TOKEN;
-        else process.env.FOLATE_TOKEN = prevToken;
-        server.close();
+        fs.rmSync(tmpDir, { recursive: true, force: true });
     }
 });
 

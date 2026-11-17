@@ -47,6 +47,7 @@
     "extraction-worker.js",
     "start-vnc.sh",
     "entrypoint.sh",
+    "scripts/folate_worker.py",
     "scripts/postinstall.js",
     "README.md",
     "LICENSE",

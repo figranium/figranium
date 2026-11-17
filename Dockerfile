@@ -53,6 +53,13 @@ ENV FIGRANIUM_SKIP_PLAYWRIGHT_INSTALL=1 \
 RUN npm ci --omit=dev --legacy-peer-deps \
     && npx playwright install --with-deps chromium firefox webkit
 
+# Install Python Folate runtime and pre-download the local ONNX model
+RUN apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update \
+    && apt-get install -y --no-install-recommends python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 -m pip install --break-system-packages --no-cache-dir 'folate>=0.1.1' \
+    && python3 -c 'from huggingface_hub import snapshot_download; snapshot_download("figranium/folate", local_dir="/opt/folate-model")'
+
 # Copy server and built assets
 COPY --from=build /app/dist /app/dist
 COPY --from=build /app/public /app/public
@@ -64,6 +71,7 @@ RUN sed -i 's/\r$//' /app/start-vnc.sh /app/entrypoint.sh \
     && chmod +x /app/start-vnc.sh /app/entrypoint.sh
 
 EXPOSE 11345
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    FOLATE_MODEL_DIR=/opt/folate-model
 
 CMD ["/app/entrypoint.sh"]

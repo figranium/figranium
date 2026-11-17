@@ -1,11 +1,23 @@
+const fs = require('node:fs');
+const os = require('node:os');
 const { spawn } = require('node:child_process');
 const { randomUUID } = require('node:crypto');
 const path = require('node:path');
 const { parseCoords } = require('../../../common-utils');
 
 const WORKER_SCRIPT = path.resolve(__dirname, '../../../scripts/folate_worker.py');
+const VENV_DIR = path.join(os.homedir(), '.figranium', 'folate-venv');
 const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 const DEFAULT_REQUEST_TIMEOUT_MS = 60_000;
+
+function resolvePythonBin() {
+    if (process.env.FOLATE_PYTHON) return process.env.FOLATE_PYTHON;
+    const venvPython = process.platform === 'win32'
+        ? path.join(VENV_DIR, 'Scripts', 'python.exe')
+        : path.join(VENV_DIR, 'bin', 'python3');
+    if (fs.existsSync(venvPython)) return venvPython;
+    return 'python3';
+}
 
 const HTML_TAGS = new Set([
     'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo',
@@ -107,7 +119,7 @@ function ensureWorker() {
         return workerProc;
     }
 
-    const pythonBin = process.env.FOLATE_PYTHON || 'python3';
+    const pythonBin = resolvePythonBin();
     const proc = spawn(pythonBin, [WORKER_SCRIPT], {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { ...process.env, PYTHONUNBUFFERED: '1' }
@@ -203,16 +215,6 @@ function callLocalWorker(payload, timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS) {
     });
 }
 
-function getRemoteFolateUrl() {
-    const raw = (process.env.FOLATE_URL || '').trim();
-    if (!raw) return null;
-    const parsed = new URL(raw);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-        throw new Error('INVALID_FOLATE_URL');
-    }
-    return raw.replace(/\/+$/, '');
-}
-
 async function resolveWithFolate({ query, html, topK = 3, maxCandidates = 48, timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS } = {}) {
     const cleanQuery = stripFolatePrefix(query);
     if (!cleanQuery) throw new Error('FOLATE_QUERY_REQUIRED');
@@ -220,39 +222,6 @@ async function resolveWithFolate({ query, html, topK = 3, maxCandidates = 48, ti
 
     const safeTopK = Number.isInteger(topK) ? Math.min(20, Math.max(1, topK)) : 3;
     const safeMaxCandidates = Number.isInteger(maxCandidates) ? Math.min(200, Math.max(1, maxCandidates)) : 48;
-
-    const remoteUrl = getRemoteFolateUrl();
-    if (remoteUrl) {
-        const headers = { 'content-type': 'application/json' };
-        if (process.env.FOLATE_TOKEN) {
-            headers.authorization = `Bearer ${process.env.FOLATE_TOKEN}`;
-        }
-        const target = remoteUrl.endsWith('/resolve') ? remoteUrl : `${remoteUrl}/resolve`;
-        const response = await fetch(target, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                query: cleanQuery,
-                html,
-                topK: safeTopK,
-                maxCandidates: safeMaxCandidates
-            }),
-            signal: AbortSignal.timeout(timeoutMs)
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            const err = new Error(data?.error || `FOLATE_REMOTE_ERROR_${response.status}`);
-            if (response.status === 503) err.code = 'FOLATE_UNAVAILABLE';
-            throw err;
-        }
-        return {
-            selector: data.selector ?? data.matches?.[0]?.selector ?? null,
-            score: data.score ?? data.matches?.[0]?.score ?? null,
-            logit: data.logit ?? data.matches?.[0]?.logit ?? null,
-            element: data.element ?? data.matches?.[0]?.element ?? null,
-            matches: Array.isArray(data.matches) ? data.matches : []
-        };
-    }
 
     const result = await callLocalWorker(
         {
@@ -274,10 +243,6 @@ async function resolveWithFolate({ query, html, topK = 3, maxCandidates = 48, ti
 }
 
 async function getFolateStatus() {
-    const remoteUrl = getRemoteFolateUrl();
-    if (remoteUrl) {
-        return { available: true, mode: 'remote', endpoint: remoteUrl };
-    }
     try {
         const status = await callLocalWorker({ action: 'status' }, 15_000);
         return {
