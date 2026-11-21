@@ -40,7 +40,7 @@ Figranium is proudly supported by:
 ## Featured Partners
 
 <div align="center">
-  <a href="https://proxy-seller.com/?utm_source=figranium" target="_blank">
+  <a href="https://proxy-seller.com/?utm_source=github&utm_medium=referral&utm_campaign=partner_promo&utm_term=github&partner=79D3D292E92E431C" target="_blank">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="partner-assets/proxy-seller_white.svg">
       <source media="(prefers-color-scheme: light)" srcset="partner-assets/proxy-seller.svg">
