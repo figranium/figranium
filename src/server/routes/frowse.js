@@ -3,7 +3,8 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
-const { requireAuthOrApiKey, requireScopedPermission, dataRateLimiter } = require('../middleware');
+const rateLimit = require('express-rate-limit');
+const { requireAuthOrApiKey, requireScopedPermission } = require('../middleware');
 const { validateUrl } = require('../../../url-utils');
 const {
     FROWSE_ACTIONS,
@@ -15,6 +16,16 @@ const {
 } = require('../../agent/figranite/frowse-client');
 
 const router = express.Router();
+
+// Agents issue many small commands per minute; keep a generous but bounded ceiling.
+const dataRateLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: Number(process.env.FROWSE_RATE_LIMIT_MAX) || 600,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'TOO_MANY_REQUESTS' },
+    validate: { xForwardedForHeader: false, trustProxy: false }
+});
 
 const ARTIFACT_DIR = path.join(os.tmpdir(), 'figranium-frowse');
 const UPLOAD_DIR = process.env.FROWSE_UPLOAD_DIR || path.join(ARTIFACT_DIR, 'uploads');

@@ -17,8 +17,7 @@ const real = require(middlewarePath);
 require.cache[middlewarePath].exports = {
     ...real,
     requireAuthOrApiKey: (_req, _res, next) => next(),
-    requireScopedPermission: () => (_req, _res, next) => next(),
-    dataRateLimiter: (_req, _res, next) => next()
+    requireScopedPermission: () => (_req, _res, next) => next()
 };
 
 const express = require('express');
