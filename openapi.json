@@ -583,7 +583,7 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "Maximum number of template summaries to return (1–24; default 12).",
+            "description": "Maximum number of template summaries to return (1\u201324; default 12).",
             "schema": {
               "type": "integer",
               "minimum": 1,
@@ -853,6 +853,250 @@
             }
           }
         ]
+      }
+    },
+    "/api/frowse/status": {
+      "get": {
+        "tags": [
+          "Frowse"
+        ],
+        "summary": "Check Frowse availability",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid session, action or arguments"
+          },
+          "503": {
+            "description": "Frowse is not installed"
+          }
+        }
+      }
+    },
+    "/api/frowse/sessions": {
+      "get": {
+        "tags": [
+          "Frowse"
+        ],
+        "summary": "List Frowse sessions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid session, action or arguments"
+          },
+          "503": {
+            "description": "Frowse is not installed"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Frowse"
+        ],
+        "summary": "Close all Frowse sessions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid session, action or arguments"
+          },
+          "503": {
+            "description": "Frowse is not installed"
+          }
+        }
+      }
+    },
+    "/api/frowse/sessions/{session}": {
+      "delete": {
+        "tags": [
+          "Frowse"
+        ],
+        "summary": "Close a Frowse session",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid session, action or arguments"
+          },
+          "503": {
+            "description": "Frowse is not installed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/frowse/sessions/{session}/commands": {
+      "post": {
+        "tags": [
+          "Frowse"
+        ],
+        "summary": "Run a Frowse command (action, args, options) in a persistent browser session",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid session, action or arguments"
+          },
+          "503": {
+            "description": "Frowse is not installed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string"
+                  },
+                  "args": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "options": {
+                    "type": "object",
+                    "properties": {
+                      "timeoutMs": {
+                        "type": "integer"
+                      },
+                      "viewport": {
+                        "type": "string",
+                        "example": "1280x800"
+                      },
+                      "userAgent": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/frowse/sessions/{session}/{action}": {
+      "post": {
+        "tags": [
+          "Frowse"
+        ],
+        "summary": "Run a Frowse action with args as the JSON body",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid session, action or arguments"
+          },
+          "503": {
+            "description": "Frowse is not installed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
       }
     }
   },
