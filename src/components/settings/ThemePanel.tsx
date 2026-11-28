@@ -15,7 +15,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ currentThemeId, onSelect }) => 
                     <TablerIcon name="palette" className="text-xl" />
                     Theme
                 </h3>
-                <p className="text-xs theme-text-faint mt-1">Choose how Figranium looks</p>
+                <p className="text-xs theme-text-faint mt-1">Choose how Figranium Browsers looks</p>
             </div>
 
             <button

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/figranium/figranium/main/banner.png" alt="Figranium Banner">
+  <img src="https://raw.githubusercontent.com/figranium/figranium/main/banner.png" alt="Figranium Browsers Banner">
 
   <br>
 
@@ -7,7 +7,7 @@
   <a href="https://github.com/figranium/figranium/pkgs/container/figranium" target="_blank"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffigranium%2Ffigranium%2Fmain%2Fghcr-stats.json&amp;query=%24.downloads_compact&amp;label=Pulls&amp;color=2496ED&amp;style=for-the-badge&amp;logo=docker&amp;logoColor=white" alt="Docker Pulls"></a>
   <a href="https://discord.gg/kPmfbgu9Xn" target="_blank"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
 
-  <p><strong>Stack blocks visually to build complex browser workflows and execute them via API.</strong></p>
+  <p><strong>Figranium Browsers — stack blocks visually to build complex browser workflows and execute them via API.</strong></p>
 
   <p>
     <a href="https://figranium.dev/docs" target="_blank"><strong>Documentation</strong></a>
@@ -17,7 +17,7 @@
 </div>
 
 <div align="center">
-  <img src="screenshot.png" alt="Figranium Demo" width="100%">
+  <img src="screenshot.png" alt="Figranium Browsers Demo" width="100%">
   <p align="center">
   </p>
 </div>
@@ -35,7 +35,7 @@
 
 # Official Partners
 
-Figranium is proudly supported by:
+Figranium Browsers is proudly supported by:
 
 ## Featured Partners
 
@@ -92,7 +92,7 @@ This starts the app on `http://localhost:11345` and the VNC viewer on `http://lo
 
 ### 1. Create a Project Directory
 
-Create a directory for your Figranium installation and navigate into it:
+Create a directory for your Figranium Browsers installation and navigate into it:
 ```bash
 mkdir figranium-server
 cd figranium-server
@@ -128,7 +128,7 @@ Caddy forwards WebSocket upgrades automatically. The viewer receives a short-liv
 
 ## Session Secret
 
-Figranium automatically generates a cryptographically random session secret on first startup and stores it in the persistent data directory (`session_secret.txt`). Subsequent starts reuse the saved secret. You can optionally set `SESSION_SECRET` to provide your own; keep the data directory persistent so existing sessions remain valid.
+Figranium Browsers automatically generates a cryptographically random session secret on first startup and stores it in the persistent data directory (`session_secret.txt`). Subsequent starts reuse the saved secret. You can optionally set `SESSION_SECRET` to provide your own; keep the data directory persistent so existing sessions remain valid.
 
 # Configuration
 
@@ -137,9 +137,9 @@ Figranium automatically generates a cryptographically random session secret on f
 | `SESSION_SECRET` | Optional override for the automatically generated, persisted session-cookie signing secret. | Auto-generated |
 | `MASTER_KEY` | Optional 256-bit key enabling encrypted at-rest secret files. Without it, the shared secret-store writes plaintext JSON. Supply 32 bytes encoded as base64url or 64 hexadecimal characters. | Unset (no shared secret-store encryption) |
 | `MASTER_KEY_FILE` | Optional location of a legacy local master key used to decrypt previously encrypted files during migration. Does not enable encryption for new writes without `MASTER_KEY`. Retain the original key until migration completes. | `data/master.key` (legacy key location) |
-| `PASSWORD_CACHE_KEY` | Secret used to encrypt the server-side 1Password cache. Set this to keep the encryption key outside the Figranium data directory. | Auto-generated and stored at `data/password_cache.key` |
+| `PASSWORD_CACHE_KEY` | Secret used to encrypt the server-side 1Password cache. Set this to keep the encryption key outside the Figranium Browsers data directory. | Auto-generated and stored at `data/password_cache.key` |
 | `PASSWORD_CACHE_ENABLED` | Enable encrypted server-side caching of 1Password Login metadata and resolved passwords. Set to `false` to always fetch from 1Password. | `true` |
-| `FIGRANIUM_TELEMETRY_ENABLED` | Send anonymous installation environment details and daily UI/API usage flags to Figranium telemetry. Set to `false` to disable. | `true` |
+| `FIGRANIUM_TELEMETRY_ENABLED` | Send anonymous installation environment details and daily UI/API usage flags to Figranium Browsers telemetry. Set to `false` to disable. | `true` |
 | `ALLOWED_IPS` | Comma list for basic IP allowlisting. | none (open) |
 | `TRUST_PROXY` | Honor `X-Forwarded-*` for application-level proxy behavior. Not required for the embedded browser viewer. | `0` |
 | `ALLOW_PRIVATE_NETWORKS` | Allow scraping local/private IPs (SSRF risk). | `false` |
@@ -167,7 +167,7 @@ At-rest encryption in the shared secret store is now **opt-in**. Without `MASTER
 
 ## CAPTCHA solving
 
-Figranium uses <a href="https://github.com/figranium/fiptcha" target="_blank">Fiptcha</a> for CAPTCHA solving. Fiptcha owns the CAPTCHA solver implementation and its configuration, supported providers, local/remote solving behavior, model setup, and platform-specific companion tooling. See the Fiptcha repository for the current CAPTCHA documentation instead of relying on duplicated configuration here.
+Figranium Browsers uses <a href="https://github.com/figranium/fiptcha" target="_blank">Fiptcha</a> for CAPTCHA solving. Fiptcha owns the CAPTCHA solver implementation and its configuration, supported providers, local/remote solving behavior, model setup, and platform-specific companion tooling. See the Fiptcha repository for the current CAPTCHA documentation instead of relying on duplicated configuration here.
 
 Proxy rotation also respects `data/proxies.json` (see below), and `data/allowed_ips.json` works as an alternate allowlist format.
 
@@ -180,7 +180,7 @@ Proxy rotation also respects `data/proxies.json` (see below), and `data/allowed_
 
 # Task Modes
 
-Figranium has two task modes:
+Figranium Browsers has two task modes:
 
 - **Agent Mode** — deterministic browser automation built from an ordered sequence of actions, control flow, variables, and extraction.
 - **Scrape Mode** — lightweight HTTP-based scraping and extraction without launching a browser.
@@ -220,7 +220,7 @@ Proxies can be defined via the UI or `data/proxies.json`:
 
 # API Surface
 
-Figranium exposes a REST API for workflow tools, applications, and custom integrations. All endpoints are hosted on your Figranium instance, typically on port `11345`.
+Figranium Browsers exposes a REST API for workflow tools, applications, and custom integrations. All endpoints are hosted on your Figranium Browsers instance, typically on port `11345`.
 
 **Authentication:**
 If enabled, provide the `x-api-key` header or `Authorization: Bearer <key>`. For internal network use, this may be optional depending on your settings.
@@ -269,7 +269,7 @@ If enabled, provide the `x-api-key` header or `Authorization: Bearer <key>`. For
 
 # Task Scheduling
 
-Figranium includes a built-in scheduler that handles automated Task execution without requiring external cron jobs or triggers.
+Figranium Browsers includes a built-in scheduler that handles automated Task execution without requiring external cron jobs or triggers.
 
 - **Visual Mode**: Configure periodic, hourly, daily, weekly, or monthly runs.
 - **Advanced Mode**: Use standard 5-field cron expressions (`* * * * *`) for complex schedules.
@@ -333,7 +333,7 @@ Figranium includes a built-in scheduler that handles automated Task execution wi
 - [ ] **<a href="https://github.com/figranium/figranium/issues/376" target="_blank">AI-assisted fixing</a>** — suggest fixes after failed runs for user approval.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/377" target="_blank">Companion app</a>** — lightweight notifications for important execution events.
 - [x] **Community presets hub** — publish and discover reusable automation presets.
-- [x] **<a href="https://github.com/figranium/figranium/issues/428" target="_blank">Embedded Templates for instant usage</a>** — browse, preview, and import ready-made Templates directly in the Figranium UI.
+- [x] **<a href="https://github.com/figranium/figranium/issues/428" target="_blank">Embedded Templates for instant usage</a>** — browse, preview, and import ready-made Templates directly in the Figranium Browsers UI.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/378" target="_blank">Database Tab / Local CRM</a>** — built-in interface for extracted data.
 - [ ] **<a href="https://github.com/figranium/figranium/issues/379" target="_blank">iframe interaction support</a>** — target and interact with elements inside iframes.
 - [x] **Autosave** — automatically persist Task changes and editor state.

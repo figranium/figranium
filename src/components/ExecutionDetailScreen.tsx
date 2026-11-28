@@ -102,7 +102,7 @@ const ExecutionDetailScreen: React.FC<ExecutionDetailScreenProps> = ({ onConfirm
 
     useEffect(() => {
         const name = execution?.taskName?.trim();
-        document.title = `${name ? `${name} Execution` : 'Execution Detail'} | Figranium`;
+        document.title = `${name ? `${name} Execution` : 'Execution Detail'} | Figranium Browsers`;
     }, [execution?.taskName]);
 
     const loadFullResult = async () => {

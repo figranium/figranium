@@ -567,7 +567,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({
                             <VersionPanel version={APP_VERSION} buildChannel={APP_BUILD_CHANNEL} buildCommit={APP_BUILD_COMMIT} />
                             <section className="app-panel p-7">
                                 <h3 className="text-sm font-bold theme-text">Runtime</h3>
-                                <p className="mt-1 text-xs theme-text-faint">Browser automation engine used by Figranium.</p>
+                                <p className="mt-1 text-xs theme-text-faint">Browser automation engine used by Figranium Browsers.</p>
                                 <p className="mt-5 text-xs theme-text-muted">Playwright <span className="font-bold theme-text">v{PLAYWRIGHT_VERSION}</span></p>
                             </section>
                             <CaptchaAssistancePanel onNotify={onNotify} />

@@ -154,23 +154,23 @@ export default function App() {
     const pinnedResults = currentTask ? pinnedResultsByTask[currentTaskKey] || null : null;
 
     useEffect(() => {
-        let title = 'Figranium';
+        let title = 'Figranium Browsers';
 
-        if (authStatus === 'login') title = 'Sign In | Figranium';
-        else if (authStatus === 'setup') title = 'Setup | Figranium';
-        else if (authStatus === 'two_factor') title = 'Verify | Figranium';
-        else if (authStatus === 'checking') title = 'Loading | Figranium';
-        else if (location.pathname === '/' || location.pathname === '/dashboard') title = 'Dashboard | Figranium';
+        if (authStatus === 'login') title = 'Sign In | Figranium Browsers';
+        else if (authStatus === 'setup') title = 'Setup | Figranium Browsers';
+        else if (authStatus === 'two_factor') title = 'Verify | Figranium Browsers';
+        else if (authStatus === 'checking') title = 'Loading | Figranium Browsers';
+        else if (location.pathname === '/' || location.pathname === '/dashboard') title = 'Dashboard | Figranium Browsers';
         else if (location.pathname.startsWith('/tasks')) {
             const taskName = currentTask?.name?.trim();
-            title = `${taskName || (location.pathname === '/tasks/new' ? 'New Task' : 'Task Editor')} | Figranium`;
-        } else if (location.pathname.startsWith('/settings')) title = 'Settings | Figranium';
-        else if (location.pathname === '/templates') title = 'Templates | Figranium';
-        else if (location.pathname === '/vault') title = 'Vault | Figranium';
-        else if (location.pathname === '/executions') title = 'Executions | Figranium';
-        else if (location.pathname.startsWith('/executions/')) title = 'Execution Detail | Figranium';
-        else if (location.pathname.startsWith('/cabinets')) title = 'Cabinets | Figranium';
-        else title = 'Not Found | Figranium';
+            title = `${taskName || (location.pathname === '/tasks/new' ? 'New Task' : 'Task Editor')} | Figranium Browsers`;
+        } else if (location.pathname.startsWith('/settings')) title = 'Settings | Figranium Browsers';
+        else if (location.pathname === '/templates') title = 'Templates | Figranium Browsers';
+        else if (location.pathname === '/vault') title = 'Vault | Figranium Browsers';
+        else if (location.pathname === '/executions') title = 'Executions | Figranium Browsers';
+        else if (location.pathname.startsWith('/executions/')) title = 'Execution Detail | Figranium Browsers';
+        else if (location.pathname.startsWith('/cabinets')) title = 'Cabinets | Figranium Browsers';
+        else title = 'Not Found | Figranium Browsers';
 
         document.title = title;
     }, [authStatus, location.pathname, currentTask?.name]);

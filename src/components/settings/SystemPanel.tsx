@@ -39,7 +39,7 @@ export function CaptchaAssistancePanel({ onNotify }: { onNotify: (message: strin
     return <section className="app-panel p-7">
         <h3 className="text-sm font-bold theme-text">CAPTCHA assistance</h3>
         <p className="text-xs theme-text-faint mt-1">Optional local help for supported CAPTCHA challenges. It is only used when a task reaches a CAPTCHA; normal browser and scrape tasks are unaffected.</p>
-        <div className="mt-5 text-xs theme-text-muted">Fiptcha v{FIPTCHA_VERSION} · Local solver: <span className="font-bold theme-text">{captcha?.activeTier || 'Unavailable'}</span>{captcha?.backend ? ` · ${captcha.backend}/${captcha.device || 'auto'}` : ''}<p className="mt-2 theme-text-faint">Running Figranium through npm does not require any extra CAPTCHA setup. “Unavailable” means local solving is disabled; remote solver services or human handoff can still be used when configured.</p></div>
+        <div className="mt-5 text-xs theme-text-muted">Fiptcha v{FIPTCHA_VERSION} · Local solver: <span className="font-bold theme-text">{captcha?.activeTier || 'Unavailable'}</span>{captcha?.backend ? ` · ${captcha.backend}/${captcha.device || 'auto'}` : ''}<p className="mt-2 theme-text-faint">Running Figranium Browsers through npm does not require any extra CAPTCHA setup. “Unavailable” means local solving is disabled; remote solver services or human handoff can still be used when configured.</p></div>
     </section>;
 }
 
@@ -145,10 +145,10 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
             const result = await response.json();
             setImportAvailable(result.available || []);
             setImportSelection(Object.fromEntries((result.available || []).map((key: string) => [key, true])));
-        } catch { setImportFile(null); onNotify('Choose a valid Figranium export ZIP.', 'error'); }
+        } catch { setImportFile(null); onNotify('Choose a valid Figranium Browsers export ZIP.', 'error'); }
     };
     const importData = async () => {
-        if (!importFile) return onNotify('Choose a Figranium export ZIP first.', 'error');
+        if (!importFile) return onNotify('Choose a Figranium Browsers export ZIP first.', 'error');
         const selected = importAvailable.filter((key) => importSelection[key]);
         if (!selected.length) return onNotify('Select at least one data type to import.', 'error');
         if (!await onConfirm({ title: 'Import selected data', message: 'Selected imported data will replace matching workspace data. Existing data in unselected categories will stay unchanged.', confirmLabel: 'Import data' })) return;
@@ -172,7 +172,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
     };
     return <div className="space-y-5">
         <section className="app-panel p-7 flex flex-wrap items-center justify-between gap-4">
-            <div><h3 className="text-sm font-bold theme-text">Session</h3><p className="text-xs theme-text-faint mt-1">Sign out of this Figranium workspace on this device.</p></div>
+            <div><h3 className="text-sm font-bold theme-text">Session</h3><p className="text-xs theme-text-faint mt-1">Sign out of this Figranium Browsers workspace on this device.</p></div>
             <button type="button" onClick={onLogout} className="app-button-danger">Sign out</button>
         </section>
         <section className="app-panel p-7">
@@ -188,7 +188,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
         </section>
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Export data</h3>
-            <p className="text-xs theme-text-faint mt-1">Download a portable ZIP containing only the Figranium data you select.</p>
+            <p className="text-xs theme-text-faint mt-1">Download a portable ZIP containing only the Figranium Browsers data you select.</p>
             <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
                 {[
                     ['tasks', 'Tasks'], ['executions', 'Executions'], ['captures', 'Captures'],
@@ -205,7 +205,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
         </section>
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Import data</h3>
-            <p className="text-xs theme-text-faint mt-1">Restore selected data from a Figranium export ZIP. Imported categories replace their matching workspace data.</p>
+            <p className="text-xs theme-text-faint mt-1">Restore selected data from a Figranium Browsers export ZIP. Imported categories replace their matching workspace data.</p>
             <div className="mt-5 flex max-w-xl items-center gap-3 rounded-xl border theme-border bg-[var(--app-input)] p-2">
                 <input ref={importInputRef} type="file" accept=".zip,application/zip" onChange={(event) => void inspectImport(event.target.files?.[0] || null)} className="hidden" />
                 <button type="button" onClick={() => importInputRef.current?.click()} className="app-button-secondary shrink-0"><TablerIcon name="upload_file" /> Choose ZIP</button>
@@ -230,7 +230,7 @@ export default function SystemPanel({ onConfirm, onNotify, onLogout }: { onConfi
         <section className="app-panel p-7">
             <h3 className="text-sm font-bold theme-text">Maintenance</h3><p className="text-xs theme-text-faint mt-1">Manually remove saved run data when you need to free disk space immediately.</p>
             <div className="mt-5 flex flex-wrap gap-3"><button type="button" disabled={saving} onClick={() => clearData('captures')} className="app-button-secondary disabled:opacity-50">Clear captures</button><button type="button" disabled={saving} onClick={() => clearData('executions')} className="app-button-secondary disabled:opacity-50">Clear execution history</button></div>
-            <div className="mt-7 border-t theme-border pt-5 max-w-xl"><h4 className="text-sm font-bold text-red-500">Clear all workspace data</h4><p className="mt-1 text-xs theme-text-faint">Keeps your account and current sign-in, but permanently removes everything else stored by Figranium.</p><div className="mt-3 flex flex-wrap gap-3"><input type="password" value={resetPassword} onChange={(event) => setResetPassword(event.target.value)} placeholder="Current password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><button type="button" disabled={saving} onClick={clearEverything} className="app-button-danger disabled:opacity-50">Clear all</button></div></div>
+            <div className="mt-7 border-t theme-border pt-5 max-w-xl"><h4 className="text-sm font-bold text-red-500">Clear all workspace data</h4><p className="mt-1 text-xs theme-text-faint">Keeps your account and current sign-in, but permanently removes everything else stored by Figranium Browsers.</p><div className="mt-3 flex flex-wrap gap-3"><input type="password" value={resetPassword} onChange={(event) => setResetPassword(event.target.value)} placeholder="Current password" className="theme-input border theme-border rounded-xl px-4 py-3 text-sm theme-text" /><button type="button" disabled={saving} onClick={clearEverything} className="app-button-danger disabled:opacity-50">Clear all</button></div></div>
         </section>
     </div>;
 }

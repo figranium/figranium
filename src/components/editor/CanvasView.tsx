@@ -578,7 +578,7 @@ const CanvasView: React.FC<CanvasViewProps> = ({
                                 <TablerIcon
                                     name="bolt"
                                     className="text-base shrink-0 transition-transform duration-150 group-hover/exec:scale-110"
-                                    style={{ color: 'var(--action-icon-start)' }}
+                                    style={{ color: 'var(--action-icon-wait)' }}
                                 />
                                 <span className="text-xs font-bold tracking-wide text-white truncate">
                                     On Execution

@@ -99,7 +99,7 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ isOpen, onClose, 
                 <div className="rounded-2xl border theme-border bg-[var(--app-surface-2)] p-3.5 mb-5 flex items-start gap-2.5">
                     <TablerIcon name="brand_github" className="text-base text-[var(--app-text-muted)] shrink-0 mt-0.5" />
                     <div className="text-xs text-[var(--app-text-muted)] leading-relaxed">
-                        <span className="font-semibold text-[var(--app-text)]">Self-hosting is 100% free:</span> Figranium is completely free and open source. All the same features—task automation, headful browsing, and selector picking—are included with zero limits when self-hosted.{' '}
+                        <span className="font-semibold text-[var(--app-text)]">Self-hosting is 100% free:</span> Figranium Browsers is completely free and open source. All the same features—task automation, headful browsing, and selector picking—are included with zero limits when self-hosted.{' '}
                         <a
                             href="https://github.com/figranium/figranium"
                             target="_blank"

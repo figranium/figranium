@@ -15,7 +15,7 @@ export const THEMES: ThemeDefinition[] = [
     {
         id: 'dark',
         name: 'Dark',
-        description: 'The classic Figranium dark theme.',
+        description: 'The classic Figranium Browsers dark theme.',
         preview: '/themes/Dark.png',
         vars: {
             '--app-bg': '#101114',

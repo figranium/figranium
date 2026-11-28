@@ -61,7 +61,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ status, onSubmit, onTwoFactorSu
             <CanvasDotGrid canvasOffset={{ x: 0, y: 0 }} canvasScale={1} viewportRef={viewportRef} />
             <div className="w-[400px] max-w-[calc(100%-40px)] glass-card auth-card-opaque p-10 rounded-[48px] space-y-8 relative">
                 <div className="text-center space-y-3">
-                    <img src="/figranium_logo.svg" alt="Figranium" className="h-24 mx-auto object-contain theme-logo" style={{ color: 'var(--app-logo)' }} />
+                    <img src="/figranium_logo.svg" alt="Figranium Browsers" className="h-24 mx-auto object-contain theme-logo" style={{ color: 'var(--app-logo)' }} />
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
