@@ -23,6 +23,7 @@ router.get('/', (_req, res) => {
             selectorStreaming: true,
             headfulSessions: true,
             folate: true,
+            frowse: true,
             externalCDP: false
         },
         browser: {

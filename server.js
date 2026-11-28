@@ -84,6 +84,7 @@ const apiKeyRoutes = require('./src/server/routes/api-keys');
 const cookieStateRoutes = require('./src/server/routes/cookie-states');
 const passwordRoutes = require('./src/server/routes/passwords');
 const folateRoutes = require('./src/server/routes/folate');
+const frowseRoutes = require('./src/server/routes/frowse');
 const { pushOutput } = require('./src/server/outputProviders');
 const { migrateStorageState } = require('./src/server/migrate-storage');
 const { concurrencyGate, closeQueue } = require('./src/server/execution-queue');
@@ -242,6 +243,7 @@ app.use('/api/passwords', passwordRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/capabilities', capabilitiesRoutes);
 app.use('/api/folate', folateRoutes);
+app.use('/api/frowse', frowseRoutes);
 app.use('/api', browserRoutes);
 
 // View Routes & Static

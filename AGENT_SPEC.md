@@ -475,3 +475,14 @@ Upload selects the latest unuploaded file, ZIP, or folder in the Cabinet. It sup
 - `javascript` actions are page-context only (no `page` object) and should be used only when native actions are insufficient.
 - Prefer structured conditions for selectors (`exists` with selector).
 - Always close block structures with `end`.
+
+## Frowse Browser Sessions
+
+Figranium exposes [Frowse](https://github.com/figranium/frowse) (compact DOM summaries plus local Folate grounding) as persistent, agent-driven browser sessions under `/api/frowse`. Requires the `frowse` Python package (`pip install frowse`; override interpreter with `FROWSE_PYTHON`).
+
+- `GET /api/frowse/status`: availability, version, supported actions (`tasks:read`).
+- `GET /api/frowse/sessions`: list sessions (`tasks:read`).
+- `POST /api/frowse/sessions/:session/commands` with `{ "action", "args", "options" }`, or `POST /api/frowse/sessions/:session/:action` with args as the body (`tasks:run`).
+- `DELETE /api/frowse/sessions/:session` and `DELETE /api/frowse/sessions` close sessions (`tasks:run`).
+
+Typical loop: `open {url}` → `snapshot` → `click|fill|type|select {selector, ...}` where `selector` may be a natural-language Folate prompt, CSS, XPath, or `@eN` ref → `get`/`wait`/`screenshot` → `close`. Navigation URLs pass Figranium's SSRF validation; `screenshot`/`pdf` return base64 inline; `upload` files must live in the Frowse upload directory (`FROWSE_UPLOAD_DIR`); `cdp`/executable options are not accepted over the API.

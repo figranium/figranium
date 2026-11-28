@@ -57,7 +57,8 @@ RUN npm ci --omit=dev --legacy-peer-deps \
 RUN apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update \
     && apt-get install -y --no-install-recommends python3-pip \
     && rm -rf /var/lib/apt/lists/* \
-    && python3 -m pip install --break-system-packages --no-cache-dir 'folate>=0.1.1' \
+    && python3 -m pip install --break-system-packages --no-cache-dir 'folate>=0.1.1' 'frowse>=0.1.2' \
+    && python3 -m playwright install --with-deps chromium \
     && python3 -c 'from huggingface_hub import snapshot_download; snapshot_download("figranium/folate", local_dir="/opt/folate-model")'
 
 # Copy server and built assets
