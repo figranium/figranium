@@ -26,6 +26,7 @@ const dataRateLimiter = rateLimit({
     message: { error: 'TOO_MANY_REQUESTS' },
     validate: { xForwardedForHeader: false, trustProxy: false }
 });
+router.use(dataRateLimiter);
 
 const ARTIFACT_DIR = path.join(os.tmpdir(), 'figranium-frowse');
 const UPLOAD_DIR = process.env.FROWSE_UPLOAD_DIR || path.join(ARTIFACT_DIR, 'uploads');
@@ -128,7 +129,7 @@ async function handleCommand(req, res, session, action, args, rawOptions) {
     }
 }
 
-router.get('/status', requireAuthOrApiKey, requireScopedPermission('tasks:read'), dataRateLimiter, (_req, res) => {
+router.get('/status', requireAuthOrApiKey, requireScopedPermission('tasks:read'), (_req, res) => {
     try {
         res.json(getFrowseStatus());
     } catch (error) {
@@ -136,7 +137,7 @@ router.get('/status', requireAuthOrApiKey, requireScopedPermission('tasks:read')
     }
 });
 
-router.get('/sessions', requireAuthOrApiKey, requireScopedPermission('tasks:read'), dataRateLimiter, async (_req, res) => {
+router.get('/sessions', requireAuthOrApiKey, requireScopedPermission('tasks:read'), async (_req, res) => {
     try {
         res.json({ sessions: await listFrowseSessions() });
     } catch (error) {
@@ -145,18 +146,18 @@ router.get('/sessions', requireAuthOrApiKey, requireScopedPermission('tasks:read
 });
 
 // Generic form: POST /api/frowse/sessions/:session/commands { action, args, options }
-router.post('/sessions/:session/commands', requireAuthOrApiKey, requireScopedPermission('tasks:run'), dataRateLimiter, (req, res) => {
+router.post('/sessions/:session/commands', requireAuthOrApiKey, requireScopedPermission('tasks:run'), (req, res) => {
     const action = typeof req.body?.action === 'string' ? req.body.action : '';
     return handleCommand(req, res, req.params.session, action, req.body?.args, req.body?.options);
 });
 
 // Convenience form: POST /api/frowse/sessions/:session/:action  { ...args, options? }
-router.post('/sessions/:session/:action', requireAuthOrApiKey, requireScopedPermission('tasks:run'), dataRateLimiter, (req, res) => {
+router.post('/sessions/:session/:action', requireAuthOrApiKey, requireScopedPermission('tasks:run'), (req, res) => {
     const { options, ...args } = isPlainObject(req.body) ? req.body : {};
     return handleCommand(req, res, req.params.session, req.params.action, args, options);
 });
 
-router.delete('/sessions/:session', requireAuthOrApiKey, requireScopedPermission('tasks:run'), dataRateLimiter, async (req, res) => {
+router.delete('/sessions/:session', requireAuthOrApiKey, requireScopedPermission('tasks:run'), async (req, res) => {
     try {
         if (!isValidSessionName(req.params.session)) return res.status(400).json({ error: 'FROWSE_SESSION_INVALID' });
         res.json({ session: req.params.session, ...(await runFrowseCommand(req.params.session, 'close')) });
@@ -165,7 +166,7 @@ router.delete('/sessions/:session', requireAuthOrApiKey, requireScopedPermission
     }
 });
 
-router.delete('/sessions', requireAuthOrApiKey, requireScopedPermission('tasks:run'), dataRateLimiter, async (_req, res) => {
+router.delete('/sessions', requireAuthOrApiKey, requireScopedPermission('tasks:run'), async (_req, res) => {
     try {
         res.json({ closed: await closeAllFrowseSessions() });
     } catch (error) {
