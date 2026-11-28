@@ -117,7 +117,7 @@ async function handleCommand(req, res, session, action, args, rawOptions) {
     }
 }
 
-router.get('/status', requireAuthOrApiKey, requireScopedPermission('tasks:read'), (_req, res) => {
+router.get('/status', requireAuthOrApiKey, requireScopedPermission('tasks:read'), dataRateLimiter, (_req, res) => {
     try {
         res.json(getFrowseStatus());
     } catch (error) {
@@ -125,7 +125,7 @@ router.get('/status', requireAuthOrApiKey, requireScopedPermission('tasks:read')
     }
 });
 
-router.get('/sessions', requireAuthOrApiKey, requireScopedPermission('tasks:read'), async (_req, res) => {
+router.get('/sessions', requireAuthOrApiKey, requireScopedPermission('tasks:read'), dataRateLimiter, async (_req, res) => {
     try {
         res.json({ sessions: await listFrowseSessions() });
     } catch (error) {

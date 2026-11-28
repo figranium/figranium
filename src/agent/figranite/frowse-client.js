@@ -70,7 +70,11 @@ function getStateDir() {
 }
 
 function getSocketPath(session) {
-    return path.join(getStateDir(), `${session}.sock`);
+    if (!isValidSessionName(session)) throw makeError('FROWSE_SESSION_INVALID', 'Session must match [A-Za-z0-9_-]{1,64}', 400);
+    const stateDir = path.resolve(getStateDir());
+    const sockPath = path.resolve(stateDir, `${path.basename(session)}.sock`);
+    if (path.dirname(sockPath) !== stateDir) throw makeError('FROWSE_SESSION_INVALID', 'Invalid session path', 400);
+    return sockPath;
 }
 
 function probeSocket(sockPath, timeoutMs = 1000) {
@@ -123,7 +127,11 @@ async function startSession(session, options = {}) {
     const child = spawn(resolvePythonBin(), args, {
         detached: true,
         stdio: 'ignore',
-        env: { ...process.env, FROWSE_STATE_DIR: getStateDir() }
+        env: {
+            ...process.env,
+            FROWSE_STATE_DIR: getStateDir(),
+            ...(process.env.FROWSE_BROWSERS_PATH ? { PLAYWRIGHT_BROWSERS_PATH: process.env.FROWSE_BROWSERS_PATH } : {})
+        }
     });
     let spawnError = null;
     child.once('error', (err) => { spawnError = err; });
