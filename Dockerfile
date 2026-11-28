@@ -57,7 +57,7 @@ RUN npm ci --omit=dev --legacy-peer-deps \
 # Frowse lives in its own venv so its dependencies cannot clash with Debian-managed packages.
 RUN apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update \
     && apt-get install -y --no-install-recommends python3-pip python3-venv \
-    && python3 -m pip install --break-system-packages --no-cache-dir 'folate>=0.1.1' \
+    && python3 -m pip install --break-system-packages --no-cache-dir --ignore-installed typing_extensions 'folate>=0.1.1' \
     && python3 -c 'from huggingface_hub import snapshot_download; snapshot_download("figranium/folate", local_dir="/opt/folate-model")' \
     && python3 -m venv /opt/frowse-venv \
     && /opt/frowse-venv/bin/pip install --no-cache-dir 'frowse>=0.1.2' \
