@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.24.0] - 2026-11-28
+
+### Frowse browser sessions
+- Added `/api/frowse` routes so agents can drive persistent, named Frowse browser sessions through Figranium: `GET /api/frowse/status`, `GET /api/frowse/sessions`, `POST /api/frowse/sessions/:session/commands` (or `/:action`), and `DELETE /api/frowse/sessions[/:session]`. Frowse returns compact DOM summaries and resolves natural-language element descriptions locally with Folate. Requires `tasks:read` / `tasks:run` API-key scopes and is advertised as `frowse: true` in `/api/capabilities`.
+- Navigation URLs pass SSRF validation, screenshots and PDFs are returned as base64 from server-chosen paths, uploads are confined to `FROWSE_UPLOAD_DIR`, CDP and executable options are not accepted over the API, and routes are rate-limited (`FROWSE_RATE_LIMIT_MAX`, default 600/min).
+- Docker images install Frowse and its Chromium in an isolated virtual environment (`FROWSE_PYTHON`, `FROWSE_BROWSERS_PATH`). Outside Docker, install it with `pip install frowse`.
+- Documented the routes in `openapi.json` and `AGENT_SPEC.md`.
+
+### Folate selector grounding
+- Added `GET /api/folate/status` and `POST /api/folate/resolve`, and natural-language selectors (plain descriptions or `folate:` / `ai:` prefixes) that are resolved automatically at runtime in action and logic blocks.
+- Bundled the local Folate runtime (installed in Docker images and by `postinstall`) and removed the remote endpoint option, so selector grounding always runs locally.
+
+### Editor and canvas
+- Redesigned the On Execution trigger block with a header, recessed URL preview, inline metadata, a bottom connector port, and a yellow bolt icon; moved the compact URL into the header and removed the extra divider, Edit pill, and label text.
+- Added a confirmation modal before deleting action blocks.
+- Normalized textbox height, padding, and placeholder alignment, and fixed dropdowns not closing on outside click when a parent stops mousedown propagation.
+- Added distorted-text CAPTCHA support to the CAPTCHA type dropdown, replaced its favicons with Tabler brand icons, used a grid-scan icon for Auto-detect, and removed the reCAPTCHA v3 option.
+- Updated branding to "Figranium Browsers".
+
+### Dependencies and build
+- Updated Fiptcha to v0.3.0.
+- Fixed the Docker image build failing on Debian-managed `typing_extensions` when installing Folate, which had been failing the V1 qualification workflow.
+- Hardened Frowse session path handling to satisfy CodeQL.
+
 ## [0.23.0] - 2026-11-16
 
 ### Authentication and security
